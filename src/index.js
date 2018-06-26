@@ -1,4 +1,4 @@
-import wwObject from './wwObject.vue'
+import wwObject from './wwObjectSrc.vue'
 
 const name = "ww-image";
 const wwEnableMetrics = true;
