@@ -24,8 +24,8 @@ export default {
 			default: {}
 		},
 		wwAttrs: {
-			type: Array,
-			default: []
+			type: Object,
+			default: {}
 		}
 	},
 	data() {
