@@ -1,5 +1,6 @@
 {
   "name": "ww-image",
+  "type": "wwObject",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -20,8 +21,8 @@
     "vue-template-compiler": "^2.5.16",
     "webpack": "^4.9.1",
     "webpack-cli": "^2.1.4",
-    "webpack-strip-block": "^0.2.0",
-    "webpack-dev-server": "^3.1.4"
+    "webpack-dev-server": "^3.1.4",
+    "webpack-strip-block": "^0.2.0"
   },
   "browserslist": [
     "> 1%",
