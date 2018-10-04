@@ -9,9 +9,9 @@
 					<!-- Image -->
 					<img v-if="wwAttrs.wwCategory != 'background'" class="ww-img ww-img-need-load" v-bind:src="wwObject.content.data.url" v-bind:alt="wwObject.alt" />
 				</div>
+				</div>
 			</div>
 		</div>
-	</div>
 </template>
  
 
@@ -260,14 +260,9 @@ export default {
 		var wwHiddenLoadImg = new Image();
 		wwHiddenLoadImg.onload = function () {
 
-			console.log("ONLOAD")
 
 			self.wwObject.content.data.imgSize.w = wwHiddenLoadImg.width;
 			self.wwObject.content.data.imgSize.h = wwHiddenLoadImg.height;
-
-			self.wwApplyZoom(self.wwObject.content.data.zoom);
-			self.wwApplyPosition(self.wwObject.content.data.position);
-			self.wwApplyRatio();
 
 			wwLib.wwElementsStyle.applyAllStyles({
 				wwObject: self.wwObject,
@@ -278,8 +273,11 @@ export default {
 			});
 
 			self.wwImgElements.wwImg.classList.add("ww-img-loaded");
-		};
 
+			self.wwApplyRatio();
+			self.wwApplyZoom(self.wwObject.content.data.zoom);
+			self.wwApplyPosition(self.wwObject.content.data.position);
+		};
 		wwHiddenLoadImg.src = this.wwObject.content.data.url;
 
 	}
