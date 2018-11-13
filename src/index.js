@@ -1,4 +1,4 @@
-import wwObject from './wwObjectSrc.vue'
+import wwObject from './wwObjectImage.vue'
 
 const name = "ww-image";
 const wwEnableMetrics = true;
@@ -11,7 +11,7 @@ const addComponent = function () {
             {
                 type: name,
                 data: {
-                    url: '/img/no_image_selected.png',
+                    url: 'https://cdn.wewebapp.io/public/images/no_image_selected.png',
                     alt: {
                         fr_FR: "webeo",
                         en_GB: "webeo",

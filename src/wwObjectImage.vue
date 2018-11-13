@@ -19,7 +19,7 @@
 export default {
     name: "ww-image",
     props: {
-        wwObject: Object,
+        wwObjectCtrl: Object,
         wwAttrs: {
             type: Object,
             default: {}
@@ -27,6 +27,7 @@ export default {
     },
     data() {
         return {
+            wwObject: this.wwObjectCtrl.get(),
             wwImgElements: {},
             wwControlsElements: {}
         };
