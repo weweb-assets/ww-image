@@ -27,14 +27,20 @@ export default {
     },
     data() {
         return {
-            wwObject: this.wwObjectCtrl.get(),
+
             wwImgElements: {},
             wwControlsElements: {}
         };
     },
     computed: {
+        wwObject() {
+            return this.wwObjectCtrl.get();
+        }
     },
     watch: {
+        wwObject() {
+            this.wwOnResize();
+        }
     },
     beforeDestroy: function () {
         window.removeEventListener('resize', this.wwOnResize)
@@ -233,6 +239,7 @@ export default {
         }
     },
     mounted: function () {
+
         const self = this;
 
         //Get all needed elements
