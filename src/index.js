@@ -1,7 +1,6 @@
 import wwObject from './wwObjectImage.vue'
 
 const name = "ww-image";
-const wwEnableMetrics = true;
 
 const addComponent = function () {
     if (window.vm) {
@@ -31,7 +30,11 @@ const addComponent = function () {
                     }
                 }
             },
-            enableMetrics: wwEnableMetrics,
+            upsales: {
+                wwAnalytics: {
+                    click: true
+                }
+            },
             /* wwManager:start */
             cmsOptions: {
             }
