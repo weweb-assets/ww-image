@@ -37,6 +37,31 @@ const addComponent = function () {
             },
             /* wwManager:start */
             cmsOptions: {
+                wwObjectMenu: {
+                    items: [
+                        {
+                            name: 'SOURCE',
+                            text: {
+                                en_GB: 'Image',
+                                fr_FR: 'Image'
+                            },
+                            icon: 'wwi wwi-image',
+                            action: 'changeImage'
+                        },
+
+                        {
+                            name: 'OPTIONS',
+                            text: {
+                                en_GB: 'Options...',
+                                fr_FR: 'Options...'
+                            },
+                            icon: 'wwi wwi-edit-other',
+                            action: 'edit'
+                        },
+
+
+                    ]
+                }
             }
             /* wwManager:end */
         });

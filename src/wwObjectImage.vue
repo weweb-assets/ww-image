@@ -1,13 +1,26 @@
 <template>
-    <div class="ww-img-directive">
-        <div class="ww-img-format">
-            <div class="ww-img-container">
-                <div class="ww-img-hover">
+    <div class="ww-image" :class="{'bg': wwAttrs.wwCategory == 'background'}">
+        <!-- wwManager:start -->
+        <div class="controls-desktop" :class="{'lock': lockControls}">
+            <div class="zoom-bar">
+                <div class="zoom-line"></div>
+                <div class="zoom-handle" :style="{'top' : zoomPercentY + '%'}" @mousedown="startZoomDesktop($event)">
+                    <div></div>
+                </div>
+            </div>
+        </div>
+        <div class="reset-zoom" @click="resetZoom($event)">
+            <i class="fa fa-expand" aria-hidden="true"></i>
+        </div>
+        <!-- wwManager:end -->
+        <div class="format" :style="styles.format">
+            <div class="container">
+                <div class="hover">
                     <!-- Image goes here -->
                     <!-- Background -->
-                    <div v-if="wwAttrs.wwCategory == 'background'" class="ww-img ww-img-bg ww-img-need-load" v-bind:style="{ backgroundImage:  'url(' + wwObject.content.data.url + ')'}" v-bind:alt="wwObject.alt"></div>
+                    <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="styles.image"></div>
                     <!-- Image -->
-                    <img v-if="wwAttrs.wwCategory != 'background'" class="ww-img ww-img-need-load" v-bind:src="wwObject.content.data.url" v-bind:alt="wwObject.alt">
+                    <img v-if="wwAttrs.wwCategory != 'background'" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="styles.image">
                 </div>
             </div>
         </div>
@@ -27,31 +40,112 @@ export default {
     },
     data() {
         return {
+            wwControlsElements: {},
+            imageLoaded: false,
+            zoomMin: 0.2,
+            zoomFactor: 1,
 
-            wwImgElements: {},
-            wwControlsElements: {}
+            /*=============================================m_ÔÔ_m=============================================\
+              STYLES
+            \================================================================================================*/
+            styles: {
+                image: {
+                    backgroundImage: '',
+                    width: 'auto',
+                    height: 'auto',
+                    minWidth: 'none',
+                    minHeight: 'none',
+                    top: '50%',
+                    left: '50%',
+                },
+                format: {
+                    paddingBottom: ''
+                }
+            },
+
+            /* wwManager:start */
+            zoomPercentY: 50,
+            lastMovePosition: { x: 0, y: 0 },
+            lastTouchDist: 0,
+            zoomBarElement: null,
+            lockControls: false,
+            /* wwManager:end */
         };
     },
     computed: {
         wwObject() {
             return this.wwObjectCtrl.get();
-        }
+        },
+        /* wwManager:start */
+
+        /* wwManager:end */
     },
     watch: {
         wwObject() {
-            this.wwOnResize();
+            this.onResize();
         }
     },
     beforeDestroy: function () {
-        window.removeEventListener('resize', this.wwOnResize)
+        this.$el.querySelector('.container').removeEventListener('mousedown', this.startMove);
+        window.removeEventListener('resize', this.onResize)
     },
     methods: {
-        wwOnResize: function () {
-            this.wwApplyZoom(this.wwObject.content.data.zoom);
-            this.wwApplyPosition(this.wwObject.content.data.position);
+        init() {
+
+            this.zoomFactor = Math.sqrt(100 * 100 / (10 - this.zoomMin));
+
+            const self = this;
+
+            //Get all needed elements
+            this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
+            this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
+
+            //Add resize event
+            window.addEventListener('resize', this.onResize);
+
+            this.applyRatio();
+
+            wwLib.wwElementsStyle.applyAllStyles({
+                wwObject: this.wwObject,
+                lastWwObject: null,
+                element: this.$el.querySelector('.format'),
+                noClass: false,
+                noAnim: this.wwAttrs.wwNoAnim,
+            });
+
+            this.imageLoaded = false;
+
+            var wwHiddenLoadImg = new Image();
+            wwHiddenLoadImg.onload = function () {
+
+                self.wwObject.content.data.imgSize.w = wwHiddenLoadImg.width;
+                self.wwObject.content.data.imgSize.h = wwHiddenLoadImg.height;
+
+                self.imageLoaded = true;
+
+                self.applyZoom(self.wwObject.content.data.zoom);
+                self.applyPosition(self.wwObject.content.data.position);
+
+                self.$emit('ww-loaded', self);
+            };
+            wwHiddenLoadImg.src = this.wwObject.content.data.url;
         },
-        wwGetScale: function () {
-            var classes = this.wwImgElements.wwImgDirective.classList;
+        onResize: function () {
+            this.applyZoom(this.wwObject.content.data.zoom);
+            this.applyPosition(this.wwObject.content.data.position);
+        },
+        preventClick(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            return false;
+        },
+
+        /*=============================================m_ÔÔ_m=============================================\
+          GET PARAMS
+        \================================================================================================*/
+        getScale: function () {
+            var classes = this.$el.classList;
 
             var hasScale = false;
 
@@ -67,7 +161,7 @@ export default {
 
             var matrixRegex = /matrix\((-?\d*\.?\d+),\s*0,\s*0,\s*(-?\d*\.?\d+),\s*0,\s*0\)/;
 
-            var matrix = this.wwImgElements.wwImgDirective.style.transform;
+            var matrix = this.$el.style.transform;
 
             var matches = matrix.match(matrixRegex);
 
@@ -77,7 +171,7 @@ export default {
 
             return matches[1];
         },
-        wwGetRatio: function () {
+        getRatio: function () {
             //If ratio is fixed in ww-object directive, override it here
             if (this.wwAttrs.wwFixedRatio) {
                 try {
@@ -102,34 +196,40 @@ export default {
 
             return this.wwObject.ratio;
         },
-        wwApplyZoom: function (wwZoom) {
+
+        /*=============================================m_ÔÔ_m=============================================\
+          APPLY
+        \================================================================================================*/
+        applyZoom: function (zoom) {
+
+            //this.wwObject.content.data.zoom = (this.wwObject.content.data.zoom >= 0 ? this.wwObject.content.data.zoom : 1);
 
 
-            if (this.wwAttrs.wwCategory == "background") {
-                wwZoom = -1;
+            if (this.wwAttrs.wwCategory == 'background') {
+                zoom = -1;
             }
 
             //Chercher class ww-anim
             //Chercher transform scale
             //Recupérer valeur scale
             //Diviser par scale pour la vraie valeur
-            var scale = this.wwGetScale();
+            var scale = this.getScale();
 
-            var icon = "expand";
+            var icon = 'expand';
             var toReturn = null;
             var containerSize;
             var imgSize;
             var newSize;
 
-            if (wwZoom === -1) {
+            if (zoom === -1) {
 
                 if (!this.wwObject.content.data || !this.wwObject.content.data.imgSize) {
                     return;
                 }
 
                 containerSize = {
-                    w: this.wwImgElements.wwImgDirective.offsetWidth,
-                    h: this.wwImgElements.wwImgDirective.offsetHeight
+                    w: this.$el.offsetWidth,
+                    h: this.$el.offsetHeight
                 };
 
                 imgSize = {
@@ -150,27 +250,27 @@ export default {
                 }
 
                 if (newSize.w == containerSize.w) {
-                    this.wwImgElements.wwImg.style.width = "100%";
-                    this.wwImgElements.wwImg.style.height = "";
+                    this.styles.image.width = '100%';
+                    this.styles.image.height = '';
                 }
                 else {
-                    this.wwImgElements.wwImg.style.width = "";
-                    this.wwImgElements.wwImg.style.height = "100%";
+                    this.styles.image.width = '';
+                    this.styles.image.height = '100%';
                 }
 
-                this.wwImgElements.wwImg.style.minWidth = "100%";
-                this.wwImgElements.wwImg.style.minHeight = "100%";
+                this.styles.image.minWidth = '100%';
+                this.styles.image.minHeight = '100%';
 
-            } else if (wwZoom === "switch") {
+            } else if (zoom === 'switch') {
 
                 containerSize = {
-                    w: this.wwImgElements.wwImgDirective.offsetWidth,
-                    h: this.wwImgElements.wwImgDirective.offsetHeight
+                    w: this.$el.offsetWidth,
+                    h: this.$el.offsetHeight
                 };
 
                 imgSize = {
-                    w: this.wwImgElements.wwImg.offsetWidth,
-                    h: this.wwImgElements.wwImg.offsetHeight
+                    w: this.$el.querySelector('.image').offsetWidth,
+                    h: this.$el.querySelector('.image').offsetHeight
                 };
 
                 newSize = {
@@ -184,190 +284,470 @@ export default {
                         h: containerSize.h
                     };
                 } else {
-                    icon = "compress";
+                    icon = 'compress';
                 }
 
-                this.wwImgElements.wwImg.style.width = newSize.w + "px";
-                this.wwImgElements.wwImg.style.height = "";
+                this.styles.image.width = newSize.w + 'px';
+                this.styles.image.height = '';
 
-                this.wwImgElements.wwImg.style.minWidth = "";
-                this.wwImgElements.wwImg.style.minHeight = "";
+                this.styles.image.minWidth = 'unset';
+                this.styles.image.minHeight = 'unset';
 
                 toReturn = newSize.w / containerSize.w;
 
+                this.zoomPercentY = 100 - this.zoomFactor * Math.sqrt(newSize.w / containerSize.w - this.zoomMin);
 
-                if (this.wwControlsElements.wwResetButtonDesktop && this.wwControlsElements.wwResetButtonMobile) {
-                    this.wwControlsElements.wwResetButtonDesktop.empty();
-                    this.wwControlsElements.wwResetButtonDesktop.append("<i class='fa fa-" + icon + "' aria-hidden='true'></i>");
-                    this.wwControlsElements.wwResetButtonMobile.empty();
-                    this.wwControlsElements.wwResetButtonMobile.append("<i class='fa fa-" + icon + "' aria-hidden='true'></i>");
-                }
             } else {
-
-
                 containerSize = {
-                    w: this.wwImgElements.wwImgDirective.offsetWidth,
-                    h: this.wwImgElements.wwImgDirective.offsetHeight
+                    w: this.$el.offsetWidth,
+                    h: this.$el.offsetHeight
                 };
 
-                this.wwImgElements.wwImg.style.width = (containerSize.w * wwZoom) + "px";
-                this.wwImgElements.wwImg.style.height = "";
+                this.styles.image.width = (containerSize.w * zoom) + 'px';
+                this.styles.image.height = '';
 
-                this.wwImgElements.wwImg.style.minWidth = "";
-                this.wwImgElements.wwImg.style.minHeight = "";
+                this.styles.image.minWidth = 'unset';
+                this.styles.image.minHeight = 'unset';
+
+                this.zoomPercentY = 100 - this.zoomFactor * Math.sqrt(this.wwObject.content.data.zoom - this.zoomMin);
+
             }
-
 
             return toReturn;
         },
-        wwApplyPosition: function (position) {
-            if (this.wwAttrs.wwCategory == "background" && this.wwImgElements) {
-                this.wwImgElements.wwImg.style.left = "50%";
-                this.wwImgElements.wwImg.style.top = "50%";
+        applyPosition: function (position) {
+            if (this.wwAttrs.wwCategory == 'background') {
+                this.styles.image.left = '50%';
+                this.styles.image.top = '50%';
             }
-            else if (position && this.wwImgElements) {
-                this.wwImgElements.wwImg.style.left = (position.x + 50) + "%";
-                this.wwImgElements.wwImg.style.top = (position.y + 50) + "%";
+            else if (position) {
+                this.styles.image.left = (position.x + 50) + '%';
+                this.styles.image.top = (position.y + 50) + '%';
             }
         },
-        wwApplyRatio: function (ratio) {
-            if (this.wwAttrs.wwCategory != "background") {
-                var _ratio = ratio || this.wwGetRatio();
+        applyRatio: function (ratio) {
+            if (this.wwAttrs.wwCategory != 'background') {
+                var _ratio = ratio || this.getRatio();
 
-                this.wwImgElements.wwImgFormat.style.paddingBottom = _ratio + "%";
+                this.styles.format.paddingBottom = _ratio + '%';
             }
+        },
+
+        /* wwManager:start */
+        /*=============================================m_ÔÔ_m=============================================\
+          IMAGE ZOOM
+        \================================================================================================*/
+        resetZoom(event) {
+            //Reset position
+            this.wwObject.content.data.position = { x: 0, y: 0 };
+            this.applyPosition(this.wwObject.content.data.position);
+
+            //Reset zoom
+            this.wwObject.content.data.zoom = this.applyZoom("switch");
+
+            this.wwObjectCtrl.update(this.wwObject);
+
+            //Stop event propagation to prevent image click
+            event.preventDefault();
+            event.stopPropagation();
+
+            return false;
+        },
+
+        startZoomDesktop(event) {
+            this.lockControls = true;
+
+            wwLib.wwObjectHover.setLock(this);
+
+            this.zoomBarElement = this.$el.querySelector('.zoom-bar');
+
+            window.addEventListener("mousemove", this.zoomDesktop);
+            window.addEventListener("mouseup", this.stopZoomDesktop);
+
+            document.addEventListener("click", this.preventClick, true);
+            document.addEventListener("touch", this.preventClick, true);
+
+            window.document.body.classList.add('ww-image-dragging');
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            return false;
+        },
+        zoomDesktop(event) {
+            // wwImgElements.wwImgDirective.addClass("dragging");
+            // wwImgElements.wwImgFormat.addClass("dragging");
+
+            let zoomPositionY = (event.clientY - this.zoomBarElement.getBoundingClientRect().top) * 100 / this.zoomBarElement.getBoundingClientRect().height;
+            zoomPositionY = Math.min(Math.max(zoomPositionY, 0), 100);
+
+            //this.zoomPercentY = zoomPositionY;
+
+            //this.wwObject.content.data.zoom = Math.exp((100 - zoomPositionY) * 7 / 100) / 100;
+            this.wwObject.content.data.zoom = Math.pow((100 - zoomPositionY) / this.zoomFactor, 2) + this.zoomMin;
+
+            this.applyZoom(this.wwObject.content.data.zoom);
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            return false;
+        },
+        stopZoomDesktop(event) {
+            this.lockControls = false;
+
+            wwLib.wwObjectHover.removeLock();
+
+            window.removeEventListener("mousemove", this.zoomDesktop);
+            window.removeEventListener("mouseup", this.stopZoomDesktop);
+
+            //Remove click events with a small delay to be sure that click is ignored
+            let self = this;
+            setTimeout(function () {
+                document.removeEventListener("click", self.preventClick, true);
+                document.removeEventListener("touch", self.preventClick, true);
+            }, 100);
+
+            this.wwObjectCtrl.update(this.wwObject);
+
+            window.document.body.classList.remove('ww-image-dragging');
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            return false;
+        },
+
+        /*=============================================m_ÔÔ_m=============================================\
+          IMAGE MOVE
+        \================================================================================================*/
+        getEventPosition(event) {
+            var position = { x: 0, y: 0 };
+
+            if (this.isTouch(event)) {
+
+                var touch0 = {
+                    x: event.originalEvent.touches[0].clientX,
+                    y: event.originalEvent.touches[0].clientY
+                };
+
+                var touch1 = {
+                    x: event.originalEvent.touches[1].clientX,
+                    y: event.originalEvent.touches[1].clientY
+                };
+
+                position.x = (touch0.x + touch1.x) / 2;
+                position.y = (touch0.y + touch1.y) / 2;
+
+            } else if (event.touches) {
+                return null;
+            } else {
+                position.x = event.clientX;
+                position.y = event.clientY;
+            }
+
+            return position;
+        },
+        getTouchDist(event) {
+            var touch0 = {
+                x: event.originalEvent.touches[0].clientX,
+                y: event.originalEvent.touches[0].clientY
+            };
+
+            var touch1 = {
+                x: event.originalEvent.touches[1].clientX,
+                y: event.originalEvent.touches[1].clientY
+            };
+
+            var dist = Math.sqrt((touch0.x - touch1.x) * (touch0.x - touch1.x) + (touch0.y - touch1.y) * (touch0.y - touch1.y));
+            return dist;
+        },
+        isTouch(event) {
+            return event.touches && event.touches.length === 2;
+        },
+
+        startMove(event) {
+
+            if (this.wwObjectCtrl.getSectionCtrl().getEditMode() != 'CONTENT' || this.wwAttrs.wwCategory == 'background') {
+                return;
+            }
+            this.lastMovePosition = this.getEventPosition(event);
+            if (this.lastMovePosition) {
+                wwLib.wwObjectHover.setLock(this);
+
+                window.addEventListener("mousemove", this.move);
+                window.addEventListener("mouseup", this.stopMove);
+
+                document.addEventListener("click", this.preventClick, true);
+                document.addEventListener("touch", this.preventClick, true);
+
+                window.document.body.classList.add('ww-image-dragging');
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                return false;
+            }
+
+        },
+        move(event) {
+            let position = this.getEventPosition(event);
+
+            if (!position) {
+                return;
+            }
+
+            var offsetXpx = position.x - this.lastMovePosition.x;
+            var offsetYpx = position.y - this.lastMovePosition.y;
+
+            var offsetXpercent = offsetXpx * 100 / this.$el.querySelector('.container').getBoundingClientRect().width;
+            var offsetYpercent = offsetYpx * 100 / this.$el.querySelector('.container').getBoundingClientRect().height;
+
+            this.wwObject.content.data.position.x += offsetXpercent;
+            this.wwObject.content.data.position.y += offsetYpercent;
+
+            this.applyPosition(this.wwObject.content.data.position);
+
+            if (this.isTouch(event)) {
+                const touchDist = this.getTouchDist(event);
+
+                this.wwObject.content.data.zoom += (touchDist - this.lastTouchDist) / 100 * (this.wwObject.content.data.zoom === 0 ? 1 : this.wwObject.content.data.zoom);
+
+                if (this.wwObject.content.data.zoom < this.zoomMin) {
+                    this.wwObject.content.data.zoom = this.zoomMin;
+                }
+                if (this.wwObject.content.data.zoom > 10) {
+                    this.wwObject.content.data.zoom = 10;
+                }
+
+                this.zoomPercentY = 100 - this.zoomFactor * Math.sqrt(this.wwObject.content.data.zoom - this.zoomMin);
+
+                this.lastTouchDist = touchDist;
+            }
+
+            this.lastMovePosition.x = position.x;
+            this.lastMovePosition.y = position.y;
+
+            event.preventDefault();
+            event.stopPropagation();
+
+        },
+        stopMove(event) {
+            this.lockControls = false;
+
+            wwLib.wwObjectHover.removeLock();
+
+            window.removeEventListener("mousemove", this.move);
+            window.removeEventListener("mouseup", this.stopMove);
+
+            //Remove click events with a small delay to be sure that click is ignored
+            let self = this;
+            setTimeout(function () {
+                document.removeEventListener("click", self.preventClick, true);
+                document.removeEventListener("touch", self.preventClick, true);
+            }, 100);
+
+            this.wwObjectCtrl.update(this.wwObject);
+
+            window.document.body.classList.remove('ww-image-dragging');
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            return false;
+        },
+
+        /*=============================================m_ÔÔ_m=============================================\
+          CHANGE IMAGE
+        \================================================================================================*/
+        async changeImage() {
+            wwLib.wwObjectHover.setLock(this);
+
+            let options = {
+                firstPage: 'SELECT_IMAGE',
+                data: {
+
+                }
+            }
+
+            const result = await wwLib.wwPopups.open(options)
+
+
+            wwLib.wwObjectHover.removeLock();
         }
+
+        /* wwManager:end */
     },
     mounted: function () {
+        this.init();
 
-        const self = this;
-
-        //Get all needed elements
-        this.wwImgElements = {};
-        this.wwImgElements.wwImgDirective = this.$el;
-        this.wwImgElements.wwImgFormat = this.wwImgElements.wwImgDirective.querySelector('.ww-img-format');
-        this.wwImgElements.wwImgContainer = this.wwImgElements.wwImgFormat.querySelector('.ww-img-container');
-        this.wwImgElements.wwImgHover = this.wwImgElements.wwImgContainer.querySelector('.ww-img-hover');
-        this.wwImgElements.wwImg = this.wwImgElements.wwImgHover.querySelector('.ww-img');
-
-
-        if (this.wwAttrs.wwCategory == 'background') {
-            this.wwImgElements.wwImgDirective.style.height = "100%";
-        }
-        else {
-            this.wwImgElements.wwImgDirective.style.height = "auto";
-        }
-
-        //Add resize event
-        window.addEventListener('resize', this.wwOnResize);
-
-        this.wwApplyRatio();
-
-        wwLib.wwElementsStyle.applyAllStyles({
-            wwObject: self.wwObject,
-            lastWwObject: null,
-            element: self.wwImgElements.wwImgFormat,
-            noClass: false,
-            noAnim: self.wwAttrs.wwNoAnim,
-        });
-
-        var wwHiddenLoadImg = new Image();
-        wwHiddenLoadImg.onload = function () {
-
-            self.wwObject.content.data.imgSize.w = wwHiddenLoadImg.width;
-            self.wwObject.content.data.imgSize.h = wwHiddenLoadImg.height;
-
-            self.wwImgElements.wwImg.classList.add("ww-img-loaded");
-
-            self.wwApplyZoom(self.wwObject.content.data.zoom);
-            self.wwApplyPosition(self.wwObject.content.data.position);
-
-            self.$emit('ww-loaded', self);
-        };
-        wwHiddenLoadImg.src = this.wwObject.content.data.url;
-
+        /* wwManager:start */
+        this.$el.querySelector('.container').addEventListener('mousedown', this.startMove);
+        /* wwManager:end */
     }
 };
 </script>
 
 
-<style scoped>
-.ww-img-directive {
-    /*overflow: hidden;*/
-    /*z-index: -1;*/
+<style scoped lang="scss">
+.ww-image {
     position: relative;
-    /*background-color: blue;*/
-    -webkit-touch-callout: none;
-    /* iOS Safari */
-    -webkit-user-select: none;
-    /* Safari */
-    -khtml-user-select: none;
-    /* Konqueror HTML */
-    -moz-user-select: none;
-    /* Firefox */
-    -ms-user-select: none;
-    /* Internet Explorer/Edge */
     user-select: none;
-    /* Non-prefixed version, currently supported by Chrome and Opera */
+
+    .format {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            overflow: hidden;
+            /* +2px to avoid white borders */
+            width: calc(100% + 2px);
+            height: calc(100% + 2px);
+            transition: background-color 0.1s ease;
+
+            .hover {
+                width: 100%;
+                height: 100%;
+                position: relative;
+
+                .image {
+                    position: absolute;
+                    transform: translate(-50%, -50%);
+                    transition: opacity 0.3s ease;
+                    opacity: 0;
+
+                    &.bg {
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        background-size: cover;
+                    }
+
+                    &.loaded {
+                        opacity: 1 !important;
+                    }
+                }
+            }
+        }
+    }
 }
 
-.ww-img-loaded {
-    opacity: 1 !important;
+/* wwManager:start */
+.ww-editing .container {
+    cursor: move;
+    cursor: grab;
 }
 
-.ww-img-need-load {
-    -webkit-transition: opacity 0.3s ease;
-    -moz-transition: opacity 0.3s ease;
-    transition: opacity 0.3s ease;
+.bg {
+    & .controls-desktop,
+    & .controls-mobile {
+        display: none;
+    }
+}
+
+.controls-desktop {
+    position: absolute;
+    right: 4px;
+    min-height: 20px;
+    bottom: 5px;
+    top: 5px;
+    width: 20px;
+    z-index: 1;
     opacity: 0;
+    display: none;
+    transition: opacity 0.15s ease;
+
+    .zoom-bar {
+        position: relative;
+        width: 100%;
+        height: 100%;
+
+        .zoom-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 3px;
+            background-color: white;
+            width: 3px;
+            border-radius: 50px;
+            transform: translateX(-50%);
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .zoom-handle {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            background-color: #e73055;
+            width: 20px;
+            height: 20px;
+            border-radius: 100%;
+            cursor: move;
+            cursor: grab;
+            box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
+        }
+    }
 }
 
-.ww-img-format {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-}
-
-.ww-img-hover {
-    width: 100%;
-    height: 100%;
-    position: relative;
-}
-
-.ww-img-container {
-    /*z-index: -1;*/
+.reset-zoom {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    -webkit-transform: translate(-50%, -50%);
-    -moz-transform: translate(-50%, -50%);
-    -ms-transform: translate(-50%, -50%);
-    -o-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-    overflow: hidden;
-    /* +2px to avoid white borders */
-    width: calc(100% + 2px);
-    height: calc(100% + 2px);
-    -webkit-transition: background-color 0.1s ease;
-    -moz-transition: background-color 0.1s ease;
-    transition: background-color 0.1s ease;
-    /*border-radius: 100%;*/
+    z-index: 1;
+    left: 5px;
+    bottom: 5px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    line-height: 25px;
+    font-size: 15px;
+    text-align: center;
+    cursor: pointer;
+    color: #757575;
+    box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    display: none;
+    transition: opacity 0.15s ease;
 }
 
-.ww-img {
-    position: absolute;
-    -webkit-transform: translate(-50%, -50%);
-    -moz-transform: translate(-50%, -50%);
-    -ms-transform: translate(-50%, -50%);
-    -o-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
+.ww-editing .controls-desktop,
+.ww-editing .reset-zoom,
+.controls-desktop.lock {
+    display: block;
 }
 
-.ww-img.ww-img-bg {
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
+.ww-image:not(.bg):hover .controls-desktop,
+.ww-image:not(.bg):hover .reset-zoom,
+.controls-desktop.lock {
+    opacity: 1;
+}
+
+/* wwManager:end */
+
+@media (max-width: 768px) {
+    .controls-desktop {
+        display: none !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .controls-mobile {
+        display: none !important;
+    }
+    .container .ww-video-bg {
+        display: block !important;
+    }
+}
+</style>
+
+<style >
+.ww-image-dragging {
+    cursor: move;
+    cursor: grab;
 }
 </style>
 
@@ -397,426 +777,81 @@ export default {
 }
 
 .ww-class-img-filter-gradient-bottom-small {
-    background: -moz-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.1) 100%
-    );
-    /* ff3.6+ */
-    background: -webkit-gradient(
-        linear,
-        left top,
-        left bottom,
-        color-stop(0%, rgba(255, 255, 255, 0)),
-        color-stop(100%, rgba(0, 0, 0, 0.1))
-    );
-    /* safari4+,chrome */
-    background: -webkit-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.1) 100%
-    );
-    /* safari5.1+,chrome10+ */
-    background: -o-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.1) 100%
-    );
-    /* opera 11.10+ */
-    background: -ms-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.1) 100%
-    );
-    /* ie10+ */
     background: linear-gradient(
         180deg,
         rgba(255, 255, 255, 0) 0%,
         rgba(0, 0, 0, 0.1) 100%
     );
-    /* w3c */
-    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#FFFFFF', endColorstr='#000000', GradientType=0);
-    /* ie6-9 */
 }
 
 .ww-class-img-filter-gradient-bottom-medium {
-    background: -moz-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.2) 100%
-    );
-    /* ff3.6+ */
-    background: -webkit-gradient(
-        linear,
-        left top,
-        left bottom,
-        color-stop(0%, rgba(255, 255, 255, 0)),
-        color-stop(100%, rgba(0, 0, 0, 0.2))
-    );
-    /* safari4+,chrome */
-    background: -webkit-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.2) 100%
-    );
-    /* safari5.1+,chrome10+ */
-    background: -o-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.2) 100%
-    );
-    /* opera 11.10+ */
-    background: -ms-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.2) 100%
-    );
-    /* ie10+ */
     background: linear-gradient(
         180deg,
         rgba(255, 255, 255, 0) 0%,
         rgba(0, 0, 0, 0.2) 100%
     );
-    /* w3c */
-    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#FFFFFF', endColorstr='#000000', GradientType=0);
-    /* ie6-9 */
 }
 
 .ww-class-img-filter-gradient-bottom-big {
-    background: -moz-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.4) 100%
-    );
-    /* ff3.6+ */
-    background: -webkit-gradient(
-        linear,
-        left top,
-        left bottom,
-        color-stop(0%, rgba(255, 255, 255, 0)),
-        color-stop(100%, rgba(0, 0, 0, 0.4))
-    );
-    /* safari4+,chrome */
-    background: -webkit-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.4) 100%
-    );
-    /* safari5.1+,chrome10+ */
-    background: -o-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.4) 100%
-    );
-    /* opera 11.10+ */
-    background: -ms-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.4) 100%
-    );
-    /* ie10+ */
     background: linear-gradient(
         180deg,
         rgba(255, 255, 255, 0) 0%,
         rgba(0, 0, 0, 0.4) 100%
     );
-    /* w3c */
-    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#FFFFFF', endColorstr='#000000', GradientType=0);
-    /* ie6-9 */
 }
 
 .ww-class-img-filter-gradient-top-small {
-    background: -moz-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.1) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ff3.6+ */
-    background: -webkit-gradient(
-        linear,
-        left top,
-        left bottom,
-        color-stop(0%, rgba(0, 0, 0, 0.1)),
-        color-stop(99%, rgba(252, 252, 252, 0)),
-        color-stop(100%, rgba(255, 255, 255, 0))
-    );
-    /* safari4+,chrome */
-    background: -webkit-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.1) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* safari5.1+,chrome10+ */
-    background: -o-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.1) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* opera 11.10+ */
-    background: -ms-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.1) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ie10+ */
     background: linear-gradient(
         180deg,
         rgba(0, 0, 0, 0.1) 0%,
         rgba(252, 252, 252, 0) 99%,
         rgba(255, 255, 255, 0) 100%
     );
-    /* w3c */
-    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#FFFFFF', GradientType=0);
-    /* ie6-9 */
 }
 
 .ww-class-img-filter-gradient-top-medium {
-    background: -moz-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.2) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ff3.6+ */
-    background: -webkit-gradient(
-        linear,
-        left top,
-        left bottom,
-        color-stop(0%, rgba(0, 0, 0, 0.2)),
-        color-stop(99%, rgba(252, 252, 252, 0)),
-        color-stop(100%, rgba(255, 255, 255, 0))
-    );
-    /* safari4+,chrome */
-    background: -webkit-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.2) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* safari5.1+,chrome10+ */
-    background: -o-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.2) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* opera 11.10+ */
-    background: -ms-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.2) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ie10+ */
     background: linear-gradient(
         180deg,
         rgba(0, 0, 0, 0.2) 0%,
         rgba(252, 252, 252, 0) 99%,
         rgba(255, 255, 255, 0) 100%
     );
-    /* w3c */
-    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#FFFFFF', GradientType=0);
-    /* ie6-9 */
 }
 
 .ww-class-img-filter-gradient-top-big {
-    background: -moz-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.4) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ff3.6+ */
-    background: -webkit-gradient(
-        linear,
-        left top,
-        left bottom,
-        color-stop(0%, rgba(0, 0, 0, 0.4)),
-        color-stop(99%, rgba(252, 252, 252, 0)),
-        color-stop(100%, rgba(255, 255, 255, 0))
-    );
-    /* safari4+,chrome */
-    background: -webkit-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.4) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* safari5.1+,chrome10+ */
-    background: -o-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.4) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* opera 11.10+ */
-    background: -ms-linear-gradient(
-        270deg,
-        rgba(0, 0, 0, 0.4) 0%,
-        rgba(252, 252, 252, 0) 99%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ie10+ */
     background: linear-gradient(
         180deg,
         rgba(0, 0, 0, 0.4) 0%,
         rgba(252, 252, 252, 0) 99%,
         rgba(255, 255, 255, 0) 100%
     );
-    /* w3c */
-    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#FFFFFF', GradientType=0);
-    /* ie6-9 */
 }
 
 .ww-class-img-filter-gradient-middle-small {
-    background: -moz-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.1) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ff3.6+ */
-    background: -webkit-gradient(
-        linear,
-        left top,
-        left bottom,
-        color-stop(0%, rgba(255, 255, 255, 0)),
-        color-stop(50%, rgba(0, 0, 0, 0.1)),
-        color-stop(100%, rgba(255, 255, 255, 0))
-    );
-    /* safari4+,chrome */
-    background: -webkit-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.1) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* safari5.1+,chrome10+ */
-    background: -o-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.1) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* opera 11.10+ */
-    background: -ms-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.1) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ie10+ */
     background: linear-gradient(
         180deg,
         rgba(255, 255, 255, 0) 0%,
         rgba(0, 0, 0, 0.1) 50%,
         rgba(255, 255, 255, 0) 100%
     );
-    /* w3c */
-    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#FFFFFF', endColorstr='#FFFFFF', GradientType=0);
-    /* ie6-9 */
 }
 
 .ww-class-img-filter-gradient-middle-medium {
-    background: -moz-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.2) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ff3.6+ */
-    background: -webkit-gradient(
-        linear,
-        left top,
-        left bottom,
-        color-stop(0%, rgba(255, 255, 255, 0)),
-        color-stop(50%, rgba(0, 0, 0, 0.2)),
-        color-stop(100%, rgba(255, 255, 255, 0))
-    );
-    /* safari4+,chrome */
-    background: -webkit-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.2) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* safari5.1+,chrome10+ */
-    background: -o-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.2) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* opera 11.10+ */
-    background: -ms-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.2) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ie10+ */
     background: linear-gradient(
         180deg,
         rgba(255, 255, 255, 0) 0%,
         rgba(0, 0, 0, 0.2) 50%,
         rgba(255, 255, 255, 0) 100%
     );
-    /* w3c */
-    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#FFFFFF', endColorstr='#FFFFFF', GradientType=0);
-    /* ie6-9 */
 }
 
 .ww-class-img-filter-gradient-middle-big {
-    background: -moz-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.4) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ff3.6+ */
-    background: -webkit-gradient(
-        linear,
-        left top,
-        left bottom,
-        color-stop(0%, rgba(255, 255, 255, 0)),
-        color-stop(50%, rgba(0, 0, 0, 0.4)),
-        color-stop(100%, rgba(255, 255, 255, 0))
-    );
-    /* safari4+,chrome */
-    background: -webkit-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.4) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* safari5.1+,chrome10+ */
-    background: -o-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.4) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* opera 11.10+ */
-    background: -ms-linear-gradient(
-        270deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(0, 0, 0, 0.4) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    /* ie10+ */
     background: linear-gradient(
         180deg,
         rgba(255, 255, 255, 0) 0%,
         rgba(0, 0, 0, 0.4) 50%,
         rgba(255, 255, 255, 0) 100%
     );
-    /* w3c */
-    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#FFFFFF', endColorstr='#FFFFFF', GradientType=0);
-    /* ie6-9 */
 }
 
 .ww-class-img-filter-custom {
@@ -851,32 +886,26 @@ export default {
 <!-- ww-class-img-effect -->
 <style scoped>
 .ww-class-img-effect-grayscale {
-    -webkit-filter: grayscale(1);
     filter: grayscale(1);
 }
 
 .ww-class-img-effect-sepia {
-    -webkit-filter: sepia(1);
     filter: sepia(1);
 }
 
 .ww-class-img-effect-invert {
-    -webkit-filter: invert(1);
     filter: invert(1);
 }
 
 .ww-class-img-effect-blur-small {
-    -webkit-filter: blur(1px);
     filter: blur(1px);
 }
 
 .ww-class-img-effect-blur-medium {
-    -webkit-filter: blur(3px);
     filter: blur(3px);
 }
 
 .ww-class-img-effect-blur-big {
-    -webkit-filter: blur(5px);
     filter: blur(5px);
 }
 </style>
@@ -920,38 +949,26 @@ export default {
 <!-- ww-class-img-shadow -->
 <style scoped>
 .ww-class-img-shadow-box-small {
-    -webkit-box-shadow: 0px 0px 5px 0px rgba(50, 50, 50, 0.75);
-    -moz-box-shadow: 0px 0px 5px 0px rgba(50, 50, 50, 0.75);
     box-shadow: 0px 0px 5px 0px rgba(50, 50, 50, 0.75);
 }
 
 .ww-class-img-shadow-box-medium {
-    -webkit-box-shadow: 0px 0px 10px 0px rgba(50, 50, 50, 0.75);
-    -moz-box-shadow: 0px 0px 10px 0px rgba(50, 50, 50, 0.75);
     box-shadow: 0px 0px 10px 0px rgba(50, 50, 50, 0.75);
 }
 
 .ww-class-img-shadow-box-big {
-    -webkit-box-shadow: 0px 0px 20px 0px rgba(50, 50, 50, 0.75);
-    -moz-box-shadow: 0px 0px 20px 0px rgba(50, 50, 50, 0.75);
     box-shadow: 0px 0px 20px 0px rgba(50, 50, 50, 0.75);
 }
 
 .ww-class-img-shadow-bottom-small {
-    -webkit-box-shadow: 0px 2px 5px 0px rgba(50, 50, 50, 0.75);
-    -moz-box-shadow: 0px 2px 5px 0px rgba(50, 50, 50, 0.75);
     box-shadow: 0px 2px 5px 0px rgba(50, 50, 50, 0.75);
 }
 
 .ww-class-img-shadow-bottom-medium {
-    -webkit-box-shadow: 0px 3px 10px 0px rgba(50, 50, 50, 0.75);
-    -moz-box-shadow: 0px 3px 10px 0px rgba(50, 50, 50, 0.75);
     box-shadow: 0px 3px 10px 0px rgba(50, 50, 50, 0.75);
 }
 
 .ww-class-img-shadow-bottom-big {
-    -webkit-box-shadow: 0px 7px 20px 0px rgba(50, 50, 50, 0.75);
-    -moz-box-shadow: 0px 7px 20px 0px rgba(50, 50, 50, 0.75);
     box-shadow: 0px 7px 20px 0px rgba(50, 50, 50, 0.75);
 }
 </style>
@@ -959,32 +976,26 @@ export default {
 <!-- ww-class-img-effect -->
 <style scoped>
 .ww-class-img-effect-grayscale {
-    -webkit-filter: grayscale(1);
     filter: grayscale(1);
 }
 
 .ww-class-img-effect-sepia {
-    -webkit-filter: sepia(1);
     filter: sepia(1);
 }
 
 .ww-class-img-effect-invert {
-    -webkit-filter: invert(1);
     filter: invert(1);
 }
 
 .ww-class-img-effect-blur-small {
-    -webkit-filter: blur(1px);
     filter: blur(1px);
 }
 
 .ww-class-img-effect-blur-medium {
-    -webkit-filter: blur(3px);
     filter: blur(3px);
 }
 
 .ww-class-img-effect-blur-big {
-    -webkit-filter: blur(5px);
     filter: blur(5px);
 }
 </style>
