@@ -390,6 +390,8 @@ export default {
 
             event.preventDefault();
             event.stopPropagation();
+            
+            //this.wwObjectCtrl.update(this.wwObject);
 
             return false;
         },
@@ -530,6 +532,8 @@ export default {
 
             event.preventDefault();
             event.stopPropagation();
+
+            //this.wwObjectCtrl.update(this.wwObject);
 
         },
         stopMove(event) {
