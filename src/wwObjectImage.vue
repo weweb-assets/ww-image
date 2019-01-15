@@ -13,7 +13,8 @@
             <i class="fa fa-expand" aria-hidden="true"></i>
         </div>
         <!-- wwManager:end -->
-        <div class="format" :style="styles.format">
+        <div class="format" :style="format">
+            <div class="border" :style="border"></div>
             <div class="container">
                 <div class="hover">
                     <!-- Image goes here -->
@@ -59,7 +60,15 @@ export default {
                     left: '50%',
                 },
                 format: {
-                    paddingBottom: ''
+                    paddingBottom: '',
+                    borderRadius: 0,
+                    boxShadow: '',
+                },
+                border: {
+                    borderRadius: 0,
+                    borderWidth: 0,
+                    borderColor: null,
+                    borderStyle: null,
                 }
             },
 
@@ -76,6 +85,28 @@ export default {
         wwObject() {
             return this.wwObjectCtrl.get();
         },
+        format() {
+            this.styles.format.borderRadius = this.wwObject.content.data.borderRadius ? this.wwObject.content.data.borderRadius + '%' : null;
+            this.styles.format.boxShadow = this.getShadow();
+
+            if (this.wwAttrs.wwCategory != 'background') {
+                const borderWidth = (this.wwObject.content.data.borderWidth ? this.wwObject.content.data.borderWidth : 0);
+                this.styles.format.paddingBottom = this.getRatio() + '%'; //'calc(' + this.getRatio() + '% - ' + (borderWidth * 2) + 'px)';
+            }
+            else {
+                this.styles.format.paddingBottom = 0;
+            }
+
+            return this.styles.format;
+        },
+        border() {
+            this.styles.border.borderRadius = this.wwObject.content.data.borderRadius ? this.wwObject.content.data.borderRadius + '%' : null;
+            this.styles.border.borderWidth = this.wwObject.content.data.borderWidth ? this.wwObject.content.data.borderWidth + 'px' : '0px';
+            this.styles.border.borderColor = this.wwObject.content.data.borderColor || 'black';
+            this.styles.border.borderStyle = this.wwObject.content.data.borderStyle || 'none';
+
+            return this.styles.border;
+        }
         /* wwManager:start */
 
         /* wwManager:end */
@@ -94,7 +125,6 @@ export default {
 
             this.zoomFactor = Math.sqrt(100 * 100 / (10 - this.zoomMin));
 
-            const self = this;
 
             //Get all needed elements
             this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
@@ -103,7 +133,7 @@ export default {
             //Add resize event
             window.addEventListener('resize', this.onResize);
 
-            this.applyRatio();
+            //this.applyRatio();
 
             wwLib.wwElementsStyle.applyAllStyles({
                 wwObject: this.wwObject,
@@ -113,7 +143,12 @@ export default {
                 noAnim: this.wwAttrs.wwNoAnim,
             });
 
+            this.loadImage();
+        },
+        loadImage() {
             this.imageLoaded = false;
+
+            const self = this;
 
             var wwHiddenLoadImg = new Image();
             wwHiddenLoadImg.onload = function () {
@@ -196,14 +231,18 @@ export default {
 
             return this.wwObject.ratio;
         },
+        getShadow() {
+            const shadow = this.wwObject.content.data.boxShadow || {};
+            if (shadow.x || shadow.y || shadow.b || shadow.s || shadow.c) {
+                return shadow.x + 'px ' + shadow.y + 'px ' + shadow.b + 'px ' + shadow.s + 'px ' + shadow.c;
+            }
+            return '';
+        },
 
         /*=============================================m_ÔÔ_m=============================================\
           APPLY
         \================================================================================================*/
         applyZoom: function (zoom) {
-
-            //this.wwObject.content.data.zoom = (this.wwObject.content.data.zoom >= 0 ? this.wwObject.content.data.zoom : 1);
-
 
             if (this.wwAttrs.wwCategory == 'background') {
                 zoom = -1;
@@ -325,13 +364,6 @@ export default {
                 this.styles.image.top = (position.y + 50) + '%';
             }
         },
-        applyRatio: function (ratio) {
-            if (this.wwAttrs.wwCategory != 'background') {
-                var _ratio = ratio || this.getRatio();
-
-                this.styles.format.paddingBottom = _ratio + '%';
-            }
-        },
 
         /* wwManager:start */
         /*=============================================m_ÔÔ_m=============================================\
@@ -390,8 +422,8 @@ export default {
 
             event.preventDefault();
             event.stopPropagation();
-            
-            //this.wwObjectCtrl.update(this.wwObject);
+
+            this.wwObjectCtrl.update(this.wwObject);
 
             return false;
         },
@@ -533,7 +565,7 @@ export default {
             event.preventDefault();
             event.stopPropagation();
 
-            //this.wwObjectCtrl.update(this.wwObject);
+            this.wwObjectCtrl.update(this.wwObject);
 
         },
         stopMove(event) {
@@ -567,15 +599,89 @@ export default {
         async changeImage() {
             wwLib.wwObjectHover.setLock(this);
 
-            let options = {
-                firstPage: 'SELECT_IMAGE',
-                data: {
+            wwLib.wwPopups.addStory('WWIMAGE_SELECT', {
+                title: {
+                    en_GB: 'Select image',
+                    fr_FR: 'Choisir une image'
+                },
+                type: 'wwPopupSelectImage'
+            },
+            )
 
+            let options = {
+                firstPage: 'WWIMAGE_SELECT'
+            }
+
+            try {
+                const result = await wwLib.wwPopups.open(options)
+                this.wwObject.content.data.url = result.image;
+
+                this.wwObject.content.data.zoom = -1;
+                this.wwObject.content.data.position = { x: 0, y: 0 };
+
+                this.wwObjectCtrl.update(this.wwObject);
+
+                this.onResize();
+                this.loadImage();
+            } catch (error) {
+
+            }
+
+            wwLib.wwObjectHover.removeLock();
+        },
+        async edit() {
+            wwLib.wwObjectHover.setLock(this);
+
+            let options = {
+                firstPage: 'EDIT_IMAGE',
+                data: {
+                    wwObject: this.wwObject
                 }
             }
 
-            const result = await wwLib.wwPopups.open(options)
+            try {
+                const result = await wwLib.wwPopups.open(options);
+                console.log(result);
+                /*
+                borderColor: "blue"
+                borderRadius: 50
+                borderStyle: "dotted"
+                borderWidth: 14
+                image: "https://wewebapp.s3.eu-west-3.amazonaws.com/designs/19/sections/1.jpg"
+                ratio: 1
+                */
+                if (typeof (result.image) != 'undefined') {
+                    this.wwObject.content.data.url = result.image;
+                }
+                if (typeof (result.borderColor) != 'undefined') {
+                    this.wwObject.content.data.borderColor = result.borderColor;
+                }
+                if (typeof (result.borderRadius) != 'undefined') {
+                    this.wwObject.content.data.borderRadius = result.borderRadius;
+                }
+                if (typeof (result.borderStyle) != 'undefined') {
+                    this.wwObject.content.data.borderStyle = result.borderStyle;
+                }
+                if (typeof (result.borderWidth) != 'undefined') {
+                    this.wwObject.content.data.borderWidth = result.borderWidth;
+                }
+                if (typeof (result.boxShadow) != 'undefined') {
+                    this.wwObject.content.data.boxShadow = result.boxShadow;
+                }
+                if (typeof (result.ratio) != 'undefined') {
+                    this.wwObject.ratio = result.ratio;
+                }
 
+
+
+                this.wwObjectCtrl.update(this.wwObject);
+
+                this.onResize();
+                this.loadImage();
+
+            } catch (error) {
+                console.log(error);
+            }
 
             wwLib.wwObjectHover.removeLock();
         }
@@ -603,6 +709,16 @@ export default {
         height: 100%;
         position: relative;
         overflow: hidden;
+
+        .border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
 
         .container {
             position: absolute;

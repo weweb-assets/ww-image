@@ -21,7 +21,17 @@ const addComponent = function () {
                         w: 1920,
                         h: 1080
                     },
-                    borderColor: '',
+                    borderRadius: 0,
+                    borderWidth: 0,
+                    borderColor: null,
+                    borderStyle: null,
+                    boxShadow: {
+                        x: 0,
+                        y: 0,
+                        b: 0,
+                        s: 0,
+                        c: ''
+                    },
                     classes: [],
                     filterGradient: null,
                     hover: {
@@ -40,16 +50,6 @@ const addComponent = function () {
                 wwObjectMenu: {
                     items: [
                         {
-                            name: 'SOURCE',
-                            text: {
-                                en_GB: 'Image',
-                                fr_FR: 'Image'
-                            },
-                            icon: 'wwi wwi-image',
-                            action: 'changeImage'
-                        },
-
-                        {
                             name: 'OPTIONS',
                             text: {
                                 en_GB: 'Options...',
@@ -58,8 +58,15 @@ const addComponent = function () {
                             icon: 'wwi wwi-edit-other',
                             action: 'edit'
                         },
-
-
+                        {
+                            name: 'SOURCE',
+                            text: {
+                                en_GB: 'Image',
+                                fr_FR: 'Image'
+                            },
+                            icon: 'wwi wwi-image',
+                            action: 'changeImage'
+                        }
                     ]
                 }
             }
