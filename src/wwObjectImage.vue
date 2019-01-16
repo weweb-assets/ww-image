@@ -13,15 +13,15 @@
             <i class="fa fa-expand" aria-hidden="true"></i>
         </div>
         <!-- wwManager:end -->
-        <div class="format" :style="format">
-            <div class="border" :style="border"></div>
+        <div class="format" :style="_styles.format">
+            <div class="border" :style="_styles.border"></div>
             <div class="container">
                 <div class="hover">
                     <!-- Image goes here -->
                     <!-- Background -->
-                    <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="image"></div>
+                    <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="_styles.image"></div>
                     <!-- Image -->
-                    <img v-if="wwAttrs.wwCategory != 'background'" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="image">
+                    <img v-if="wwAttrs.wwCategory != 'background'" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="_styles.image">
                 </div>
             </div>
         </div>
@@ -45,6 +45,7 @@ export default {
             imageLoaded: false,
             zoomMin: 0.2,
             zoomFactor: 1,
+            el: null,
 
             /*=============================================m_ÔÔ_m=============================================\
               STYLES
@@ -87,14 +88,18 @@ export default {
         wwObject() {
             return this.wwObjectCtrl.get();
         },
-        image() {
+        _styles() {
+            if (!this.el) {
+                return {}
+            }
+
+            //IMAGE
             this.styles.image.filter = this.wwObject.content.data.filter || null;
+            this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
+            this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
 
-            return this.styles.image;
-        },
-        format() {
-            this.styles.format.borderRadius = this.wwObject.content.data.borderRadius ? this.wwObject.content.data.borderRadius + '%' : null;
 
+            //FORMAT
             this.styles.format.boxShadow = this.getShadow();
 
             if (this.wwAttrs.wwCategory != 'background') {
@@ -105,16 +110,22 @@ export default {
                 this.styles.format.paddingBottom = 0;
             }
 
-            return this.styles.format;
-        },
-        border() {
-            this.styles.border.borderRadius = this.wwObject.content.data.borderRadius ? this.wwObject.content.data.borderRadius + '%' : null;
-            this.styles.border.borderWidth = this.wwObject.content.data.borderWidth ? this.wwObject.content.data.borderWidth + 'px' : '0px';
+
+            //BORDER
+            const w = this.$el.getBoundingClientRect().width;
+
+            const borderRadius = w * (this.wwObject.content.data.borderRadius ? this.wwObject.content.data.borderRadius : 0) / 100;
+            this.styles.border.borderRadius = borderRadius + 'px';
+            this.styles.format.borderRadius = this.styles.border.borderRadius;
+
+            const borderWidth = w * (this.wwObject.content.data.borderWidth ? this.wwObject.content.data.borderWidth : 0) / 100;
+            this.styles.border.borderWidth = borderWidth + 'px';
+
             this.styles.border.borderColor = this.wwObject.content.data.borderColor || 'black';
             this.styles.border.borderStyle = this.wwObject.content.data.borderStyle || 'none';
             this.styles.border.background = this.wwObject.content.data.overlay || '';
 
-            return this.styles.border;
+            return this.styles;
         }
         /* wwManager:start */
 
@@ -133,11 +144,6 @@ export default {
         init() {
 
             this.zoomFactor = Math.sqrt(100 * 100 / (10 - this.zoomMin));
-
-
-            //Get all needed elements
-            this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
-            this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
 
             //Add resize event
             window.addEventListener('resize', this.onResize);
@@ -705,6 +711,8 @@ export default {
     },
     mounted: function () {
         this.init();
+
+        this.el = this.$el;
 
         /* wwManager:start */
         this.$el.querySelector('.container').addEventListener('mousedown', this.startMove);
