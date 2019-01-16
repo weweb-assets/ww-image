@@ -19,9 +19,9 @@
                 <div class="hover">
                     <!-- Image goes here -->
                     <!-- Background -->
-                    <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="styles.image"></div>
+                    <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="image"></div>
                     <!-- Image -->
-                    <img v-if="wwAttrs.wwCategory != 'background'" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="styles.image">
+                    <img v-if="wwAttrs.wwCategory != 'background'" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="image">
                 </div>
             </div>
         </div>
@@ -63,12 +63,14 @@ export default {
                     paddingBottom: '',
                     borderRadius: 0,
                     boxShadow: '',
+                    filter: '',
                 },
                 border: {
                     borderRadius: 0,
                     borderWidth: 0,
                     borderColor: null,
                     borderStyle: null,
+                    background: null,
                 }
             },
 
@@ -85,8 +87,14 @@ export default {
         wwObject() {
             return this.wwObjectCtrl.get();
         },
+        image() {
+            this.styles.image.filter = this.wwObject.content.data.filter || null;
+
+            return this.styles.image;
+        },
         format() {
             this.styles.format.borderRadius = this.wwObject.content.data.borderRadius ? this.wwObject.content.data.borderRadius + '%' : null;
+
             this.styles.format.boxShadow = this.getShadow();
 
             if (this.wwAttrs.wwCategory != 'background') {
@@ -104,6 +112,7 @@ export default {
             this.styles.border.borderWidth = this.wwObject.content.data.borderWidth ? this.wwObject.content.data.borderWidth + 'px' : '0px';
             this.styles.border.borderColor = this.wwObject.content.data.borderColor || 'black';
             this.styles.border.borderStyle = this.wwObject.content.data.borderStyle || 'none';
+            this.styles.border.background = this.wwObject.content.data.overlay || '';
 
             return this.styles.border;
         }
@@ -667,6 +676,12 @@ export default {
                 }
                 if (typeof (result.boxShadow) != 'undefined') {
                     this.wwObject.content.data.boxShadow = result.boxShadow;
+                }
+                if (typeof (result.filter) != 'undefined') {
+                    this.wwObject.content.data.filter = result.filter;
+                }
+                if (typeof (result.overlay) != 'undefined') {
+                    this.wwObject.content.data.overlay = result.overlay;
                 }
                 if (typeof (result.ratio) != 'undefined') {
                     this.wwObject.ratio = result.ratio;

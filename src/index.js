@@ -25,6 +25,8 @@ const addComponent = function () {
                     borderWidth: 0,
                     borderColor: null,
                     borderStyle: null,
+                    overlay: null,
+                    filter: null,
                     boxShadow: {
                         x: 0,
                         y: 0,
