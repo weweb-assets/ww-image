@@ -93,8 +93,10 @@ export default {
                 return {}
             }
 
+            this.wwObject.content.data.style = this.wwObject.content.data.style || {}
+
             //IMAGE
-            this.styles.image.filter = this.wwObject.content.data.filter || null;
+            this.styles.image.filter = this.wwObject.content.data.style.filter || null;
             this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
             this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
 
@@ -103,7 +105,7 @@ export default {
             this.styles.format.boxShadow = this.getShadow();
 
             if (this.wwAttrs.wwCategory != 'background') {
-                const borderWidth = (this.wwObject.content.data.borderWidth ? this.wwObject.content.data.borderWidth : 0);
+                const borderWidth = (this.wwObject.content.data.style.borderWidth ? this.wwObject.content.data.style.borderWidth : 0);
                 this.styles.format.paddingBottom = this.getRatio() + '%'; //'calc(' + this.getRatio() + '% - ' + (borderWidth * 2) + 'px)';
             }
             else {
@@ -114,16 +116,16 @@ export default {
             //BORDER
             const w = this.$el.getBoundingClientRect().width;
 
-            const borderRadius = w * (this.wwObject.content.data.borderRadius ? this.wwObject.content.data.borderRadius : 0) / 100;
+            const borderRadius = w * (this.wwObject.content.data.style.borderRadius ? this.wwObject.content.data.style.borderRadius : 0) / 100;
             this.styles.border.borderRadius = borderRadius + 'px';
             this.styles.format.borderRadius = this.styles.border.borderRadius;
 
-            const borderWidth = w * (this.wwObject.content.data.borderWidth ? this.wwObject.content.data.borderWidth : 0) / 100;
+            const borderWidth = w * (this.wwObject.content.data.style.borderWidth ? this.wwObject.content.data.style.borderWidth : 0) / 100;
             this.styles.border.borderWidth = borderWidth + 'px';
 
-            this.styles.border.borderColor = this.wwObject.content.data.borderColor || 'black';
-            this.styles.border.borderStyle = this.wwObject.content.data.borderStyle || 'none';
-            this.styles.border.background = this.wwObject.content.data.overlay || '';
+            this.styles.border.borderColor = this.wwObject.content.data.style.borderColor || 'black';
+            this.styles.border.borderStyle = this.wwObject.content.data.style.borderStyle || 'none';
+            this.styles.border.background = this.wwObject.content.data.style.overlay || '';
 
             return this.styles;
         }
@@ -247,7 +249,7 @@ export default {
             return this.wwObject.ratio;
         },
         getShadow() {
-            const shadow = this.wwObject.content.data.boxShadow || {};
+            const shadow = this.wwObject.content.data.style.boxShadow || {};
             if (shadow.x || shadow.y || shadow.b || shadow.s || shadow.c) {
                 return shadow.x + 'px ' + shadow.y + 'px ' + shadow.b + 'px ' + shadow.s + 'px ' + shadow.c;
             }
@@ -647,8 +649,165 @@ export default {
         async edit() {
             wwLib.wwObjectHover.setLock(this);
 
+            wwLib.wwPopups.addStory('WWIMAGE_EDIT', {
+                title: {
+                    en_GB: 'Edit Image',
+                    fr_FR: 'Editer l\'image'
+                },
+                type: 'wwPopupList',
+                buttons: null,
+                storyData: {
+                    list: {
+                        EDIT_IMAGE_SELECT: {
+                            separator: {
+                                en_GB: 'Image',
+                                fr_FR: 'Image'
+                            },
+                            title: {
+                                en_GB: 'Select image',
+                                fr_FR: 'Sélectionner une image'
+                            },
+                            desc: {
+                                en_GB: 'Accepted formats (Max 5Mb) : .png, .jpg, .gif',
+                                fr_FR: 'Formats acceptés (Max 5Mb) : .png, .jpg, .gif'
+                            },
+                            icon: 'wwi wwi-image',
+                            shortcut: 'i',
+                            next: 'WWIMAGE_SELECT'
+                        },
+                        EDIT_IMAGE_STYLE: {
+                            separator: {
+                                en_GB: 'Style',
+                                fr_FR: 'Style'
+                            },
+                            title: {
+                                en_GB: 'Change image style',
+                                fr_FR: 'Changer l\'apparence de l\'image'
+                            },
+                            desc: {
+                                en_GB: 'Borders, shadow, ...',
+                                fr_FR: 'Bordures, ombres, ...'
+                            },
+                            icon: 'wwi wwi-edit-style',
+                            shortcut: 's',
+                            next: 'WWIMAGE_STYLE'
+                        },
+                        EDIT_IMAGE_RATIO: {
+                            title: {
+                                en_GB: 'Change image ratio',
+                                fr_FR: 'Changer le ratio de l\'image'
+                            },
+                            desc: {
+                                en_GB: 'Portrait, square, landscape, ...',
+                                fr_FR: 'Portrait, carré, paysage, ...'
+                            },
+                            icon: 'wwi wwi-ratio',
+                            shortcut: 'r',
+                            next: 'WWIMAGE_RATIO'
+                        },
+                        EDIT_IMAGE_ANIM: {
+                            separator: {
+                                en_GB: 'Interaction',
+                                fr_FR: 'Interaction'
+                            },
+                            title: {
+                                en_GB: 'Animation',
+                                fr_FR: 'Animation'
+                            },
+                            desc: {
+                                en_GB: 'Change animation',
+                                fr_FR: 'Choisir l\'animation à l\'apparition de l\'image'
+                            },
+                            icon: 'wwi wwi-anim',
+                            shortcut: 'a',
+                            next: 'ANIMATION'
+                        },
+                        /*
+                            EDIT_IMAGE_HOVER: {
+                                title: {
+                                    en_GB: 'Hover effect',
+                                    fr_FR: 'Effet au survol'
+                                },
+                                desc: {
+                                    en_GB: 'Choose animation when cursor is above the image',
+                                    fr_FR: 'Choisir l\'animation lors du survol de la souris'
+                                },
+                                icon: 'wwi wwi-hover',
+                                shortcut: 'o',
+                                next: 'IMAGE_HOVER'
+                            },
+                        */
+                        EDIT_IMAGE_HIDE: {
+                            separator: {
+                                en_GB: 'More',
+                                fr_FR: 'Plus'
+                            },
+                            title: {
+                                en_GB: 'Show / Hide',
+                                fr_FR: 'Montrer / Cacher'
+                            },
+                            icon: 'wwi wwi-hidden',
+                            shortcut: 'h',
+                            next: null,
+                            result: {
+                                hidden: true
+                            }
+                        },
+                        EDIT_IMAGE_CHANGE: {
+                            title: {
+                                en_GB: 'Change object type',
+                                fr_FR: 'Changer le type d\'objet'
+                            },
+                            icon: 'wwi wwi-switch',
+                            shortcut: 't',
+                            next: 'SELECT_WWOBJECT'
+                        },
+                    }
+                }
+            })
+            wwLib.wwPopups.addStory('WWIMAGE_SELECT', {
+                title: {
+                    en_GB: 'Select image',
+                    fr_FR: 'Choisir une image'
+                },
+                type: 'wwPopupSelectImage',
+                next: 'WWIMAGE_RATIO'
+            })
+            wwLib.wwPopups.addStory('WWIMAGE_RATIO', {
+                title: {
+                    en_GB: 'Image Ratio',
+                    fr_FR: 'Ratio de l\'image'
+                },
+                type: 'wwPopupImageRatio',
+                buttons: {
+                    NEXT: {
+                        text: {
+                            en_GB: 'Next',
+                            fr_FR: 'Suivant'
+                        },
+                        next: 'WWIMAGE_STYLE'
+                    }
+                }
+            })
+            wwLib.wwPopups.addStory('WWIMAGE_STYLE', {
+                title: {
+                    en_GB: 'Image style',
+                    fr_FR: 'Style de l\'image'
+                },
+                type: 'wwPopupImageStyle',
+                buttons: {
+                    OK: {
+                        text: {
+                            en_GB: 'Ok',
+                            fr_FR: 'Valider'
+                        },
+                        next: false
+                    }
+                }
+            })
+
             let options = {
-                firstPage: 'EDIT_IMAGE',
+                firstPage: 'WWIMAGE_EDIT',
                 data: {
                     wwObject: this.wwObject
                 }
@@ -656,46 +815,46 @@ export default {
 
             try {
                 const result = await wwLib.wwPopups.open(options);
-                console.log(result);
-                /*
-                borderColor: "blue"
-                borderRadius: 50
-                borderStyle: "dotted"
-                borderWidth: 14
-                image: "https://wewebapp.s3.eu-west-3.amazonaws.com/designs/19/sections/1.jpg"
-                ratio: 1
-                */
+
+                /*=============================================m_ÔÔ_m=============================================\
+                  IMAGE
+                \================================================================================================*/
                 if (typeof (result.image) != 'undefined') {
                     this.wwObject.content.data.url = result.image;
                 }
+
+                /*=============================================m_ÔÔ_m=============================================\
+                  STYLE
+                \================================================================================================*/
                 if (typeof (result.borderColor) != 'undefined') {
-                    this.wwObject.content.data.borderColor = result.borderColor;
+                    this.wwObject.content.data.style.borderColor = result.borderColor;
                 }
                 if (typeof (result.borderRadius) != 'undefined') {
-                    this.wwObject.content.data.borderRadius = result.borderRadius;
+                    this.wwObject.content.data.style.borderRadius = result.borderRadius;
                 }
                 if (typeof (result.borderStyle) != 'undefined') {
-                    this.wwObject.content.data.borderStyle = result.borderStyle;
+                    this.wwObject.content.data.style.borderStyle = result.borderStyle;
                 }
                 if (typeof (result.borderWidth) != 'undefined') {
-                    this.wwObject.content.data.borderWidth = result.borderWidth;
+                    this.wwObject.content.data.style.borderWidth = result.borderWidth;
                 }
                 if (typeof (result.boxShadow) != 'undefined') {
-                    this.wwObject.content.data.boxShadow = result.boxShadow;
+                    this.wwObject.content.data.style.boxShadow = result.boxShadow;
                 }
                 if (typeof (result.filter) != 'undefined') {
-                    this.wwObject.content.data.filter = result.filter;
+                    this.wwObject.content.data.style.filter = result.filter;
                 }
                 if (typeof (result.overlay) != 'undefined') {
-                    this.wwObject.content.data.overlay = result.overlay;
+                    this.wwObject.content.data.style.overlay = result.overlay;
                 }
                 if (typeof (result.ratio) != 'undefined') {
                     this.wwObject.ratio = result.ratio;
                 }
 
 
-
                 this.wwObjectCtrl.update(this.wwObject);
+
+                this.wwObjectCtrl.globalEdit(result);
 
                 this.onResize();
                 this.loadImage();
@@ -800,7 +959,7 @@ export default {
     bottom: 5px;
     top: 5px;
     width: 20px;
-    z-index: 1;
+    z-index: 5;
     opacity: 0;
     display: none;
     transition: opacity 0.15s ease;

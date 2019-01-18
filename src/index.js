@@ -16,26 +16,35 @@ const addComponent = function () {
                     },
                     position: { x: 0, y: 0 },
                     zoom: -1,
-                    ratio: -1,
+                    style: {
+                        borderRadius: 0,
+                        borderWidth: 0,
+                        borderColor: null,
+                        borderStyle: null,
+                        overlay: null,
+                        filter: null,
+                        boxShadow: {
+                            x: 0,
+                            y: 0,
+                            b: 0,
+                            s: 0,
+                            c: ''
+                        },
+                    },
+                    animation: {
+                        duration: 0,
+                        delay: 0,
+                        fn: null,
+                        opacity: 1,
+                        scale: 1,
+                        translateX: 0,
+                        translateY: 0,
+                        rotate: 0
+                    },
                     imgSize: {
                         w: 1920,
                         h: 1080
                     },
-                    borderRadius: 0,
-                    borderWidth: 0,
-                    borderColor: null,
-                    borderStyle: null,
-                    overlay: null,
-                    filter: null,
-                    boxShadow: {
-                        x: 0,
-                        y: 0,
-                        b: 0,
-                        s: 0,
-                        c: ''
-                    },
-                    classes: [],
-                    filterGradient: null,
                     hover: {
                         name: '',
                         options: {}
