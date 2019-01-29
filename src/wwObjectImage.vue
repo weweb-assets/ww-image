@@ -654,7 +654,7 @@ export default {
                     en_GB: 'Edit Image',
                     fr_FR: 'Editer l\'image'
                 },
-                type: 'wwPopupList',
+                type: 'wwPopupEditWwObject',
                 buttons: null,
                 storyData: {
                     list: {
@@ -704,64 +704,7 @@ export default {
                             icon: 'wwi wwi-ratio',
                             shortcut: 'r',
                             next: 'WWIMAGE_RATIO'
-                        },
-                        EDIT_IMAGE_ANIM: {
-                            separator: {
-                                en_GB: 'Interaction',
-                                fr_FR: 'Interaction'
-                            },
-                            title: {
-                                en_GB: 'Animation',
-                                fr_FR: 'Animation'
-                            },
-                            desc: {
-                                en_GB: 'Change animation',
-                                fr_FR: 'Choisir l\'animation à l\'apparition de l\'image'
-                            },
-                            icon: 'wwi wwi-anim',
-                            shortcut: 'a',
-                            next: 'ANIMATION'
-                        },
-                        /*
-                            EDIT_IMAGE_HOVER: {
-                                title: {
-                                    en_GB: 'Hover effect',
-                                    fr_FR: 'Effet au survol'
-                                },
-                                desc: {
-                                    en_GB: 'Choose animation when cursor is above the image',
-                                    fr_FR: 'Choisir l\'animation lors du survol de la souris'
-                                },
-                                icon: 'wwi wwi-hover',
-                                shortcut: 'o',
-                                next: 'IMAGE_HOVER'
-                            },
-                        */
-                        EDIT_IMAGE_HIDE: {
-                            separator: {
-                                en_GB: 'More',
-                                fr_FR: 'Plus'
-                            },
-                            title: {
-                                en_GB: 'Show / Hide',
-                                fr_FR: 'Montrer / Cacher'
-                            },
-                            icon: 'wwi wwi-hidden',
-                            shortcut: 'h',
-                            next: null,
-                            result: {
-                                hidden: true
-                            }
-                        },
-                        EDIT_IMAGE_CHANGE: {
-                            title: {
-                                en_GB: 'Change object type',
-                                fr_FR: 'Changer le type d\'objet'
-                            },
-                            icon: 'wwi wwi-switch',
-                            shortcut: 't',
-                            next: 'SELECT_WWOBJECT'
-                        },
+                        }
                     }
                 }
             })
