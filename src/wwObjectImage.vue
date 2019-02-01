@@ -17,6 +17,7 @@
             <div class="border" :style="_styles.border"></div>
             <div class="container">
                 <div class="hover">
+                    <img class="loader" :src="loaderSrc" :class="{'loaded': imageLoaded}">
                     <!-- Image goes here -->
                     <!-- Background -->
                     <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="_styles.image"></div>
@@ -76,11 +77,11 @@ export default {
             },
 
             /* wwManager:start */
-            zoomPercentY: 50,
             lastMovePosition: { x: 0, y: 0 },
             lastTouchDist: 0,
             zoomBarElement: null,
             lockControls: false,
+            moveDirection: null,
             /* wwManager:end */
         };
     },
@@ -99,7 +100,15 @@ export default {
             this.styles.image.filter = this.wwObject.content.data.style.filter || null;
             this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
             this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
+            this.styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
 
+            if (this.wwAttrs.wwCategory != 'background') {
+                this.styles.image['-webkit-transform'] = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
+                this.styles.image['-moz-transform'] = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
+                this.styles.image['-ms-transform'] = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
+                this.styles.image['-o-transform'] = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
+                this.styles.image.transform = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
+            }
 
             //FORMAT
             this.styles.format.boxShadow = this.getShadow();
@@ -128,38 +137,43 @@ export default {
             this.styles.border.background = this.wwObject.content.data.style.overlay || '';
 
             return this.styles;
-        }
+        },
+        loaderSrc() {
+            return this.wwObject.content.data.dataUrl;
+        },
         /* wwManager:start */
-
+        zoomPercentY() {
+            return 100 - this.zoomFactor * Math.sqrt(Math.max(this.wwObject.content.data.zoom, 0) - this.zoomMin);
+        },
+        editing() {
+            return this.wwObjectCtrl.getSectionCtrl().getEditMode() == 'CONTENT';
+        }
         /* wwManager:end */
     },
     watch: {
-        wwObject() {
-            this.onResize();
+        /* wwManager:start */
+        editing() {
+            //Preload canvas to avoid waiting on save !
+            if (this.editing) {
+                this.resizeImage({
+                    image: this.wwObject.content.data.url,
+                    maxSize: 20,
+                    ratio: this.getRatio(),
+                    zoom: this.wwObject.content.data.zoom,
+                    x: this.wwObject.content.data.position.x,
+                    y: this.wwObject.content.data.position.y
+                })
+            }
         }
+        /* wwManager:end */
     },
     beforeDestroy: function () {
         this.$el.querySelector('.container').removeEventListener('mousedown', this.startMove);
-        window.removeEventListener('resize', this.onResize)
     },
     methods: {
         init() {
 
             this.zoomFactor = Math.sqrt(100 * 100 / (10 - this.zoomMin));
-
-            //Add resize event
-            window.addEventListener('resize', this.onResize);
-
-            //this.applyRatio();
-
-            wwLib.wwElementsStyle.applyAllStyles({
-                wwObject: this.wwObject,
-                lastWwObject: null,
-                element: this.$el.querySelector('.format'),
-                noClass: false,
-                noAnim: this.wwAttrs.wwNoAnim,
-            });
-
             this.loadImage();
         },
         loadImage() {
@@ -169,22 +183,10 @@ export default {
 
             var wwHiddenLoadImg = new Image();
             wwHiddenLoadImg.onload = function () {
-
-                self.wwObject.content.data.imgSize.w = wwHiddenLoadImg.width;
-                self.wwObject.content.data.imgSize.h = wwHiddenLoadImg.height;
-
                 self.imageLoaded = true;
-
-                self.applyZoom(self.wwObject.content.data.zoom);
-                self.applyPosition(self.wwObject.content.data.position);
-
                 self.$emit('ww-loaded', self);
             };
             wwHiddenLoadImg.src = this.wwObject.content.data.url;
-        },
-        onResize: function () {
-            this.applyZoom(this.wwObject.content.data.zoom);
-            this.applyPosition(this.wwObject.content.data.position);
         },
         preventClick(event) {
             event.preventDefault();
@@ -256,132 +258,6 @@ export default {
             return '';
         },
 
-        /*=============================================m_ÔÔ_m=============================================\
-          APPLY
-        \================================================================================================*/
-        applyZoom: function (zoom) {
-
-            if (this.wwAttrs.wwCategory == 'background') {
-                zoom = -1;
-            }
-
-            //Chercher class ww-anim
-            //Chercher transform scale
-            //Recupérer valeur scale
-            //Diviser par scale pour la vraie valeur
-            var scale = this.getScale();
-
-            var icon = 'expand';
-            var toReturn = null;
-            var containerSize;
-            var imgSize;
-            var newSize;
-
-            if (zoom === -1) {
-
-                if (!this.wwObject.content.data || !this.wwObject.content.data.imgSize) {
-                    return;
-                }
-
-                containerSize = {
-                    w: this.$el.offsetWidth,
-                    h: this.$el.offsetHeight
-                };
-
-                imgSize = {
-                    w: this.wwObject.content.data.imgSize.w,
-                    h: this.wwObject.content.data.imgSize.h
-                };
-
-                newSize = {
-                    w: containerSize.w,
-                    h: containerSize.w * imgSize.h / imgSize.w
-                };
-
-                if (newSize.h < containerSize.h) {
-                    newSize = {
-                        w: containerSize.h * imgSize.w / imgSize.h,
-                        h: containerSize.h
-                    };
-                }
-
-                if (newSize.w == containerSize.w) {
-                    this.styles.image.width = '100%';
-                    this.styles.image.height = '';
-                }
-                else {
-                    this.styles.image.width = '';
-                    this.styles.image.height = '100%';
-                }
-
-                this.styles.image.minWidth = '100%';
-                this.styles.image.minHeight = '100%';
-
-            } else if (zoom === 'switch') {
-
-                containerSize = {
-                    w: this.$el.offsetWidth,
-                    h: this.$el.offsetHeight
-                };
-
-                imgSize = {
-                    w: this.$el.querySelector('.image').offsetWidth,
-                    h: this.$el.querySelector('.image').offsetHeight
-                };
-
-                newSize = {
-                    w: containerSize.w,
-                    h: containerSize.w * imgSize.h / imgSize.w
-                };
-
-                if (containerSize.w === imgSize.w) {
-                    newSize = {
-                        w: containerSize.h * imgSize.w / imgSize.h,
-                        h: containerSize.h
-                    };
-                } else {
-                    icon = 'compress';
-                }
-
-                this.styles.image.width = newSize.w + 'px';
-                this.styles.image.height = '';
-
-                this.styles.image.minWidth = 'unset';
-                this.styles.image.minHeight = 'unset';
-
-                toReturn = newSize.w / containerSize.w;
-
-                this.zoomPercentY = 100 - this.zoomFactor * Math.sqrt(newSize.w / containerSize.w - this.zoomMin);
-
-            } else {
-                containerSize = {
-                    w: this.$el.offsetWidth,
-                    h: this.$el.offsetHeight
-                };
-
-                this.styles.image.width = (containerSize.w * zoom) + 'px';
-                this.styles.image.height = '';
-
-                this.styles.image.minWidth = 'unset';
-                this.styles.image.minHeight = 'unset';
-
-                this.zoomPercentY = 100 - this.zoomFactor * Math.sqrt(this.wwObject.content.data.zoom - this.zoomMin);
-
-            }
-
-            return toReturn;
-        },
-        applyPosition: function (position) {
-            if (this.wwAttrs.wwCategory == 'background') {
-                this.styles.image.left = '50%';
-                this.styles.image.top = '50%';
-            }
-            else if (position) {
-                this.styles.image.left = (position.x + 50) + '%';
-                this.styles.image.top = (position.y + 50) + '%';
-            }
-        },
-
         /* wwManager:start */
         /*=============================================m_ÔÔ_m=============================================\
           IMAGE ZOOM
@@ -389,10 +265,24 @@ export default {
         resetZoom(event) {
             //Reset position
             this.wwObject.content.data.position = { x: 0, y: 0 };
-            this.applyPosition(this.wwObject.content.data.position);
 
             //Reset zoom
-            this.wwObject.content.data.zoom = this.applyZoom("switch");
+            const imgSize = {
+                w: this.$el.querySelector('.image').getBoundingClientRect().width,
+                h: this.$el.querySelector('.image').getBoundingClientRect().height,
+            }
+
+            const ratio = imgSize.h / imgSize.w;
+
+            if (this.wwObject.content.data.zoom !== 1) {
+                this.wwObject.content.data.zoom = 1;
+            }
+            else {
+                const rationContainer = this.$el.querySelector('.container').getBoundingClientRect().height / this.$el.querySelector('.container').getBoundingClientRect().width;
+
+                this.wwObject.content.data.zoom = rationContainer / ratio;
+            }
+
 
             this.wwObjectCtrl.update(this.wwObject);
 
@@ -424,18 +314,12 @@ export default {
             return false;
         },
         zoomDesktop(event) {
-            // wwImgElements.wwImgDirective.addClass("dragging");
-            // wwImgElements.wwImgFormat.addClass("dragging");
 
             let zoomPositionY = (event.clientY - this.zoomBarElement.getBoundingClientRect().top) * 100 / this.zoomBarElement.getBoundingClientRect().height;
             zoomPositionY = Math.min(Math.max(zoomPositionY, 0), 100);
 
-            //this.zoomPercentY = zoomPositionY;
 
-            //this.wwObject.content.data.zoom = Math.exp((100 - zoomPositionY) * 7 / 100) / 100;
             this.wwObject.content.data.zoom = Math.pow((100 - zoomPositionY) / this.zoomFactor, 2) + this.zoomMin;
-
-            this.applyZoom(this.wwObject.content.data.zoom);
 
             event.preventDefault();
             event.stopPropagation();
@@ -551,13 +435,26 @@ export default {
             var offsetXpx = position.x - this.lastMovePosition.x;
             var offsetYpx = position.y - this.lastMovePosition.y;
 
+            if (this.moveDirection == 'x') {
+                offsetYpx = 0;
+            }
+            else if (this.moveDirection == 'y') {
+                offsetXpx = 0;
+            }
+            else if (wwLib.wwShortcuts.hasModifiers('SHIFT') && Math.abs(offsetXpx) > Math.abs(offsetYpx)) {
+                offsetYpx = 0;
+                this.moveDirection = 'x';
+            }
+            else if (wwLib.wwShortcuts.hasModifiers('SHIFT')) {
+                offsetXpx = 0;
+                this.moveDirection = 'y';
+            }
+
             var offsetXpercent = offsetXpx * 100 / this.$el.querySelector('.container').getBoundingClientRect().width;
             var offsetYpercent = offsetYpx * 100 / this.$el.querySelector('.container').getBoundingClientRect().height;
 
-            this.wwObject.content.data.position.x += offsetXpercent;
-            this.wwObject.content.data.position.y += offsetYpercent;
-
-            this.applyPosition(this.wwObject.content.data.position);
+            this.wwObject.content.data.position.x += offsetXpercent / this.wwObject.content.data.zoom;
+            this.wwObject.content.data.position.y += offsetYpercent / this.wwObject.content.data.zoom * this.$el.querySelector('.image').getBoundingClientRect().width * this.$el.querySelector('.container').getBoundingClientRect().height / (this.$el.querySelector('.image').getBoundingClientRect().height * this.$el.querySelector('.container').getBoundingClientRect().width);
 
             if (this.isTouch(event)) {
                 const touchDist = this.getTouchDist(event);
@@ -570,8 +467,6 @@ export default {
                 if (this.wwObject.content.data.zoom > 10) {
                     this.wwObject.content.data.zoom = 10;
                 }
-
-                this.zoomPercentY = 100 - this.zoomFactor * Math.sqrt(this.wwObject.content.data.zoom - this.zoomMin);
 
                 this.lastTouchDist = touchDist;
             }
@@ -592,6 +487,8 @@ export default {
 
             window.removeEventListener("mousemove", this.move);
             window.removeEventListener("mouseup", this.stopMove);
+
+            this.moveDirection = null;
 
             //Remove click events with a small delay to be sure that click is ignored
             let self = this;
@@ -638,7 +535,6 @@ export default {
 
                 this.wwObjectCtrl.update(this.wwObject);
 
-                this.onResize();
                 this.loadImage();
             } catch (error) {
 
@@ -764,6 +660,15 @@ export default {
                 \================================================================================================*/
                 if (typeof (result.image) != 'undefined') {
                     this.wwObject.content.data.url = result.image;
+
+                    this.resizeImage({
+                        image: this.wwObject.content.data.url,
+                        maxSize: 20,
+                        ratio: this.getRatio(),
+                        zoom: this.wwObject.content.data.zoom,
+                        x: this.wwObject.content.data.position.x,
+                        y: this.wwObject.content.data.position.y
+                    })
                 }
 
                 /*=============================================m_ÔÔ_m=============================================\
@@ -799,7 +704,6 @@ export default {
 
                 this.wwObjectCtrl.globalEdit(result);
 
-                this.onResize();
                 this.loadImage();
 
             } catch (error) {
@@ -807,6 +711,92 @@ export default {
             }
 
             wwLib.wwObjectHover.removeLock();
+        },
+        resizeImage(options) {
+
+            if (!options.image || !options.maxSize) {
+                return null;
+            }
+
+            options.zoom = options.zoom || 0;
+            options.x = options.x || 0;
+            options.y = options.y || 0;
+
+            return new Promise(function (resolve, reject) {
+
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext("2d");
+                const img = document.createElement('img');
+
+                let canvasInfo = {
+                    width: 0,
+                    height: 0,
+                    ratio: 0
+                }
+
+                img.onload = function () {
+
+                    try {
+
+                        canvasInfo.width = this.width;
+                        canvasInfo.height = this.height;
+                        canvasInfo.ratio = options.ratio / 100 || this.width / this.height;
+
+                        if (canvasInfo.width > options.maxSize) {
+                            canvasInfo.height = options.maxSize / canvasInfo.ratio;
+                            canvasInfo.width = options.maxSize;
+                        }
+                        if (canvasInfo.height > options.maxSize) {
+                            canvasInfo.width = canvasInfo.ratio * options.maxSize;
+                            canvasInfo.height = options.maxSize;
+                        }
+                        canvas.width = canvasInfo.width;
+                        canvas.height = canvasInfo.height;
+
+                        context.save();
+
+                        context.translate(canvas.width / 2, canvas.height / 2);
+
+                        const imgSize = {
+                            w: options.zoom * canvas.width,
+                            h: (options.zoom * canvas.width) * this.height / this.width
+                        }
+
+                        const origin = {
+                            x: (options.x - 50) / 100 * imgSize.w,
+                            y: (options.y - 50) / 100 * imgSize.h
+                        }
+
+                        context.drawImage(img, origin.x, origin.y, imgSize.w, imgSize.h);
+
+                        context.restore();
+                        resolve(canvas.toDataURL("image/bmp"));
+                    } catch (error) {
+                        console.log('ww-image preview error', error)
+                        return resolve(null);
+                    }
+                }
+
+                img.setAttribute('crossOrigin', 'anonymous');
+
+                img.src = options.image
+            });
+
+
+        },
+        async beforeSave() {
+            const dataUrl = await this.resizeImage({
+                image: this.wwObject.content.data.url,
+                maxSize: 20,
+                ratio: this.getRatio(),
+                zoom: this.wwObject.content.data.zoom,
+                x: this.wwObject.content.data.position.x,
+                y: this.wwObject.content.data.position.y
+            })
+
+            this.wwObject.content.data.dataUrl = dataUrl;
+
+            await this.wwObjectCtrl.update(this.wwObject);
         }
 
         /* wwManager:end */
@@ -861,8 +851,22 @@ export default {
                 height: 100%;
                 position: relative;
 
+                .loader {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    transition: opacity 0s linear 0.3s;
+
+                    &.loaded {
+                        opacity: 0;
+                    }
+                }
+
                 .image {
                     position: absolute;
+                    top: 50%;
+                    left: 50%;
                     transform: translate(-50%, -50%);
                     transition: opacity 0.3s ease;
                     opacity: 0;
