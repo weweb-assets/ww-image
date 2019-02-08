@@ -169,6 +169,7 @@ export default {
     },
     beforeDestroy: function () {
         this.$el.querySelector('.container').removeEventListener('mousedown', this.startMove);
+        this.$el.querySelector('.container').removeEventListener('touchstart', this.startMove);
     },
     methods: {
         init() {
@@ -188,9 +189,12 @@ export default {
             };
             wwHiddenLoadImg.src = this.wwObject.content.data.url;
         },
-        preventClick(event) {
-            event.preventDefault();
-            event.stopPropagation();
+        preventEvent(event) {
+
+            if (!this.isTouch(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
 
             return false;
         },
@@ -287,8 +291,7 @@ export default {
             this.wwObjectCtrl.update(this.wwObject);
 
             //Stop event propagation to prevent image click
-            event.preventDefault();
-            event.stopPropagation();
+            this.preventEvent(event);
 
             return false;
         },
@@ -303,13 +306,12 @@ export default {
             window.addEventListener("mousemove", this.zoomDesktop);
             window.addEventListener("mouseup", this.stopZoomDesktop);
 
-            document.addEventListener("click", this.preventClick, true);
-            document.addEventListener("touch", this.preventClick, true);
+            document.addEventListener("click", this.preventEvent, true);
+            document.addEventListener("touch", this.preventEvent, true);
 
             window.document.body.classList.add('ww-image-dragging');
 
-            event.preventDefault();
-            event.stopPropagation();
+            this.preventEvent(event);
 
             return false;
         },
@@ -321,8 +323,7 @@ export default {
 
             this.wwObject.content.data.zoom = Math.pow((100 - zoomPositionY) / this.zoomFactor, 2) + this.zoomMin;
 
-            event.preventDefault();
-            event.stopPropagation();
+            this.preventEvent(event);
 
             this.wwObjectCtrl.update(this.wwObject);
 
@@ -339,16 +340,15 @@ export default {
             //Remove click events with a small delay to be sure that click is ignored
             let self = this;
             setTimeout(function () {
-                document.removeEventListener("click", self.preventClick, true);
-                document.removeEventListener("touch", self.preventClick, true);
+                document.removeEventListener("click", self.preventEvent, true);
+                document.removeEventListener("touch", self.preventEvent, true);
             }, 100);
 
             this.wwObjectCtrl.update(this.wwObject);
 
             window.document.body.classList.remove('ww-image-dragging');
 
-            event.preventDefault();
-            event.stopPropagation();
+            this.preventEvent(event);
 
             return false;
         },
@@ -361,21 +361,17 @@ export default {
 
             if (this.isTouch(event)) {
 
-                var touch0 = {
-                    x: event.originalEvent.touches[0].clientX,
-                    y: event.originalEvent.touches[0].clientY
-                };
+                position.x = 0;
+                position.y = 0;
 
-                var touch1 = {
-                    x: event.originalEvent.touches[1].clientX,
-                    y: event.originalEvent.touches[1].clientY
-                };
+                for (let touch of event.touches) {
+                    position.x += touch.clientX
+                    position.y += touch.clientY
+                }
 
-                position.x = (touch0.x + touch1.x) / 2;
-                position.y = (touch0.y + touch1.y) / 2;
+                position.x = position.x / event.touches.length;
+                position.y = position.y / event.touches.length;
 
-            } else if (event.touches) {
-                return null;
             } else {
                 position.x = event.clientX;
                 position.y = event.clientY;
@@ -384,21 +380,24 @@ export default {
             return position;
         },
         getTouchDist(event) {
-            var touch0 = {
-                x: event.originalEvent.touches[0].clientX,
-                y: event.originalEvent.touches[0].clientY
-            };
+            if (event.touches && event.touches.length >= 2) {
+                var touch0 = {
+                    x: event.touches[0].clientX,
+                    y: event.touches[0].clientY
+                };
 
-            var touch1 = {
-                x: event.originalEvent.touches[1].clientX,
-                y: event.originalEvent.touches[1].clientY
-            };
+                var touch1 = {
+                    x: event.touches[1].clientX,
+                    y: event.touches[1].clientY
+                };
 
-            var dist = Math.sqrt((touch0.x - touch1.x) * (touch0.x - touch1.x) + (touch0.y - touch1.y) * (touch0.y - touch1.y));
-            return dist;
+                var dist = Math.sqrt((touch0.x - touch1.x) * (touch0.x - touch1.x) + (touch0.y - touch1.y) * (touch0.y - touch1.y));
+                return dist;
+            }
+            return 0;
         },
         isTouch(event) {
-            return event.touches && event.touches.length === 2;
+            return event.touches && event.touches.length;
         },
 
         startMove(event) {
@@ -410,16 +409,18 @@ export default {
             if (this.lastMovePosition) {
                 wwLib.wwObjectHover.setLock(this);
 
-                window.addEventListener("mousemove", this.move);
-                window.addEventListener("mouseup", this.stopMove);
+                document.addEventListener("mousemove", this.move);
+                document.addEventListener("mouseup", this.stopMove);
 
-                document.addEventListener("click", this.preventClick, true);
-                document.addEventListener("touch", this.preventClick, true);
+                document.addEventListener("touchmove", this.move);
+                document.addEventListener("touchend", this.stopMove);
+
+                document.addEventListener("click", this.preventEvent, true);
+                document.addEventListener("touch", this.preventEvent, true);
 
                 window.document.body.classList.add('ww-image-dragging');
 
-                event.preventDefault();
-                event.stopPropagation();
+                this.preventEvent(event);
 
                 return false;
             }
@@ -474,8 +475,7 @@ export default {
             this.lastMovePosition.x = position.x;
             this.lastMovePosition.y = position.y;
 
-            event.preventDefault();
-            event.stopPropagation();
+            this.preventEvent(event);
 
             this.wwObjectCtrl.update(this.wwObject);
 
@@ -485,24 +485,26 @@ export default {
 
             wwLib.wwObjectHover.removeLock();
 
-            window.removeEventListener("mousemove", this.move);
-            window.removeEventListener("mouseup", this.stopMove);
+            document.removeEventListener("mousemove", this.move);
+            document.removeEventListener("mouseup", this.stopMove);
+
+            document.removeEventListener("touchmove", this.move);
+            document.removeEventListener("touchend", this.stopMove);
 
             this.moveDirection = null;
 
             //Remove click events with a small delay to be sure that click is ignored
             let self = this;
             setTimeout(function () {
-                document.removeEventListener("click", self.preventClick, true);
-                document.removeEventListener("touch", self.preventClick, true);
+                document.removeEventListener("click", self.preventEvent, true);
+                document.removeEventListener("touch", self.preventEvent, true);
             }, 100);
 
             this.wwObjectCtrl.update(this.wwObject);
 
             window.document.body.classList.remove('ww-image-dragging');
 
-            event.preventDefault();
-            event.stopPropagation();
+            this.preventEvent(event);
 
             return false;
         },
@@ -807,6 +809,7 @@ export default {
         this.el = this.$el;
 
         /* wwManager:start */
+        this.$el.querySelector('.container').addEventListener('touchstart', this.startMove);
         this.$el.querySelector('.container').addEventListener('mousedown', this.startMove);
         /* wwManager:end */
     }
