@@ -32,7 +32,7 @@
 
 <script>
 export default {
-    name: "ww-image",
+    name: "__COMPONENT_NAME__",
     props: {
         wwObjectCtrl: Object,
         wwAttrs: {
