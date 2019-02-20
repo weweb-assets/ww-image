@@ -10,13 +10,13 @@ const addComponent = function () {
             content: {
                 type: name,
                 data: {
-                    url: 'https://cdn.wewebapp.io/public/images/no_image_selected.png',
+                    url: 'https://cdn.weweb.app/public/images/no_image_selected.png',
                     alt: {
                         fr_FR: "webeo",
                         en_GB: "webeo",
                     },
                     position: { x: 0, y: 0 },
-                    zoom: -1,
+                    zoom: 1,
                     style: {
                         borderRadius: 0,
                         borderWidth: 0,

@@ -1,28 +1,30 @@
 <template>
     <div class="ww-image" :class="{'bg': wwAttrs.wwCategory == 'background'}">
-        <!-- wwManager:start -->
-        <div class="controls-desktop" :class="{'lock': lockControls}">
-            <div class="zoom-bar">
-                <div class="zoom-line"></div>
-                <div class="zoom-handle" :style="{'top' : zoomPercentY + '%'}" @mousedown="startZoomDesktop($event)">
-                    <div></div>
+        <div class="wrapper" :style="_styles.wrapper">
+            <!-- wwManager:start -->
+            <div class="controls-desktop" :class="{'lock': lockControls}">
+                <div class="zoom-bar">
+                    <div class="zoom-line"></div>
+                    <div class="zoom-handle" :style="{'top' : zoomPercentY + '%'}" @mousedown="startZoomDesktop($event)">
+                        <div></div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="reset-zoom" @click="resetZoom($event)">
-            <i class="fa fa-expand" aria-hidden="true"></i>
-        </div>
-        <!-- wwManager:end -->
-        <div class="format" :style="_styles.format">
-            <div class="border" :style="_styles.border"></div>
-            <div class="container">
-                <div class="hover">
-                    <img class="loader" :src="loaderSrc" :class="{'loaded': imageLoaded}">
-                    <!-- Image goes here -->
-                    <!-- Background -->
-                    <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="_styles.image"></div>
-                    <!-- Image -->
-                    <img v-if="wwAttrs.wwCategory != 'background'" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="_styles.image">
+            <div class="reset-zoom" @click="resetZoom($event)">
+                <i class="fa fa-expand" aria-hidden="true"></i>
+            </div>
+            <!-- wwManager:end -->
+            <div class="format" :style="_styles.format">
+                <div class="border" :style="_styles.border"></div>
+                <div class="container">
+                    <div class="hover">
+                        <img class="loader" :src="loaderSrc" :class="{'loaded': imageLoaded}">
+                        <!-- Image goes here -->
+                        <!-- Background -->
+                        <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="_styles.image"></div>
+                        <!-- Image -->
+                        <img v-if="wwAttrs.wwCategory != 'background'" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="_styles.image">
+                    </div>
                 </div>
             </div>
         </div>
@@ -73,6 +75,9 @@ export default {
                     borderColor: null,
                     borderStyle: null,
                     background: null,
+                },
+                wrapper: {
+                    width: null
                 }
             },
 
@@ -94,6 +99,8 @@ export default {
                 return {}
             }
 
+            const w = this.$el.getBoundingClientRect().width;
+
             this.wwObject.content.data.style = this.wwObject.content.data.style || {}
 
             //IMAGE
@@ -114,8 +121,7 @@ export default {
             this.styles.format.boxShadow = this.getShadow();
 
             if (this.wwAttrs.wwCategory != 'background') {
-                const borderWidth = (this.wwObject.content.data.style.borderWidth ? this.wwObject.content.data.style.borderWidth : 0);
-                this.styles.format.paddingBottom = this.getRatio() + '%'; //'calc(' + this.getRatio() + '% - ' + (borderWidth * 2) + 'px)';
+                this.styles.format.paddingBottom = this.getRatio() + '%';
             }
             else {
                 this.styles.format.paddingBottom = 0;
@@ -123,8 +129,6 @@ export default {
 
 
             //BORDER
-            const w = this.$el.getBoundingClientRect().width;
-
             const borderRadius = w * (this.wwObject.content.data.style.borderRadius ? this.wwObject.content.data.style.borderRadius : 0) / 100;
             this.styles.border.borderRadius = borderRadius + 'px';
             this.styles.format.borderRadius = this.styles.border.borderRadius;
@@ -135,6 +139,14 @@ export default {
             this.styles.border.borderColor = this.wwObject.content.data.style.borderColor || 'black';
             this.styles.border.borderStyle = this.wwObject.content.data.style.borderStyle || 'none';
             this.styles.border.background = this.wwObject.content.data.style.overlay || '';
+
+            //WRAPPER
+            if (this.wwObject.content.data.style.maxHeight) {
+                this.styles.wrapper.width = (parseInt(this.wwObject.content.data.style.maxHeight) / this.getRatio() * 100) + 'px';
+            } else {
+                this.styles.wrapper.width = null;
+            }
+
 
             return this.styles;
         },
@@ -173,7 +185,6 @@ export default {
     },
     methods: {
         init() {
-
             this.zoomFactor = Math.sqrt(100 * 100 / (10 - this.zoomMin));
             this.loadImage();
         },
@@ -290,9 +301,6 @@ export default {
 
             this.wwObjectCtrl.update(this.wwObject);
 
-            //Stop event propagation to prevent image click
-            this.preventEvent(event);
-
             return false;
         },
 
@@ -405,20 +413,27 @@ export default {
             if (this.wwObjectCtrl.getSectionCtrl().getEditMode() != 'CONTENT' || this.wwAttrs.wwCategory == 'background') {
                 return;
             }
+
+            if (event.ctrlKey || event.button == 2) {
+                return;
+            }
+
             this.lastMovePosition = this.getEventPosition(event);
             if (this.lastMovePosition) {
-                wwLib.wwObjectHover.setLock(this);
+                // wwLib.wwObjectHover.setLock(this);
 
-                document.addEventListener("mousemove", this.move);
-                document.addEventListener("mouseup", this.stopMove);
+                wwLib.getFrontDocument().addEventListener("mousemove", this.move);
+                wwLib.getManagerDocument().addEventListener("mousemove", this.move);
+                wwLib.getFrontDocument().addEventListener("mouseup", this.stopMove);
+                wwLib.getManagerDocument().addEventListener("mouseup", this.stopMove);
 
-                document.addEventListener("touchmove", this.move);
-                document.addEventListener("touchend", this.stopMove);
+                wwLib.getFrontDocument().addEventListener("touchmove", this.move);
+                wwLib.getManagerDocument().addEventListener("touchmove", this.move);
+                wwLib.getFrontDocument().addEventListener("touchend", this.stopMove);
+                wwLib.getManagerDocument().addEventListener("touchend", this.stopMove);
 
-                document.addEventListener("click", this.preventEvent, true);
-                document.addEventListener("touch", this.preventEvent, true);
 
-                window.document.body.classList.add('ww-image-dragging');
+                document.body.classList.add('ww-image-dragging');
 
                 this.preventEvent(event);
 
@@ -427,6 +442,11 @@ export default {
 
         },
         move(event) {
+            if (wwLib.wwObjectMenu.list.length) {
+                this.stopMove(event);
+                return;
+            }
+
             let position = this.getEventPosition(event);
 
             if (!position) {
@@ -483,22 +503,19 @@ export default {
         stopMove(event) {
             this.lockControls = false;
 
-            wwLib.wwObjectHover.removeLock();
+            // wwLib.wwObjectHover.removeLock();
 
-            document.removeEventListener("mousemove", this.move);
-            document.removeEventListener("mouseup", this.stopMove);
+            wwLib.getFrontDocument().removeEventListener("mousemove", this.move);
+            wwLib.getManagerDocument().removeEventListener("mousemove", this.move);
+            wwLib.getFrontDocument().removeEventListener("mouseup", this.stopMove);
+            wwLib.getManagerDocument().removeEventListener("mouseup", this.stopMove);
 
-            document.removeEventListener("touchmove", this.move);
-            document.removeEventListener("touchend", this.stopMove);
+            wwLib.getFrontDocument().removeEventListener("touchmove", this.move);
+            wwLib.getManagerDocument().removeEventListener("touchmove", this.move);
+            wwLib.getFrontDocument().removeEventListener("touchend", this.stopMove);
+            wwLib.getManagerDocument().removeEventListener("touchend", this.stopMove);
 
             this.moveDirection = null;
-
-            //Remove click events with a small delay to be sure that click is ignored
-            let self = this;
-            setTimeout(function () {
-                document.removeEventListener("click", self.preventEvent, true);
-                document.removeEventListener("touch", self.preventEvent, true);
-            }, 100);
 
             this.wwObjectCtrl.update(this.wwObject);
 
@@ -532,7 +549,7 @@ export default {
                 const result = await wwLib.wwPopups.open(options)
                 this.wwObject.content.data.url = result.image;
 
-                this.wwObject.content.data.zoom = -1;
+                this.wwObject.content.data.zoom = 1;
                 this.wwObject.content.data.position = { x: 0, y: 0 };
 
                 this.wwObjectCtrl.update(this.wwObject);
@@ -602,6 +619,23 @@ export default {
                             icon: 'wwi wwi-ratio',
                             shortcut: 'r',
                             next: 'WWIMAGE_RATIO'
+                        },
+                        EDIT_IMAGE_LINK: {
+                            separator: {
+                                en_GB: 'Link',
+                                fr_FR: 'Lien'
+                            },
+                            title: {
+                                en_GB: 'Change image link',
+                                fr_FR: 'Changer le lien de l\'image'
+                            },
+                            desc: {
+                                en_GB: 'External, internal, ...',
+                                fr_FR: 'Externe, interne, ...'
+                            },
+                            icon: 'wwi wwi-link-external',
+                            shortcut: 's',
+                            next: 'WWIMAGE_LINKS'
                         }
                     }
                 }
@@ -644,6 +678,25 @@ export default {
                         },
                         next: false
                     }
+                }
+            })
+            wwLib.wwPopups.addStory('WWIMAGE_LINKS', {
+                title: {
+                    en_GB: 'Link',
+                    fr_FR: 'Lien'
+                },
+                type: 'wwPopupLinks',
+                storyData: {
+                    links: [
+                        'EXTERNAL',
+                        'INTERNAL',
+                        'SECTION',
+                        'POPUP',
+                        'DOWNLOAD',
+                        'ZOOM',
+                        'TOGGLE_NAVBAR',
+                        'NO_LINK'
+                    ]
                 }
             })
 
@@ -699,6 +752,9 @@ export default {
                 }
                 if (typeof (result.ratio) != 'undefined') {
                     this.wwObject.ratio = result.ratio;
+                }
+                if (typeof (result.maxHeight) != 'undefined') {
+                    this.wwObject.content.data.style.maxHeight = result.maxHeight;
                 }
 
 
@@ -772,11 +828,15 @@ export default {
                         context.drawImage(img, origin.x, origin.y, imgSize.w, imgSize.h);
 
                         context.restore();
-                        resolve(canvas.toDataURL("image/bmp"));
+                        return resolve(canvas.toDataURL("image/bmp"));
                     } catch (error) {
                         console.log('ww-image preview error', error)
                         return resolve(null);
                     }
+                }
+
+                img.onerror = function () {
+                    return resolve(null);
                 }
 
                 img.setAttribute('crossOrigin', 'anonymous');
@@ -803,7 +863,7 @@ export default {
 
         /* wwManager:end */
     },
-    mounted: function () {
+    mounted() {
         this.init();
 
         this.el = this.$el;
@@ -821,67 +881,73 @@ export default {
 .ww-image {
     position: relative;
     user-select: none;
+    display: flex;
+    justify-content: center;
 
-    .format {
+    .wrapper {
         width: 100%;
-        height: 100%;
-        position: relative;
-        overflow: hidden;
 
-        .border {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        .format {
+            width: 100%;
+            height: 100%;
+            position: relative;
             overflow: hidden;
-            /* +2px to avoid white borders */
-            width: calc(100% + 2px);
-            height: calc(100% + 2px);
-            transition: background-color 0.1s ease;
 
-            .hover {
-                width: 100%;
-                height: 100%;
-                position: relative;
+            .border {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1;
+                pointer-events: none;
+            }
 
-                .loader {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
+            .container {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                overflow: hidden;
+                /* +2px to avoid white borders */
+                width: calc(100% + 2px);
+                height: calc(100% + 2px);
+                transition: background-color 0.1s ease;
+
+                .hover {
                     width: 100%;
-                    transition: opacity 0s linear 0.3s;
+                    height: 100%;
+                    position: relative;
 
-                    &.loaded {
+                    .loader {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        transition: opacity 0s linear 0.3s;
+
+                        &.loaded {
+                            opacity: 0;
+                        }
+                    }
+
+                    .image {
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        transition: opacity 0.3s ease;
                         opacity: 0;
-                    }
-                }
 
-                .image {
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    transition: opacity 0.3s ease;
-                    opacity: 0;
+                        &.bg {
+                            background-repeat: no-repeat;
+                            background-position: center;
+                            background-size: cover;
+                        }
 
-                    &.bg {
-                        background-repeat: no-repeat;
-                        background-position: center;
-                        background-size: cover;
-                    }
-
-                    &.loaded {
-                        opacity: 1 !important;
+                        &.loaded {
+                            opacity: 1 !important;
+                        }
                     }
                 }
             }
