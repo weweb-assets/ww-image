@@ -18,12 +18,18 @@
                 <div class="border" :style="_styles.border"></div>
                 <div class="container">
                     <div class="hover">
-                        <img class="loader" :src="loaderSrc" :class="{'loaded': imageLoaded}">
-                        <!-- Image goes here -->
+                        <!-- wwManager:start -->
                         <!-- Background -->
-                        <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="_styles.image"></div>
+                        <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :style="_styles.image"></div>
                         <!-- Image -->
-                        <img v-if="wwAttrs.wwCategory != 'background'" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :class="{'loaded': imageLoaded}" :style="_styles.image">
+                        <img v-if="wwAttrs.wwCategory != 'background'" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :style="_styles.image">
+                        <!-- wwManager:end -->
+                        <!-- wwFront:start -->
+                        <!-- Background -->
+                        <div v-if="wwAttrs.wwCategory == 'background'" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" :style="_styles.image"></div>
+                        <!-- Image -->
+                        <img v-if="wwAttrs.wwCategory != 'background'" class="image twic" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" :alt="wwObject.alt" :style="_styles.image">
+                        <!-- wwFront:end -->
                     </div>
                 </div>
             </div>
@@ -45,7 +51,7 @@ export default {
     data() {
         return {
             wwControlsElements: {},
-            imageLoaded: false,
+            imageLoaded: true,
             zoomMin: 0.2,
             zoomFactor: 1,
             el: null,
@@ -56,8 +62,8 @@ export default {
             styles: {
                 image: {
                     backgroundImage: '',
-                    width: 'auto',
-                    height: 'auto',
+                    width: '100%',
+                    height: '100%',
                     minWidth: 'none',
                     minHeight: 'none',
                     top: '50%',
@@ -105,10 +111,11 @@ export default {
 
             //IMAGE
             this.styles.image.filter = this.wwObject.content.data.style.filter || null;
-            this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
-            this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
-            this.styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
 
+            /* wwManager:start */
+            this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
+            this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
+            this.styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
             if (this.wwAttrs.wwCategory != 'background') {
                 this.styles.image['-webkit-transform'] = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
                 this.styles.image['-moz-transform'] = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
@@ -116,6 +123,18 @@ export default {
                 this.styles.image['-o-transform'] = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
                 this.styles.image.transform = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
             }
+            /* wwManager:end */
+
+            /* wwFront:start */
+            if (this.wwAttrs.wwCategory != 'background') {
+                this.styles.image.left = this.wwObject.content.data.pos.left;
+                this.styles.image.top = this.wwObject.content.data.pos.top;
+                this.styles.image.width = this.wwObject.content.data.pos.width;
+                this.styles.image.height = this.wwObject.content.data.pos.height;
+            }
+            /* wwFront:end */
+
+
 
             //FORMAT
             this.styles.format.boxShadow = this.getShadow();
@@ -149,6 +168,9 @@ export default {
 
 
             return this.styles;
+        },
+        twicTransform() {
+            return 'crop=' + this.wwObject.content.data.crop + '/auto';
         },
         loaderSrc() {
             return this.wwObject.content.data.dataUrl;
@@ -189,6 +211,7 @@ export default {
             this.loadImage();
         },
         loadImage() {
+            /*
             this.imageLoaded = false;
 
             const self = this;
@@ -199,6 +222,7 @@ export default {
                 self.$emit('ww-loaded', self);
             };
             wwHiddenLoadImg.src = this.wwObject.content.data.url;
+            */
         },
         preventEvent(event) {
 
@@ -314,12 +338,7 @@ export default {
             window.addEventListener("mousemove", this.zoomDesktop);
             window.addEventListener("mouseup", this.stopZoomDesktop);
 
-            document.addEventListener("click", this.preventEvent, true);
-            document.addEventListener("touch", this.preventEvent, true);
-
             window.document.body.classList.add('ww-image-dragging');
-
-            this.preventEvent(event);
 
             return false;
         },
@@ -345,18 +364,9 @@ export default {
             window.removeEventListener("mousemove", this.zoomDesktop);
             window.removeEventListener("mouseup", this.stopZoomDesktop);
 
-            //Remove click events with a small delay to be sure that click is ignored
-            let self = this;
-            setTimeout(function () {
-                document.removeEventListener("click", self.preventEvent, true);
-                document.removeEventListener("touch", self.preventEvent, true);
-            }, 100);
-
             this.wwObjectCtrl.update(this.wwObject);
 
             window.document.body.classList.remove('ww-image-dragging');
-
-            this.preventEvent(event);
 
             return false;
         },
@@ -420,7 +430,6 @@ export default {
 
             this.lastMovePosition = this.getEventPosition(event);
             if (this.lastMovePosition) {
-                // wwLib.wwObjectHover.setLock(this);
 
                 wwLib.getFrontDocument().addEventListener("mousemove", this.move);
                 wwLib.getManagerDocument().addEventListener("mousemove", this.move);
@@ -434,8 +443,6 @@ export default {
 
 
                 document.body.classList.add('ww-image-dragging');
-
-                this.preventEvent(event);
 
                 return false;
             }
@@ -520,8 +527,6 @@ export default {
             this.wwObjectCtrl.update(this.wwObject);
 
             window.document.body.classList.remove('ww-image-dragging');
-
-            this.preventEvent(event);
 
             return false;
         },
@@ -847,18 +852,75 @@ export default {
 
         },
         async beforeSave() {
-            const dataUrl = await this.resizeImage({
-                image: this.wwObject.content.data.url,
-                maxSize: 20,
-                ratio: this.getRatio(),
-                zoom: this.wwObject.content.data.zoom,
-                x: this.wwObject.content.data.position.x,
-                y: this.wwObject.content.data.position.y
-            })
 
-            this.wwObject.content.data.dataUrl = dataUrl;
+            if (this.wwAttrs.wwCategory != 'background') {
+                const rectCtn = this.$el.getBoundingClientRect();
+                const rectImg = this.$el.querySelector('.image').getBoundingClientRect();
 
-            await this.wwObjectCtrl.update(this.wwObject);
+                const z = Math.abs(this.wwObject.content.data.zoom);
+                const px = this.wwObject.content.data.position.x;
+                const py = this.wwObject.content.data.position.y;
+
+                const r = rectCtn.height / rectCtn.width;
+                const R = this.wwObject.content.data.imgSize.h / this.wwObject.content.data.imgSize.w;
+
+                const zh = rectImg.height / rectCtn.height;
+
+                //SIZE
+                const x = Math.max(Math.min(0.5 - z * (1 / 2 - px / 100), 100), 0);
+                const y = Math.max(Math.min(0.5 - zh * (1 / 2 - py / 100), 100), 0);
+
+                const w = Math.max(Math.min(1, z, 1 - x), 0);
+                const h = Math.max(Math.min(1, zh, 1 - y), 0);
+
+                //CROP
+                const cx = Math.max(Math.min((0.5 * (1 - 1 / z) * 100) - px, 100), 0);
+                const cy = Math.max(Math.min((0.5 * (1 - 1 / zh) * 100) - py, 100), 0);
+
+                const cw = Math.max(Math.min(100 / z, 100 - cx, w * rectCtn.width * 100 / rectImg.width), 0);
+                const ch = Math.max(Math.min(100 / zh, 100 - cy, h * rectCtn.height * 100 / rectImg.height), 0);
+
+                this.wwObject.content.data.crop = cw + 'px' + ch + 'p@' + cx + 'px' + cy + 'p';
+                this.wwObject.content.data.pos = {
+                    left: (x * 100) + '%',
+                    top: (y * 100) + '%',
+                    width: (w * 100) + '%',
+                    height: (h * 100) + '%'
+                }
+
+                if (this.wwObject.uniqueId == 14826165634) {
+                    console.log(this.wwObject.content.data.pos);
+                }
+
+                if (this.wwObject.uniqueId == 10007599688) {
+                    console.log(this.wwObject.content.data.pos);
+                }
+
+                if (this.wwObject.uniqueId == 14752210978) {
+                    console.log(this.wwObject.content.data.pos);
+                }
+
+                if (this.wwObject.uniqueId == 6016626787) {
+                    console.log(this.wwObject.content.data.pos);
+                }
+
+                await this.wwObjectCtrl.update(this.wwObject);
+            }
+
+
+
+            // const dataUrl = await this.resizeImage({
+            //     image: this.wwObject.content.data.url,
+            //     maxSize: 20,
+            //     ratio: this.getRatio(),
+            //     zoom: this.wwObject.content.data.zoom,
+            //     x: this.wwObject.content.data.position.x,
+            //     y: this.wwObject.content.data.position.y
+            // })
+
+            // this.wwObject.content.data.dataUrl = dataUrl;
+
+            // await this.wwObjectCtrl.update(this.wwObject);
         }
 
         /* wwManager:end */
@@ -872,6 +934,9 @@ export default {
         this.$el.querySelector('.container').addEventListener('touchstart', this.startMove);
         this.$el.querySelector('.container').addEventListener('mousedown', this.startMove);
         /* wwManager:end */
+    },
+    created() {
+        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp.s3.eu-west-3.amazonaws.com', 'cdn.weweb.app');
     }
 };
 </script>
@@ -919,27 +984,29 @@ export default {
                     height: 100%;
                     position: relative;
 
-                    .loader {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        transition: opacity 0s linear 0.3s;
-
-                        &.loaded {
-                            opacity: 0;
-                        }
-                    }
-
                     .image {
                         position: absolute;
+                        transition: opacity 0.3s ease;
+                        /*opacity: 0;*/
+
+                        /* wwFront:start */
+                        width: 100%;
+                        height: 100%;
+                        /* wwFront:end */
+
+                        /* wwManager:start */
                         top: 50%;
                         left: 50%;
                         transform: translate(-50%, -50%);
-                        transition: opacity 0.3s ease;
-                        opacity: 0;
+                        /* wwManager:end */
 
                         &.bg {
+                            /* wwFront:start */
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            /* wwFront:end */
+
                             background-repeat: no-repeat;
                             background-position: center;
                             background-size: cover;
