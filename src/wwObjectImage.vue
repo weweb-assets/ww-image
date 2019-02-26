@@ -26,9 +26,9 @@
                         <!-- wwManager:end -->
                         <!-- wwFront:start -->
                         <!-- Background -->
-                        <div v-if="wwAttrs.wwCategory == 'background'" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" :style="_styles.image"></div>
+                        <div v-if="wwAttrs.wwCategory == 'background'" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :style="_styles.image"></div>
                         <!-- Image -->
-                        <img v-if="wwAttrs.wwCategory != 'background'" class="image twic" src="https://i.twic.pics/v1/placeholder:1x1:transparent" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" :alt="wwObject.alt" :style="_styles.image">
+                        <img v-if="wwAttrs.wwCategory != 'background'" class="image twic" :src="placeholderSrc" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" data-src-step="30" :alt="wwObject.alt" :style="_styles.image">
                         <!-- wwFront:end -->
                     </div>
                 </div>
@@ -126,6 +126,9 @@ export default {
             /* wwManager:end */
 
             /* wwFront:start */
+            // if (this.wwAttrs.wwCategory == 'background') {
+            //     this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(https://i.twic.pics/v1/crop=' + this.wwObject.content.data.crop + '/resize=10/quality=10/' + this.wwObject.content.data.url + ')' : '';
+            // }
             if (this.wwAttrs.wwCategory != 'background') {
                 this.styles.image.left = this.wwObject.content.data.pos.left;
                 this.styles.image.top = this.wwObject.content.data.pos.top;
@@ -174,6 +177,9 @@ export default {
         },
         loaderSrc() {
             return this.wwObject.content.data.dataUrl;
+        },
+        placeholderSrc() {
+            return 'https://i.twic.pics/v1/crop=' + this.wwObject.content.data.crop + '/resize=10/quality=10/' + this.wwObject.content.data.url
         },
         /* wwManager:start */
         zoomPercentY() {
@@ -322,7 +328,7 @@ export default {
                 this.wwObject.content.data.zoom = rationContainer / ratio;
             }
 
-
+            this.calcTwicPics();
             this.wwObjectCtrl.update(this.wwObject);
 
             return false;
@@ -352,6 +358,7 @@ export default {
 
             this.preventEvent(event);
 
+            this.calcTwicPics();
             this.wwObjectCtrl.update(this.wwObject);
 
             return false;
@@ -364,6 +371,7 @@ export default {
             window.removeEventListener("mousemove", this.zoomDesktop);
             window.removeEventListener("mouseup", this.stopZoomDesktop);
 
+            this.calcTwicPics();
             this.wwObjectCtrl.update(this.wwObject);
 
             window.document.body.classList.remove('ww-image-dragging');
@@ -504,6 +512,7 @@ export default {
 
             this.preventEvent(event);
 
+            this.calcTwicPics();
             this.wwObjectCtrl.update(this.wwObject);
 
         },
@@ -524,6 +533,7 @@ export default {
 
             this.moveDirection = null;
 
+            this.calcTwicPics();
             this.wwObjectCtrl.update(this.wwObject);
 
             window.document.body.classList.remove('ww-image-dragging');
@@ -557,6 +567,7 @@ export default {
                 this.wwObject.content.data.zoom = 1;
                 this.wwObject.content.data.position = { x: 0, y: 0 };
 
+                this.calcTwicPics();
                 this.wwObjectCtrl.update(this.wwObject);
 
                 this.loadImage();
@@ -762,7 +773,7 @@ export default {
                     this.wwObject.content.data.style.maxHeight = result.maxHeight;
                 }
 
-
+                this.calcTwicPics();
                 this.wwObjectCtrl.update(this.wwObject);
 
                 this.wwObjectCtrl.globalEdit(result);
@@ -851,78 +862,41 @@ export default {
 
 
         },
-        async beforeSave() {
+        calcTwicPics() {
+            const rectCtn = this.$el.getBoundingClientRect();
+            const rectImg = this.$el.querySelector('.image').getBoundingClientRect();
 
-            if (this.wwAttrs.wwCategory != 'background') {
-                const rectCtn = this.$el.getBoundingClientRect();
-                const rectImg = this.$el.querySelector('.image').getBoundingClientRect();
+            const z = Math.abs(this.wwObject.content.data.zoom);
+            const px = this.wwObject.content.data.position.x;
+            const py = this.wwObject.content.data.position.y;
 
-                const z = Math.abs(this.wwObject.content.data.zoom);
-                const px = this.wwObject.content.data.position.x;
-                const py = this.wwObject.content.data.position.y;
+            const r = rectCtn.height / rectCtn.width;
+            const R = this.wwObject.content.data.imgSize.h / this.wwObject.content.data.imgSize.w;
 
-                const r = rectCtn.height / rectCtn.width;
-                const R = this.wwObject.content.data.imgSize.h / this.wwObject.content.data.imgSize.w;
+            const zh = rectImg.height / rectCtn.height;
 
-                const zh = rectImg.height / rectCtn.height;
+            //SIZE
+            const x = Math.max(Math.min(0.5 - z * (1 / 2 - px / 100), 100), 0);
+            const y = Math.max(Math.min(0.5 - zh * (1 / 2 - py / 100), 100), 0);
 
-                //SIZE
-                const x = Math.max(Math.min(0.5 - z * (1 / 2 - px / 100), 100), 0);
-                const y = Math.max(Math.min(0.5 - zh * (1 / 2 - py / 100), 100), 0);
+            const w = Math.max(Math.min(1, z, 1 - x), 0);
+            const h = Math.max(Math.min(1, zh, 1 - y), 0);
 
-                const w = Math.max(Math.min(1, z, 1 - x), 0);
-                const h = Math.max(Math.min(1, zh, 1 - y), 0);
+            //CROP
+            const cx = Math.max(Math.min((0.5 * (1 - 1 / z) * 100) - px, 100), 0);
+            const cy = Math.max(Math.min((0.5 * (1 - 1 / zh) * 100) - py, 100), 0);
 
-                //CROP
-                const cx = Math.max(Math.min((0.5 * (1 - 1 / z) * 100) - px, 100), 0);
-                const cy = Math.max(Math.min((0.5 * (1 - 1 / zh) * 100) - py, 100), 0);
+            const cw = Math.max(Math.min(100 / z, 100 - cx, w * rectCtn.width * 100 / rectImg.width), 0);
+            const ch = Math.max(Math.min(100 / zh, 100 - cy, h * rectCtn.height * 100 / rectImg.height), 0);
 
-                const cw = Math.max(Math.min(100 / z, 100 - cx, w * rectCtn.width * 100 / rectImg.width), 0);
-                const ch = Math.max(Math.min(100 / zh, 100 - cy, h * rectCtn.height * 100 / rectImg.height), 0);
-
-                this.wwObject.content.data.crop = cw + 'px' + ch + 'p@' + cx + 'px' + cy + 'p';
-                this.wwObject.content.data.pos = {
-                    left: (x * 100) + '%',
-                    top: (y * 100) + '%',
-                    width: (w * 100) + '%',
-                    height: (h * 100) + '%'
-                }
-
-                if (this.wwObject.uniqueId == 14826165634) {
-                    console.log(this.wwObject.content.data.pos);
-                }
-
-                if (this.wwObject.uniqueId == 10007599688) {
-                    console.log(this.wwObject.content.data.pos);
-                }
-
-                if (this.wwObject.uniqueId == 14752210978) {
-                    console.log(this.wwObject.content.data.pos);
-                }
-
-                if (this.wwObject.uniqueId == 6016626787) {
-                    console.log(this.wwObject.content.data.pos);
-                }
-
-                await this.wwObjectCtrl.update(this.wwObject);
+            this.wwObject.content.data.crop = cw + 'px' + ch + 'p@' + cx + 'px' + cy + 'p';
+            this.wwObject.content.data.pos = {
+                left: (x * 100) + '%',
+                top: (y * 100) + '%',
+                width: (w * 100) + '%',
+                height: (h * 100) + '%'
             }
-
-
-
-            // const dataUrl = await this.resizeImage({
-            //     image: this.wwObject.content.data.url,
-            //     maxSize: 20,
-            //     ratio: this.getRatio(),
-            //     zoom: this.wwObject.content.data.zoom,
-            //     x: this.wwObject.content.data.position.x,
-            //     y: this.wwObject.content.data.position.y
-            // })
-
-            // this.wwObject.content.data.dataUrl = dataUrl;
-
-            // await this.wwObjectCtrl.update(this.wwObject);
         }
-
         /* wwManager:end */
     },
     mounted() {
