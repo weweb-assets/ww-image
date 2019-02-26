@@ -28,7 +28,7 @@
                         <!-- Background -->
                         <div v-if="wwAttrs.wwCategory == 'background'" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" :style="_styles.image"></div>
                         <!-- Image -->
-                        <img v-if="wwAttrs.wwCategory != 'background'" class="image twic" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" :alt="wwObject.alt" :style="_styles.image">
+                        <img v-if="wwAttrs.wwCategory != 'background'" class="image twic" src="https://i.twic.pics/v1/placeholder:1x1:transparent" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" :alt="wwObject.alt" :style="_styles.image">
                         <!-- wwFront:end -->
                     </div>
                 </div>
