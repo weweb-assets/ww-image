@@ -986,6 +986,14 @@ export default {
                             background-size: cover;
                         }
 
+                        &.twic {
+                            opacity: 0;
+                            &.twic-background-done,
+                            &.twic-done {
+                                opacity: 1;
+                            }
+                        }
+
                         &.loaded {
                             opacity: 1 !important;
                         }
