@@ -179,7 +179,8 @@ export default {
             return this.wwObject.content.data.dataUrl;
         },
         placeholderSrc() {
-            return 'https://i.twic.pics/v1/crop=' + this.wwObject.content.data.crop + '/resize=10/quality=10/' + this.wwObject.content.data.url
+            return 'https://i.twic.pics/v1/placeholder:1x1:transparent';
+            //return 'https://i.twic.pics/v1/crop=' + this.wwObject.content.data.crop + '/resize=10/quality=10/' + this.wwObject.content.data.url
         },
         /* wwManager:start */
         zoomPercentY() {
@@ -986,13 +987,15 @@ export default {
                             background-size: cover;
                         }
 
-                        &.twic {
-                            opacity: 0;
-                            &.twic-background-done,
-                            &.twic-done {
-                                opacity: 1;
-                            }
-                        }
+                        // &.twic {
+                        //     filter: blur(5px);
+                        //     // opacity: 0;
+                        //     &.twic-background-done,
+                        //     &.twic-done {
+                        //         filter: blur(0);
+                        //         // opacity: 1;
+                        //     }
+                        // }
 
                         &.loaded {
                             opacity: 1 !important;
