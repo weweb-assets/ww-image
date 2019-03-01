@@ -550,8 +550,8 @@ export default {
 
             wwLib.wwPopups.addStory('WWIMAGE_SELECT', {
                 title: {
-                    en_GB: 'Select image',
-                    fr_FR: 'Choisir une image'
+                    en: 'Select image',
+                    fr: 'Choisir une image'
                 },
                 type: 'wwPopupSelectImage'
             },
@@ -583,8 +583,8 @@ export default {
 
             wwLib.wwPopups.addStory('WWIMAGE_EDIT', {
                 title: {
-                    en_GB: 'Edit Image',
-                    fr_FR: 'Editer l\'image'
+                    en: 'Edit Image',
+                    fr: 'Editer l\'image'
                 },
                 type: 'wwPopupEditWwObject',
                 buttons: null,
@@ -592,16 +592,16 @@ export default {
                     list: {
                         EDIT_IMAGE_SELECT: {
                             separator: {
-                                en_GB: 'Image',
-                                fr_FR: 'Image'
+                                en: 'Image',
+                                fr: 'Image'
                             },
                             title: {
-                                en_GB: 'Select image',
-                                fr_FR: 'Sélectionner une image'
+                                en: 'Select image',
+                                fr: 'Sélectionner une image'
                             },
                             desc: {
-                                en_GB: 'Accepted formats (Max 5Mb) : .png, .jpg, .gif',
-                                fr_FR: 'Formats acceptés (Max 5Mb) : .png, .jpg, .gif'
+                                en: 'Accepted formats (Max 5Mb) : .png, .jpg, .gif',
+                                fr: 'Formats acceptés (Max 5Mb) : .png, .jpg, .gif'
                             },
                             icon: 'wwi wwi-image',
                             shortcut: 'i',
@@ -609,16 +609,16 @@ export default {
                         },
                         EDIT_IMAGE_STYLE: {
                             separator: {
-                                en_GB: 'Style',
-                                fr_FR: 'Style'
+                                en: 'Style',
+                                fr: 'Style'
                             },
                             title: {
-                                en_GB: 'Change image style',
-                                fr_FR: 'Changer l\'apparence de l\'image'
+                                en: 'Change image style',
+                                fr: 'Changer l\'apparence de l\'image'
                             },
                             desc: {
-                                en_GB: 'Borders, shadow, ...',
-                                fr_FR: 'Bordures, ombres, ...'
+                                en: 'Borders, shadow, ...',
+                                fr: 'Bordures, ombres, ...'
                             },
                             icon: 'wwi wwi-edit-style',
                             shortcut: 's',
@@ -626,12 +626,12 @@ export default {
                         },
                         EDIT_IMAGE_RATIO: {
                             title: {
-                                en_GB: 'Change image ratio',
-                                fr_FR: 'Changer le ratio de l\'image'
+                                en: 'Change image ratio',
+                                fr: 'Changer le ratio de l\'image'
                             },
                             desc: {
-                                en_GB: 'Portrait, square, landscape, ...',
-                                fr_FR: 'Portrait, carré, paysage, ...'
+                                en: 'Portrait, square, landscape, ...',
+                                fr: 'Portrait, carré, paysage, ...'
                             },
                             icon: 'wwi wwi-ratio',
                             shortcut: 'r',
@@ -639,16 +639,16 @@ export default {
                         },
                         EDIT_IMAGE_LINK: {
                             separator: {
-                                en_GB: 'Link',
-                                fr_FR: 'Lien'
+                                en: 'Link',
+                                fr: 'Lien'
                             },
                             title: {
-                                en_GB: 'Change image link',
-                                fr_FR: 'Changer le lien de l\'image'
+                                en: 'Change image link',
+                                fr: 'Changer le lien de l\'image'
                             },
                             desc: {
-                                en_GB: 'External, internal, ...',
-                                fr_FR: 'Externe, interne, ...'
+                                en: 'External, internal, ...',
+                                fr: 'Externe, interne, ...'
                             },
                             icon: 'wwi wwi-link-external',
                             shortcut: 's',
@@ -659,23 +659,23 @@ export default {
             })
             wwLib.wwPopups.addStory('WWIMAGE_SELECT', {
                 title: {
-                    en_GB: 'Select image',
-                    fr_FR: 'Choisir une image'
+                    en: 'Select image',
+                    fr: 'Choisir une image'
                 },
                 type: 'wwPopupSelectImage',
                 next: 'WWIMAGE_RATIO'
             })
             wwLib.wwPopups.addStory('WWIMAGE_RATIO', {
                 title: {
-                    en_GB: 'Image Ratio',
-                    fr_FR: 'Ratio de l\'image'
+                    en: 'Image Ratio',
+                    fr: 'Ratio de l\'image'
                 },
                 type: 'wwPopupImageRatio',
                 buttons: {
                     NEXT: {
                         text: {
-                            en_GB: 'Next',
-                            fr_FR: 'Suivant'
+                            en: 'Next',
+                            fr: 'Suivant'
                         },
                         next: 'WWIMAGE_STYLE'
                     }
@@ -683,15 +683,15 @@ export default {
             })
             wwLib.wwPopups.addStory('WWIMAGE_STYLE', {
                 title: {
-                    en_GB: 'Image style',
-                    fr_FR: 'Style de l\'image'
+                    en: 'Image style',
+                    fr: 'Style de l\'image'
                 },
                 type: 'wwPopupImageStyle',
                 buttons: {
                     OK: {
                         text: {
-                            en_GB: 'Ok',
-                            fr_FR: 'Valider'
+                            en: 'Ok',
+                            fr: 'Valider'
                         },
                         next: false
                     }
@@ -699,8 +699,8 @@ export default {
             })
             wwLib.wwPopups.addStory('WWIMAGE_LINKS', {
                 title: {
-                    en_GB: 'Link',
-                    fr_FR: 'Lien'
+                    en: 'Link',
+                    fr: 'Lien'
                 },
                 type: 'wwPopupLinks',
                 storyData: {

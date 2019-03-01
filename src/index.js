@@ -12,8 +12,8 @@ const addComponent = function () {
                 data: {
                     url: 'https://cdn.weweb.app/public/images/no_image_selected.png',
                     alt: {
-                        fr_FR: "webeo",
-                        en_GB: "webeo",
+                        fr: "webeo",
+                        en: "webeo",
                     },
                     position: { x: 0, y: 0 },
                     zoom: 1,
@@ -64,8 +64,8 @@ const addComponent = function () {
                         {
                             name: 'OPTIONS',
                             text: {
-                                en_GB: 'Options...',
-                                fr_FR: 'Options...'
+                                en: 'Options...',
+                                fr: 'Options...'
                             },
                             icon: 'wwi wwi-edit-other',
                             action: 'edit'
@@ -73,8 +73,8 @@ const addComponent = function () {
                         {
                             name: 'SOURCE',
                             text: {
-                                en_GB: 'Image',
-                                fr_FR: 'Image'
+                                en: 'Image',
+                                fr: 'Image'
                             },
                             icon: 'wwi wwi-image',
                             action: 'changeImage'
