@@ -22,7 +22,7 @@
                         <!-- Background -->
                         <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :style="_styles.image"></div>
                         <!-- Image -->
-                        <img v-if="wwAttrs.wwCategory != 'background'" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :style="_styles.image">
+                        <img v-if="wwAttrs.wwCategory != 'background'" draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :style="_styles.image">
                         <!-- wwManager:end -->
                         <!-- wwFront:start -->
                         <!-- Background -->
@@ -89,6 +89,7 @@ export default {
 
             /* wwManager:start */
             lastMovePosition: { x: 0, y: 0 },
+            moving: false,
             lastTouchDist: 0,
             zoomBarElement: null,
             lockControls: false,
@@ -232,7 +233,6 @@ export default {
             */
         },
         preventEvent(event) {
-
             if (!this.isTouch(event)) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -309,6 +309,8 @@ export default {
           IMAGE ZOOM
         \================================================================================================*/
         resetZoom(event) {
+            this.preventEvent(event);
+
             //Reset position
             this.wwObject.content.data.position = { x: 0, y: 0 };
 
@@ -346,6 +348,8 @@ export default {
             window.addEventListener("mouseup", this.stopZoomDesktop);
 
             window.document.body.classList.add('ww-image-dragging');
+
+            wwLib.wwObjectMenu.preventOpen();
 
             return false;
         },
@@ -437,6 +441,8 @@ export default {
                 return;
             }
 
+            this.moving = false;
+
             this.lastMovePosition = this.getEventPosition(event);
             if (this.lastMovePosition) {
 
@@ -450,9 +456,7 @@ export default {
                 wwLib.getFrontDocument().addEventListener("touchend", this.stopMove);
                 wwLib.getManagerDocument().addEventListener("touchend", this.stopMove);
 
-
                 document.body.classList.add('ww-image-dragging');
-
                 return false;
             }
 
@@ -471,6 +475,12 @@ export default {
 
             var offsetXpx = position.x - this.lastMovePosition.x;
             var offsetYpx = position.y - this.lastMovePosition.y;
+
+            if (!this.moving && Math.abs(offsetXpx) + Math.abs(offsetYpx) < 4) {
+                return;
+            }
+
+            this.moving = true;
 
             if (this.moveDirection == 'x') {
                 offsetYpx = 0;
@@ -518,7 +528,14 @@ export default {
 
         },
         stopMove(event) {
+
+            if (this.moving) {
+                wwLib.wwObjectMenu.preventOpen();
+            }
+
             this.lockControls = false;
+
+            this.moving = false;
 
             // wwLib.wwObjectHover.removeLock();
 
@@ -1118,5 +1135,6 @@ export default {
 .ww-image-dragging {
     cursor: move;
     cursor: grab;
+    user-select: none;
 }
 </style>
