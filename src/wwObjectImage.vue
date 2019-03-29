@@ -152,12 +152,11 @@ export default {
 
 
             //BORDER
-            const borderRadius = w * (this.wwObject.content.data.style.borderRadius ? this.wwObject.content.data.style.borderRadius : 0) / 100;
-            this.styles.border.borderRadius = borderRadius + 'px';
-            this.styles.format.borderRadius = this.styles.border.borderRadius;
+            const borderRadius = (this.wwObject.content.data.style.borderRadius || 0) + '%';
+            this.styles.border.borderRadius = borderRadius;
+            this.styles.format.borderRadius = borderRadius;
 
-            const borderWidth = w * (this.wwObject.content.data.style.borderWidth ? this.wwObject.content.data.style.borderWidth : 0) / 100;
-            this.styles.border.borderWidth = borderWidth + 'px';
+            this.styles.border.borderWidth = (this.wwObject.content.data.style.borderWidth || 0) + 'px';
 
             this.styles.border.borderColor = this.wwObject.content.data.style.borderColor || 'black';
             this.styles.border.borderStyle = this.wwObject.content.data.style.borderStyle || 'none';
@@ -767,7 +766,7 @@ export default {
                     this.wwObject.content.data.style.borderColor = result.borderColor;
                 }
                 if (typeof (result.borderRadius) != 'undefined') {
-                    this.wwObject.content.data.style.borderRadius = result.borderRadius;
+                    this.wwObject.content.data.style.borderRadius = result.borderRadius / 2;
                 }
                 if (typeof (result.borderStyle) != 'undefined') {
                     this.wwObject.content.data.style.borderStyle = result.borderStyle;
@@ -904,8 +903,8 @@ export default {
             const cx = Math.max(Math.min((0.5 * (1 - 1 / z) * 100) - px, 100), 0);
             const cy = Math.max(Math.min((0.5 * (1 - 1 / zh) * 100) - py, 100), 0);
 
-            const cw = Math.max(Math.min(100 / z, 100 - cx, w * rectCtn.width * 100 / rectImg.width), 0);
-            const ch = Math.max(Math.min(100 / zh, 100 - cy, h * rectCtn.height * 100 / rectImg.height), 0);
+            const cw = Math.round(Math.max(Math.min(100 / z, 100 - cx, w * rectCtn.width * 100 / rectImg.width), 0));
+            const ch = Math.round(Math.max(Math.min(100 / zh, 100 - cy, h * rectCtn.height * 100 / rectImg.height), 0));
 
             this.wwObject.content.data.crop = cw + 'px' + ch + 'p@' + cx + 'px' + cy + 'p';
             this.wwObject.content.data.pos = {
@@ -965,10 +964,10 @@ export default {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                overflow: hidden;
+                // overflow: hidden;
                 /* +2px to avoid white borders */
-                width: calc(100% + 2px);
-                height: calc(100% + 2px);
+                width: 100%;
+                height: 100%;
                 transition: background-color 0.1s ease;
 
                 .hover {
