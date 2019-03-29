@@ -28,7 +28,7 @@
                         <!-- Background -->
                         <div v-if="wwAttrs.wwCategory == 'background'" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :style="_styles.image"></div>
                         <!-- Image -->
-                        <img v-if="wwAttrs.wwCategory != 'background'" class="image twic" :src="placeholderSrc" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" data-src-step="30" :alt="wwObject.alt" :style="_styles.image">
+                        <img v-if="wwAttrs.wwCategory != 'background'" class="image twic" :src="placeholderSrc" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" data-src-step="10" :alt="wwObject.alt" :style="_styles.image">
                         <!-- wwFront:end -->
                     </div>
                 </div>
@@ -152,7 +152,7 @@ export default {
 
 
             //BORDER
-            const borderRadius = (this.wwObject.content.data.style.borderRadius || 0) + '%';
+            const borderRadius = ((this.wwObject.content.data.style.borderRadius || 0) / 100 * w) + 'px';
             this.styles.border.borderRadius = borderRadius;
             this.styles.format.borderRadius = borderRadius;
 
@@ -192,21 +192,6 @@ export default {
         /* wwManager:end */
     },
     watch: {
-        /* wwManager:start */
-        editing() {
-            //Preload canvas to avoid waiting on save !
-            if (this.editing) {
-                this.resizeImage({
-                    image: this.wwObject.content.data.url,
-                    maxSize: 20,
-                    ratio: this.getRatio(),
-                    zoom: this.wwObject.content.data.zoom,
-                    x: this.wwObject.content.data.position.x,
-                    y: this.wwObject.content.data.position.y
-                })
-            }
-        }
-        /* wwManager:end */
     },
     beforeDestroy: function () {
         this.$el.querySelector('.container').removeEventListener('mousedown', this.startMove);
@@ -749,6 +734,7 @@ export default {
                 if (typeof (result.image) != 'undefined') {
                     this.wwObject.content.data.url = result.image;
 
+                    /*
                     this.resizeImage({
                         image: this.wwObject.content.data.url,
                         maxSize: 20,
@@ -757,6 +743,7 @@ export default {
                         x: this.wwObject.content.data.position.x,
                         y: this.wwObject.content.data.position.y
                     })
+                    */
                 }
 
                 /*=============================================m_ÔÔ_m=============================================\
@@ -797,6 +784,7 @@ export default {
 
                 this.loadImage();
 
+
             } catch (error) {
                 console.log(error);
             }
@@ -815,6 +803,9 @@ export default {
 
             return new Promise(function (resolve, reject) {
 
+                return resolve();
+
+                /*
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext("2d");
                 const img = document.createElement('img');
@@ -875,13 +866,20 @@ export default {
                 img.setAttribute('crossOrigin', 'anonymous');
 
                 img.src = options.image
+                */
             });
 
 
         },
         calcTwicPics() {
+            const img = this.$el.querySelector('.image');
+
+            //Set image size before calculating crop
+            img.style.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
+            img.style.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
+
             const rectCtn = this.$el.getBoundingClientRect();
-            const rectImg = this.$el.querySelector('.image').getBoundingClientRect();
+            const rectImg = img.getBoundingClientRect();
 
             const z = Math.abs(this.wwObject.content.data.zoom);
             const px = this.wwObject.content.data.position.x;
@@ -900,11 +898,11 @@ export default {
             const h = Math.max(Math.min(1, zh, 1 - y), 0);
 
             //CROP
-            const cx = Math.max(Math.min((0.5 * (1 - 1 / z) * 100) - px, 100), 0);
-            const cy = Math.max(Math.min((0.5 * (1 - 1 / zh) * 100) - py, 100), 0);
+            const cx = Math.floor(Math.max(Math.min((0.5 * (1 - 1 / z) * 100) - px, 100), 0));
+            const cy = Math.floor(Math.max(Math.min((0.5 * (1 - 1 / zh) * 100) - py, 100), 0));
 
-            const cw = Math.round(Math.max(Math.min(100 / z, 100 - cx, w * rectCtn.width * 100 / rectImg.width), 0));
-            const ch = Math.round(Math.max(Math.min(100 / zh, 100 - cy, h * rectCtn.height * 100 / rectImg.height), 0));
+            const cw = Math.ceil(Math.max(Math.min(100 / z, 100 - cx, w * rectCtn.width * 100 / rectImg.width), 0));
+            const ch = Math.ceil(Math.max(Math.min(100 / zh, 100 - cy, h * rectCtn.height * 100 / rectImg.height), 0));
 
             this.wwObject.content.data.crop = cw + 'px' + ch + 'p@' + cx + 'px' + cy + 'p';
             this.wwObject.content.data.pos = {
@@ -913,6 +911,8 @@ export default {
                 width: (w * 100) + '%',
                 height: (h * 100) + '%'
             }
+
+            console.log(rectImg.height, rectCtn.height);
         }
         /* wwManager:end */
     },
@@ -966,8 +966,8 @@ export default {
                 transform: translate(-50%, -50%);
                 // overflow: hidden;
                 /* +2px to avoid white borders */
-                width: 100%;
-                height: 100%;
+                width: calc(100% + 1px);
+                height: calc(100% + 1px);
                 transition: background-color 0.1s ease;
 
                 .hover {
