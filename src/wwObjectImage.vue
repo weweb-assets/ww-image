@@ -26,9 +26,11 @@
                         <!-- wwManager:end -->
                         <!-- wwFront:start -->
                         <!-- Background -->
-                        <div v-if="wwAttrs.wwCategory == 'background'" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :style="_styles.image"></div>
+                        <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :style="_styles.image"></div>
+                        <div v-if="wwAttrs.wwCategory == 'background' && wwAttrs.wwNoTwicPics" class="image bg" :style="_styles.image"></div>
                         <!-- Image -->
-                        <img v-if="wwAttrs.wwCategory != 'background'" class="image twic" :src="placeholderSrc" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" data-src-step="10" :alt="wwObject.alt" :style="_styles.image">
+                        <img v-if="wwAttrs.wwCategory != 'background' && !wwAttrs.wwNoTwicPics" class="image twic" :src="placeholderSrc" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" data-src-step="10" :alt="wwObject.alt" :style="_styles.image">
+                        <img v-if="wwAttrs.wwCategory != 'background' && wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :style="_styles.image">
                         <!-- wwFront:end -->
                     </div>
                 </div>
@@ -113,30 +115,29 @@ export default {
             //IMAGE
             this.styles.image.filter = this.wwObject.content.data.style.filter || null;
 
-            /* wwManager:start */
-            this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
-            this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
-            this.styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
-            if (this.wwAttrs.wwCategory != 'background') {
-                this.styles.image['-webkit-transform'] = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
-                this.styles.image['-moz-transform'] = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
-                this.styles.image['-ms-transform'] = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
-                this.styles.image['-o-transform'] = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
-                this.styles.image.transform = 'translate(' + (this.wwObject.content.data.position.x - 50) + '%, ' + (this.wwObject.content.data.position.y - 50) + '%)';
+            let position
+            if (wwLib.manager || this.wwAttrs.wwNoTwicPics) {
+                this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
+                this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
+                this.styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
+                if (this.wwAttrs.wwCategory != 'background') {
+                    position = this.wwObject.content.data.position || {x:0, y:0}
+                    this.styles.image['-webkit-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                    this.styles.image['-moz-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                    this.styles.image['-ms-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                    this.styles.image['-o-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                    this.styles.image.transform = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                }
             }
-            /* wwManager:end */
-
-            /* wwFront:start */
-            // if (this.wwAttrs.wwCategory == 'background') {
-            //     this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(https://i.twic.pics/v1/crop=' + this.wwObject.content.data.crop + '/resize=10/quality=10/' + this.wwObject.content.data.url + ')' : '';
-            // }
-            if (this.wwAttrs.wwCategory != 'background') {
-                this.styles.image.left = this.wwObject.content.data.pos.left;
-                this.styles.image.top = this.wwObject.content.data.pos.top;
-                this.styles.image.width = this.wwObject.content.data.pos.width;
-                this.styles.image.height = this.wwObject.content.data.pos.height;
+            else {
+                if (this.wwAttrs.wwCategory != 'background') {
+                    position = this.wwObject.content.data.pos || {left: 0, right: 0, top: 0, bottom: 0};
+                    this.styles.image.left = this.wwObject.content.data.pos.left;
+                    this.styles.image.top = this.wwObject.content.data.pos.top;
+                    this.styles.image.width = this.wwObject.content.data.pos.width;
+                    this.styles.image.height = this.wwObject.content.data.pos.height;
+                }
             }
-            /* wwFront:end */
 
 
 
@@ -928,6 +929,7 @@ export default {
     },
     created() {
         this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp.s3.eu-west-3.amazonaws.com', 'cdn.weweb.app');
+        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp-preprod.s3.eu-west-3.amazonaws.com', 'cdn.weweb.dev');
     }
 };
 </script>
@@ -1113,21 +1115,6 @@ export default {
 }
 
 /* wwManager:end */
-
-@media (max-width: 768px) {
-    .controls-desktop {
-        display: none !important;
-    }
-}
-
-@media (min-width: 769px) {
-    .controls-mobile {
-        display: none !important;
-    }
-    .container .ww-video-bg {
-        display: block !important;
-    }
-}
 </style>
 
 <style >

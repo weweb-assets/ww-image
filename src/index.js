@@ -16,6 +16,7 @@ const addComponent = function () {
                         en: "webeo",
                     },
                     position: { x: 0, y: 0 },
+                    pos: {},
                     zoom: 1,
                     style: {
                         borderRadius: 0,
@@ -63,9 +64,10 @@ const addComponent = function () {
                     items: [
                         {
                             name: 'OPTIONS',
+                            main: true,
                             text: {
-                                en: 'Options...',
-                                fr: 'Options...'
+                                en: 'Options',
+                                fr: 'Options'
                             },
                             icon: 'wwi wwi-edit-other',
                             action: 'edit'
