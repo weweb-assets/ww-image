@@ -20,17 +20,17 @@
                     <div class="hover">
                         <!-- wwManager:start -->
                         <!-- Background -->
-                        <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :style="_styles.image"></div>
+                        <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :style="_styles.image" :alt="wwObject.content.data.alt"></div>
                         <!-- Image -->
-                        <img v-if="wwAttrs.wwCategory != 'background'" draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :style="_styles.image">
+                        <img v-if="wwAttrs.wwCategory != 'background'" draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="_styles.image">
                         <!-- wwManager:end -->
                         <!-- wwFront:start -->
                         <!-- Background -->
                         <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :style="_styles.image"></div>
                         <div v-if="wwAttrs.wwCategory == 'background' && wwAttrs.wwNoTwicPics" class="image bg" :style="_styles.image"></div>
                         <!-- Image -->
-                        <img v-if="wwAttrs.wwCategory != 'background' && !wwAttrs.wwNoTwicPics" class="image twic" :src="placeholderSrc" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" data-src-step="10" :alt="wwObject.alt" :style="_styles.image">
-                        <img v-if="wwAttrs.wwCategory != 'background' && wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.alt" :style="_styles.image">
+                        <img v-if="wwAttrs.wwCategory != 'background' && !wwAttrs.wwNoTwicPics" class="image twic" :src="placeholderSrc" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="_styles.image">
+                        <img v-if="wwAttrs.wwCategory != 'background' && wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="_styles.image">
                         <!-- wwFront:end -->
                     </div>
                 </div>
@@ -66,7 +66,6 @@ export default {
                     backgroundImage: '',
                     width: '100%',
                     height: '100%',
-                    minWidth: 'none',
                     minHeight: 'none',
                     top: '50%',
                     left: '50%',
@@ -76,6 +75,7 @@ export default {
                     borderRadius: 0,
                     boxShadow: '',
                     filter: '',
+                    minWidth: '20',
                 },
                 border: {
                     borderRadius: 0,
@@ -121,7 +121,7 @@ export default {
                 this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
                 this.styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
                 if (this.wwAttrs.wwCategory != 'background') {
-                    position = this.wwObject.content.data.position || {x:0, y:0}
+                    position = this.wwObject.content.data.position || { x: 0, y: 0 }
                     this.styles.image['-webkit-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
                     this.styles.image['-moz-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
                     this.styles.image['-ms-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
@@ -131,7 +131,7 @@ export default {
             }
             else {
                 if (this.wwAttrs.wwCategory != 'background') {
-                    position = this.wwObject.content.data.pos || {left: 0, right: 0, top: 0, bottom: 0};
+                    position = this.wwObject.content.data.pos || { left: 0, right: 0, top: 0, bottom: 0 };
                     this.styles.image.left = this.wwObject.content.data.pos.left;
                     this.styles.image.top = this.wwObject.content.data.pos.top;
                     this.styles.image.width = this.wwObject.content.data.pos.width;
@@ -143,6 +143,7 @@ export default {
 
             //FORMAT
             this.styles.format.boxShadow = this.getShadow();
+            this.styles.format.minWidth = this.wwObject.content.data.style.minWidth ? this.wwObject.content.data.style.minWidth + 'px' : '20px';
 
             if (this.wwAttrs.wwCategory != 'background') {
                 this.styles.format.paddingBottom = this.getRatio() + '%';
@@ -174,7 +175,7 @@ export default {
             return this.styles;
         },
         twicTransform() {
-            return 'crop=' + this.wwObject.content.data.crop + '/auto';
+            return 'crop=' + this.wwObject.content.data.crop + '/quality=100/auto';
         },
         loaderSrc() {
             return this.wwObject.content.data.dataUrl;
@@ -609,6 +610,19 @@ export default {
                             shortcut: 'i',
                             next: 'WWIMAGE_SELECT'
                         },
+                        EDIT_IMAGE_ALT: {
+                            title: {
+                                en: '\'Alt\' text',
+                                fr: 'Texte \'Alt\''
+                            },
+                            desc: {
+                                en: 'Description to help blind people and Google SOE',
+                                fr: 'Description pour aider les personnes mal voyantes et le référencement de Google'
+                            },
+                            icon: 'wwi wwi-text',
+                            shortcut: 'a',
+                            next: 'WWIMAGE_ALT'
+                        },
                         EDIT_IMAGE_STYLE: {
                             separator: {
                                 en: 'Style',
@@ -639,6 +653,20 @@ export default {
                             shortcut: 'r',
                             next: 'WWIMAGE_RATIO'
                         },
+                        EDIT_IMAGE_MINWIDTH: {
+                            title: {
+                                en: 'Set image minimum width',
+                                fr: 'Changer la largeur minimale de l\'image'
+                            },
+                            desc: {
+                                en: 'In pixels',
+                                fr: 'En pixels'
+                            },
+                            icon: 'fas fa-arrows-alt-h',
+                            shortcut: 'm',
+                            next: 'WWIMAGE_MINWIDTH'
+                        },
+
                         EDIT_IMAGE_LINK: {
                             separator: {
                                 en: 'Link',
@@ -672,7 +700,7 @@ export default {
                     en: 'Image Ratio',
                     fr: 'Ratio de l\'image'
                 },
-                type: 'wwPopupImageRatio',
+                type: 'wwPopupWwObjectRatio',
                 buttons: {
                     NEXT: {
                         text: {
@@ -688,14 +716,14 @@ export default {
                     en: 'Image style',
                     fr: 'Style de l\'image'
                 },
-                type: 'wwPopupImageStyle',
+                type: 'wwPopupWwObjectStyle',
                 buttons: {
-                    OK: {
+                    NEXT: {
                         text: {
-                            en: 'Ok',
-                            fr: 'Valider'
+                            en: 'Next',
+                            fr: 'Suivant'
                         },
-                        next: false
+                        next: 'WWIMAGE_ALT'
                     }
                 }
             })
@@ -718,6 +746,68 @@ export default {
                     ]
                 }
             })
+            wwLib.wwPopups.addStory('WWIMAGE_ALT', {
+                title: {
+                    en: '\'Alt\' text',
+                    fr: 'Text \'Alt\''
+                },
+                type: 'wwPopupForm',
+                storyData: {
+                    fields: [
+                        {
+                            label: {
+                                en: '\'Alt\' text :',
+                                fr: 'Texte \'Alt\' :'
+                            },
+                            type: 'text',
+                            key: 'altText',
+                            valueData: 'wwObject.content.data.alt',
+                            desc: {
+                                en: 'Short description of the image to help blind people and Google for SOE',
+                                fr: 'Déscription courte de l\'image pour aider les personnes mal voyantes et Google (référencement)'
+                            }
+                        }
+                    ]
+                },
+                buttons: {
+                    OK: {
+                        text: {
+                            en: 'Ok',
+                            fr: 'Valider'
+                        },
+                        next: false
+                    }
+                }
+            })
+            wwLib.wwPopups.addStory('WWIMAGE_MINWIDTH', {
+                title: {
+                    en: 'Minimum width',
+                    fr: 'Largeur minimale'
+                },
+                type: 'wwPopupForm',
+                storyData: {
+                    fields: [
+                        {
+                            label: {
+                                en: 'Min width (px) :',
+                                fr: 'Largeur minimale (px) :'
+                            },
+                            type: 'text',
+                            key: 'minWidth',
+                            valueData: 'wwObject.content.data.style.minWidth'
+                        }
+                    ]
+                },
+                buttons: {
+                    OK: {
+                        text: {
+                            en: 'Ok',
+                            fr: 'Valider'
+                        },
+                        next: false
+                    }
+                }
+            })
 
             let options = {
                 firstPage: 'WWIMAGE_EDIT',
@@ -734,18 +824,22 @@ export default {
                 \================================================================================================*/
                 if (typeof (result.image) != 'undefined') {
                     this.wwObject.content.data.url = result.image;
-
-                    /*
-                    this.resizeImage({
-                        image: this.wwObject.content.data.url,
-                        maxSize: 20,
-                        ratio: this.getRatio(),
-                        zoom: this.wwObject.content.data.zoom,
-                        x: this.wwObject.content.data.position.x,
-                        y: this.wwObject.content.data.position.y
-                    })
-                    */
                 }
+                if (typeof (result.altText) != 'undefined') {
+                    this.wwObject.content.data.alt = result.altText;
+                }
+
+                /*
+                this.resizeImage({
+                    image: this.wwObject.content.data.url,
+                    maxSize: 20,
+                    ratio: this.getRatio(),
+                    zoom: this.wwObject.content.data.zoom,
+                    x: this.wwObject.content.data.position.x,
+                    y: this.wwObject.content.data.position.y
+                })
+                */
+
 
                 /*=============================================m_ÔÔ_m=============================================\
                   STYLE
@@ -776,6 +870,9 @@ export default {
                 }
                 if (typeof (result.maxHeight) != 'undefined') {
                     this.wwObject.content.data.style.maxHeight = result.maxHeight;
+                }
+                if (typeof (result.minWidth) != 'undefined') {
+                    this.wwObject.content.data.style.minWidth = result.minWidth;
                 }
 
                 this.calcTwicPics();
@@ -810,21 +907,21 @@ export default {
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext("2d");
                 const img = document.createElement('img');
-
+     
                 let canvasInfo = {
                     width: 0,
                     height: 0,
                     ratio: 0
                 }
-
+     
                 img.onload = function () {
-
+     
                     try {
-
+     
                         canvasInfo.width = this.width;
                         canvasInfo.height = this.height;
                         canvasInfo.ratio = options.ratio / 100 || this.width / this.height;
-
+     
                         if (canvasInfo.width > options.maxSize) {
                             canvasInfo.height = options.maxSize / canvasInfo.ratio;
                             canvasInfo.width = options.maxSize;
@@ -835,23 +932,23 @@ export default {
                         }
                         canvas.width = canvasInfo.width;
                         canvas.height = canvasInfo.height;
-
+     
                         context.save();
-
+     
                         context.translate(canvas.width / 2, canvas.height / 2);
-
+     
                         const imgSize = {
                             w: options.zoom * canvas.width,
                             h: (options.zoom * canvas.width) * this.height / this.width
                         }
-
+     
                         const origin = {
                             x: (options.x - 50) / 100 * imgSize.w,
                             y: (options.y - 50) / 100 * imgSize.h
                         }
-
+     
                         context.drawImage(img, origin.x, origin.y, imgSize.w, imgSize.h);
-
+     
                         context.restore();
                         return resolve(canvas.toDataURL("image/bmp"));
                     } catch (error) {
@@ -859,13 +956,13 @@ export default {
                         return resolve(null);
                     }
                 }
-
+     
                 img.onerror = function () {
                     return resolve(null);
                 }
-
+     
                 img.setAttribute('crossOrigin', 'anonymous');
-
+     
                 img.src = options.image
                 */
             });
