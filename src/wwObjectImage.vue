@@ -1123,7 +1123,7 @@ export default {
 }
 
 /* wwManager:start */
-.ww-editing .container {
+.ww-editing-content .container {
     cursor: move;
     cursor: grab;
 }
@@ -1199,8 +1199,8 @@ export default {
     transition: opacity 0.15s ease;
 }
 
-.ww-editing .controls-desktop,
-.ww-editing .reset-zoom,
+.ww-editing-content .controls-desktop,
+.ww-editing-content .reset-zoom,
 .controls-desktop.lock {
     display: block;
 }
