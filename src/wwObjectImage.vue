@@ -1010,7 +1010,6 @@ export default {
                 height: (h * 100) + '%'
             }
 
-            console.log(rectImg.height, rectCtn.height);
         }
         /* wwManager:end */
     },
@@ -1123,7 +1122,7 @@ export default {
 }
 
 /* wwManager:start */
-.ww-editing-content .container {
+.ww-edit-mode-content .container {
     cursor: move;
     cursor: grab;
 }
@@ -1199,8 +1198,8 @@ export default {
     transition: opacity 0.15s ease;
 }
 
-.ww-editing-content .controls-desktop,
-.ww-editing-content .reset-zoom,
+.ww-edit-mode-content .controls-desktop,
+.ww-edit-mode-content .reset-zoom,
 .controls-desktop.lock {
     display: block;
 }
