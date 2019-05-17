@@ -18,17 +18,14 @@
                 <div class="border" :style="_styles.border"></div>
                 <div class="container">
                     <div class="hover">
-                        <!-- wwManager:start -->
-                        <!-- Background -->
-                        <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :style="_styles.image" :alt="wwObject.content.data.alt"></div>
+                        <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="focusPoint" :style="_styles.image"></div>
+                        <div v-if="wwAttrs.wwCategory == 'background' && wwAttrs.wwNoTwicPics" class="image bg" :style="_styles.image"></div>
+
                         <!-- Image -->
+                        <!-- wwManager:start -->
                         <img v-if="wwAttrs.wwCategory != 'background'" draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="_styles.image">
                         <!-- wwManager:end -->
                         <!-- wwFront:start -->
-                        <!-- Background -->
-                        <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :style="_styles.image"></div>
-                        <div v-if="wwAttrs.wwCategory == 'background' && wwAttrs.wwNoTwicPics" class="image bg" :style="_styles.image"></div>
-                        <!-- Image -->
                         <img v-if="wwAttrs.wwCategory != 'background' && !wwAttrs.wwNoTwicPics" class="image twic" :src="placeholderSrc" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="_styles.image">
                         <img v-if="wwAttrs.wwCategory != 'background' && wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="_styles.image">
                         <!-- wwFront:end -->
@@ -41,6 +38,11 @@
  
 
 <script>
+/* wwManager:start */
+import wwImagePopupFocusPoint from './wwImagePopupFocusPoint.vue'
+wwLib.wwPopups.addPopup('wwImagePopupFocusPoint', wwImagePopupFocusPoint);
+/* wwManager:end */
+
 export default {
     name: "__COMPONENT_NAME__",
     props: {
@@ -184,6 +186,10 @@ export default {
             return 'https://i.twic.pics/v1/placeholder:1x1:transparent';
             //return 'https://i.twic.pics/v1/crop=' + this.wwObject.content.data.crop + '/resize=10/quality=10/' + this.wwObject.content.data.url
         },
+        focusPoint() {
+            let focusPoint = this.wwObject.content.data.focusPoint || [50, 50];
+            return focusPoint[0] + 'px' + focusPoint[1] + 'p';
+        },
         /* wwManager:start */
         zoomPercentY() {
             return 100 - this.zoomFactor * Math.sqrt(Math.max(this.wwObject.content.data.zoom, 0) - this.zoomMin);
@@ -195,7 +201,7 @@ export default {
     },
     watch: {
     },
-    beforeDestroy: function () {
+    beforeDestroy() {
         this.$el.querySelector('.container').removeEventListener('mousedown', this.startMove);
         this.$el.querySelector('.container').removeEventListener('touchstart', this.startMove);
     },
@@ -230,7 +236,7 @@ export default {
         /*=============================================m_ÔÔ_m=============================================\
           GET PARAMS
         \================================================================================================*/
-        getScale: function () {
+        getScale() {
             var classes = this.$el.classList;
 
             var hasScale = false;
@@ -257,7 +263,7 @@ export default {
 
             return matches[1];
         },
-        getRatio: function () {
+        getRatio() {
             //If ratio is fixed in ww-object directive, override it here
             if (this.wwAttrs.wwFixedRatio) {
                 try {
@@ -322,7 +328,6 @@ export default {
 
             return false;
         },
-
         startZoomDesktop(event) {
             this.lockControls = true;
 
@@ -416,7 +421,6 @@ export default {
         isTouch(event) {
             return event.touches && event.touches.length;
         },
-
         startMove(event) {
 
             if (this.wwObjectCtrl.getSectionCtrl().getEditMode() != 'CONTENT' || this.wwAttrs.wwCategory == 'background') {
@@ -584,6 +588,117 @@ export default {
         async edit() {
             wwLib.wwObjectHover.setLock(this);
 
+            let editOptionsList = {
+                EDIT_IMAGE_SELECT: {
+                    separator: {
+                        en: 'Image',
+                        fr: 'Image'
+                    },
+                    title: {
+                        en: 'Select image',
+                        fr: 'Sélectionner une image'
+                    },
+                    desc: {
+                        en: 'Accepted formats (Max 5Mb) : .png, .jpg, .gif',
+                        fr: 'Formats acceptés (Max 5Mb) : .png, .jpg, .gif'
+                    },
+                    icon: 'wwi wwi-image',
+                    shortcut: 'i',
+                    next: 'WWIMAGE_SELECT'
+                }
+            }
+
+            if (this.wwAttrs.wwCategory == 'background') {
+                editOptionsList.WWIMAGE_FOCUSPOINT = {
+                    title: {
+                        en: 'Background focus point',
+                        fr: 'Point focal pour font'
+                    },
+                    desc: {
+                        en: 'Select a focus point that should always be visible.',
+                        fr: 'Selectionner un point focal qui doit toujours être visible.'
+                    },
+                    icon: 'wwi wwi-show',
+                    shortcut: 'f',
+                    next: 'WWIMAGE_FOCUSPOINT'
+                }
+            }
+
+            editOptionsList.EDIT_IMAGE_ALT = {
+                title: {
+                    en: '\'Alt\' text',
+                    fr: 'Texte \'Alt\''
+                },
+                desc: {
+                    en: 'Description to help blind people and Google SOE',
+                    fr: 'Description pour aider les personnes mal voyantes et le référencement de Google'
+                },
+                icon: 'wwi wwi-text',
+                shortcut: 'a',
+                next: 'WWIMAGE_ALT'
+            }
+            editOptionsList.EDIT_IMAGE_STYLE = {
+                separator: {
+                    en: 'Style',
+                    fr: 'Style'
+                },
+                title: {
+                    en: 'Change image style',
+                    fr: 'Changer l\'apparence de l\'image'
+                },
+                desc: {
+                    en: 'Borders, shadow, ...',
+                    fr: 'Bordures, ombres, ...'
+                },
+                icon: 'wwi wwi-edit-style',
+                shortcut: 's',
+                next: 'WWIMAGE_STYLE'
+            }
+            editOptionsList.EDIT_IMAGE_RATIO = {
+                title: {
+                    en: 'Change image ratio',
+                    fr: 'Changer le ratio de l\'image'
+                },
+                desc: {
+                    en: 'Portrait, square, landscape, ...',
+                    fr: 'Portrait, carré, paysage, ...'
+                },
+                icon: 'wwi wwi-ratio',
+                shortcut: 'r',
+                next: 'WWIMAGE_RATIO'
+            }
+            editOptionsList.EDIT_IMAGE_MINWIDTH = {
+                title: {
+                    en: 'Set image minimum width',
+                    fr: 'Changer la largeur minimale de l\'image'
+                },
+                desc: {
+                    en: 'In pixels',
+                    fr: 'En pixels'
+                },
+                icon: 'fas fa-arrows-alt-h',
+                shortcut: 'm',
+                next: 'WWIMAGE_MINWIDTH'
+            }
+            editOptionsList.EDIT_IMAGE_LINK = {
+                separator: {
+                    en: 'Link',
+                    fr: 'Lien'
+                },
+                title: {
+                    en: 'Change image link',
+                    fr: 'Changer le lien de l\'image'
+                },
+                desc: {
+                    en: 'External, internal, ...',
+                    fr: 'Externe, interne, ...'
+                },
+                icon: 'wwi wwi-link-external',
+                shortcut: 's',
+                next: 'WWIMAGE_LINKS'
+            }
+
+
             wwLib.wwPopups.addStory('WWIMAGE_EDIT', {
                 title: {
                     en: 'Edit Image',
@@ -592,99 +707,7 @@ export default {
                 type: 'wwPopupEditWwObject',
                 buttons: null,
                 storyData: {
-                    list: {
-                        EDIT_IMAGE_SELECT: {
-                            separator: {
-                                en: 'Image',
-                                fr: 'Image'
-                            },
-                            title: {
-                                en: 'Select image',
-                                fr: 'Sélectionner une image'
-                            },
-                            desc: {
-                                en: 'Accepted formats (Max 5Mb) : .png, .jpg, .gif',
-                                fr: 'Formats acceptés (Max 5Mb) : .png, .jpg, .gif'
-                            },
-                            icon: 'wwi wwi-image',
-                            shortcut: 'i',
-                            next: 'WWIMAGE_SELECT'
-                        },
-                        EDIT_IMAGE_ALT: {
-                            title: {
-                                en: '\'Alt\' text',
-                                fr: 'Texte \'Alt\''
-                            },
-                            desc: {
-                                en: 'Description to help blind people and Google SOE',
-                                fr: 'Description pour aider les personnes mal voyantes et le référencement de Google'
-                            },
-                            icon: 'wwi wwi-text',
-                            shortcut: 'a',
-                            next: 'WWIMAGE_ALT'
-                        },
-                        EDIT_IMAGE_STYLE: {
-                            separator: {
-                                en: 'Style',
-                                fr: 'Style'
-                            },
-                            title: {
-                                en: 'Change image style',
-                                fr: 'Changer l\'apparence de l\'image'
-                            },
-                            desc: {
-                                en: 'Borders, shadow, ...',
-                                fr: 'Bordures, ombres, ...'
-                            },
-                            icon: 'wwi wwi-edit-style',
-                            shortcut: 's',
-                            next: 'WWIMAGE_STYLE'
-                        },
-                        EDIT_IMAGE_RATIO: {
-                            title: {
-                                en: 'Change image ratio',
-                                fr: 'Changer le ratio de l\'image'
-                            },
-                            desc: {
-                                en: 'Portrait, square, landscape, ...',
-                                fr: 'Portrait, carré, paysage, ...'
-                            },
-                            icon: 'wwi wwi-ratio',
-                            shortcut: 'r',
-                            next: 'WWIMAGE_RATIO'
-                        },
-                        EDIT_IMAGE_MINWIDTH: {
-                            title: {
-                                en: 'Set image minimum width',
-                                fr: 'Changer la largeur minimale de l\'image'
-                            },
-                            desc: {
-                                en: 'In pixels',
-                                fr: 'En pixels'
-                            },
-                            icon: 'fas fa-arrows-alt-h',
-                            shortcut: 'm',
-                            next: 'WWIMAGE_MINWIDTH'
-                        },
-
-                        EDIT_IMAGE_LINK: {
-                            separator: {
-                                en: 'Link',
-                                fr: 'Lien'
-                            },
-                            title: {
-                                en: 'Change image link',
-                                fr: 'Changer le lien de l\'image'
-                            },
-                            desc: {
-                                en: 'External, internal, ...',
-                                fr: 'Externe, interne, ...'
-                            },
-                            icon: 'wwi wwi-link-external',
-                            shortcut: 's',
-                            next: 'WWIMAGE_LINKS'
-                        }
-                    }
+                    list: editOptionsList
                 }
             })
             wwLib.wwPopups.addStory('WWIMAGE_SELECT', {
@@ -808,6 +831,24 @@ export default {
                     }
                 }
             })
+            wwLib.wwPopups.addStory('WWIMAGE_FOCUSPOINT', {
+                title: {
+                    en: 'Background focus point',
+                    fr: 'Point focal pour le font'
+                },
+                type: 'wwImagePopupFocusPoint',
+                storyData: {
+                },
+                buttons: {
+                    OK: {
+                        text: {
+                            en: 'Ok',
+                            fr: 'Valider'
+                        },
+                        next: false
+                    }
+                }
+            })
 
             let options = {
                 firstPage: 'WWIMAGE_EDIT',
@@ -827,6 +868,9 @@ export default {
                 }
                 if (typeof (result.altText) != 'undefined') {
                     this.wwObject.content.data.alt = result.altText;
+                }
+                if (typeof (result.focusPoint) != 'undefined') {
+                    this.wwObject.content.data.focusPoint = result.focusPoint;
                 }
 
                 /*

@@ -28,7 +28,7 @@ const addComponent = function () {
                             b: 0,
                             s: 0,
                             c: ''
-                        },
+                        }
                     },
                     animation: {
                         duration: 0,
@@ -47,7 +47,8 @@ const addComponent = function () {
                     hover: {
                         name: '',
                         options: {}
-                    }
+                    },
+                    focusPoint: [50, 50]
                 }
             },
             upsales: {
