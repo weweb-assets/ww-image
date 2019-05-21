@@ -18,6 +18,7 @@
                 <div class="border" :style="_styles.border"></div>
                 <div class="container">
                     <div class="hover">
+                        <!-- TO DO : data-background-transform="quality=85" -->
                         <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="focusPoint" :style="_styles.image"></div>
                         <div v-if="wwAttrs.wwCategory == 'background' && wwAttrs.wwNoTwicPics" class="image bg" :style="_styles.image"></div>
 
@@ -177,7 +178,7 @@ export default {
             return this.styles;
         },
         twicTransform() {
-            return 'crop=' + this.wwObject.content.data.crop + '/quality=100/auto';
+            return 'crop=' + this.wwObject.content.data.crop + '/quality=85/auto';
         },
         loaderSrc() {
             return this.wwObject.content.data.dataUrl;
