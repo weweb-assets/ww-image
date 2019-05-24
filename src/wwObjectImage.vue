@@ -15,11 +15,10 @@
             </div>
             <!-- wwManager:end -->
             <div class="format" :style="_styles.format">
-                <div class="border" :style="_styles.border"></div>
                 <div class="container">
                     <div class="hover">
                         <!-- TO DO : data-background-transform="quality=85" -->
-                        <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="focusPoint" :style="_styles.image"></div>
+                        <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="focusPoint" data-background-transform="auto/quality=85" :style="_styles.image"></div>
                         <div v-if="wwAttrs.wwCategory == 'background' && wwAttrs.wwNoTwicPics" class="image bg" :style="_styles.image"></div>
 
                         <!-- Image -->
@@ -33,6 +32,7 @@
                     </div>
                 </div>
             </div>
+            <div class="border" :style="_styles.border"></div>
         </div>
     </div>
 </template>
@@ -1085,22 +1085,22 @@ export default {
 
     .wrapper {
         width: 100%;
+        position: relative;
+
+        .border {
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            pointer-events: none;
+        }
 
         .format {
             width: 100%;
             height: 100%;
             position: relative;
             overflow: hidden;
-
-            .border {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                z-index: 1;
-                pointer-events: none;
-            }
 
             .container {
                 position: absolute;
