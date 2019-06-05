@@ -157,7 +157,8 @@ export default {
 
 
             //BORDER
-            const borderRadius = ((this.wwObject.content.data.style.borderRadius || 0) / 100 * w) + 'px';
+            const unit = this.wwObject.content.data.style.borderRadiusUnit || '%';
+            const borderRadius = (this.wwObject.content.data.style.borderRadius / (unit == '%' ? 2 : 1) || 0) + unit;
             this.styles.border.borderRadius = borderRadius;
             this.styles.format.borderRadius = borderRadius;
 
@@ -893,7 +894,10 @@ export default {
                     this.wwObject.content.data.style.borderColor = result.borderColor;
                 }
                 if (typeof (result.borderRadius) != 'undefined') {
-                    this.wwObject.content.data.style.borderRadius = result.borderRadius / 2;
+                    this.wwObject.content.data.style.borderRadius = result.borderRadius;
+                }
+                if (typeof (result.borderRadiusUnit) != 'undefined') {
+                    this.wwObject.content.data.style.borderRadiusUnit = result.borderRadiusUnit;
                 }
                 if (typeof (result.borderStyle) != 'undefined') {
                     this.wwObject.content.data.style.borderStyle = result.borderStyle;
