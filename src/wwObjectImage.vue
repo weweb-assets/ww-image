@@ -179,7 +179,8 @@ export default {
             return this.styles;
         },
         twicTransform() {
-            return 'crop=' + this.wwObject.content.data.crop + '/quality=85/auto';
+            //TODO: Correct crop when it's 99 instead of 100.
+            return this.wwObject.content.data.crop ? 'crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/quality=85/auto' : '';
         },
         loaderSrc() {
             return this.wwObject.content.data.dataUrl;
@@ -192,13 +193,13 @@ export default {
             let focusPoint = this.wwObject.content.data.focusPoint || [50, 50];
             return focusPoint[0] + 'px' + focusPoint[1] + 'p';
         },
+        editing() {
+            return this.wwObjectCtrl.getSectionCtrl().getEditMode() == 'CONTENT';
+        },
         /* wwManager:start */
         zoomPercentY() {
             return 100 - this.zoomFactor * Math.sqrt(Math.max(this.wwObject.content.data.zoom, 0) - this.zoomMin);
         },
-        editing() {
-            return this.wwObjectCtrl.getSectionCtrl().getEditMode() == 'CONTENT';
-        }
         /* wwManager:end */
     },
     watch: {
@@ -213,18 +214,14 @@ export default {
             this.loadImage();
         },
         loadImage() {
-            /*
-            this.imageLoaded = false;
-
-            const self = this;
-
+            /* wwManager:start */
             var wwHiddenLoadImg = new Image();
-            wwHiddenLoadImg.onload = function () {
-                self.imageLoaded = true;
-                self.$emit('ww-loaded', self);
+            wwHiddenLoadImg.onload = () => {
+                this.calcTwicPics();
+                this.wwObjectCtrl.update(this.wwObject);
             };
             wwHiddenLoadImg.src = this.wwObject.content.data.url;
-            */
+            /* wwManager:end */
         },
         preventEvent(event) {
             if (!this.isTouch(event)) {
@@ -1045,11 +1042,13 @@ export default {
             const h = Math.max(Math.min(1, zh, 1 - y), 0);
 
             //CROP
-            const cx = Math.floor(Math.max(Math.min((0.5 * (1 - 1 / z) * 100) - px, 100), 0));
-            const cy = Math.floor(Math.max(Math.min((0.5 * (1 - 1 / zh) * 100) - py, 100), 0));
+            const _cx = Math.max(Math.min((0.5 * (1 - 1 / z) * 100) - px, 100), 0);
+            const _cy = Math.max(Math.min((0.5 * (1 - 1 / zh) * 100) - py, 100), 0);
+            const cx = Math.floor(_cx);
+            const cy = Math.floor(_cy);
 
-            const cw = Math.ceil(Math.max(Math.min(100 / z, 100 - cx, w * rectCtn.width * 100 / rectImg.width), 0));
-            const ch = Math.ceil(Math.max(Math.min(100 / zh, 100 - cy, h * rectCtn.height * 100 / rectImg.height), 0));
+            const cw = Math.ceil(Math.max(Math.min(100 / z, 100 - _cx, w * rectCtn.width * 100 / rectImg.width), 0));
+            const ch = Math.ceil(Math.max(Math.min(100 / zh, 100 - _cy, h * rectCtn.height * 100 / rectImg.height), 0));
 
             this.wwObject.content.data.crop = cw + 'px' + ch + 'p@' + cx + 'px' + cy + 'p';
             this.wwObject.content.data.pos = {
@@ -1058,7 +1057,6 @@ export default {
                 width: (w * 100) + '%',
                 height: (h * 100) + '%'
             }
-
         }
         /* wwManager:end */
     },
@@ -1073,8 +1071,12 @@ export default {
         /* wwManager:end */
     },
     created() {
+        let u = this.wwObject.content.data.url;
         this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp.s3.eu-west-3.amazonaws.com', 'cdn.weweb.app');
         this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp-preprod.s3.eu-west-3.amazonaws.com', 'cdn.weweb.dev');
+        if (u != this.wwObject.content.data.url) {
+            this.wwObjectCtrl.update(this.wwObject);
+        }
     }
 };
 </script>
