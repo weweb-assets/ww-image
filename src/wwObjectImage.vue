@@ -217,8 +217,10 @@ export default {
             /* wwManager:start */
             var wwHiddenLoadImg = new Image();
             wwHiddenLoadImg.onload = () => {
-                this.calcTwicPics();
-                this.wwObjectCtrl.update(this.wwObject);
+                if (!this.wwObject.content.data.crop) {
+                    this.calcTwicPics();
+                    this.wwObjectCtrl.update(this.wwObject);
+                }
             };
             wwHiddenLoadImg.src = this.wwObject.content.data.url;
             /* wwManager:end */
