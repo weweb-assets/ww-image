@@ -30,7 +30,7 @@
                     <!-- wwManager:end -->
                     <!-- wwFront:start -->
                     <span class="img-front">
-                        <img v-if="!wwAttrs.wwNoTwicPics" class="image twic" src="https://i.twic.pics/v1/placeholder:1x1:transparent" :data-src="wwObject.content.data.url" :data-src-transform="c_twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image">
+                        <img v-if="!wwAttrs.wwNoTwicPics" class="image twic" :src="c_twicTransformPlaceholder" :data-src="wwObject.content.data.url" :data-src-transform="c_twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image">
                         <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image">
                     </span>
                     <!-- wwFront:end -->
@@ -194,7 +194,24 @@ export default {
                 crop.cx = Math.max(0, crop.cx || 0);
                 crop.cy = Math.max(0, crop.cy || 0);
 
-                return 'crop=' + crop.cw + 'px' + crop.ch + 'p@' + crop.cx + 'px' + crop.cy + 'p';
+                return 'crop=' + crop.cw + 'px' + crop.ch + 'p@' + crop.cx + 'px' + crop.cy + 'p/quality=85/auto';
+            }
+        },
+        c_twicTransformPlaceholder() {
+            if (typeof (this.wwObject.content.data.crop) == 'string') {
+                if (!this.wwObject.content.data.crop || this.wwObject.content.data.crop.indexOf('NaN') !== -1) {
+                    return 'https://i.twic.pics/v1/cover/resize=20/' + this.wwObject.content.data.url;
+                }
+                return 'https://i.twic.pics/v1/crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/resize=20/' + this.wwObject.content.data.url;
+            }
+            else {
+                const crop = this.wwObject.content.data.crop || {};
+                crop.cw = Math.max(0, (crop.cw) || 100);
+                crop.ch = Math.max(0, (crop.ch) || 100);
+                crop.cx = Math.max(0, crop.cx || 0);
+                crop.cy = Math.max(0, crop.cy || 0);
+
+                return 'https://i.twic.pics/v1/crop=' + crop.cw + 'px' + crop.ch + 'p@' + crop.cx + 'px' + crop.cy + 'p/resize=20/' + this.wwObject.content.data.url;
             }
         },
         c_focusPoint() {
@@ -306,8 +323,10 @@ export default {
                 this.wwObject.content.data.zoom = rationContainer / ratio;
             }
 
-            this.calcTwicPics();
-            this.wwObjectCtrl.update(this.wwObject);
+            this.$nextTick(() => {
+                this.calcTwicPics();
+                this.wwObjectCtrl.update(this.wwObject);
+            })
 
             return false;
         },
@@ -894,13 +913,14 @@ export default {
                     this.wwObject.content.data.style.minWidth = result.minWidth;
                 }
 
-                this.calcTwicPics();
-                this.wwObjectCtrl.update(this.wwObject);
+                this.$nextTick(() => {
+                    this.calcTwicPics();
+                    this.wwObjectCtrl.update(this.wwObject);
 
-                this.wwObjectCtrl.globalEdit(result);
+                    this.wwObjectCtrl.globalEdit(result);
 
-                this.loadImage();
-
+                    this.loadImage();
+                });
 
             } catch (error) {
                 console.log(error);
