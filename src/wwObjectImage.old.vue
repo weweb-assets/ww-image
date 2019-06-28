@@ -1,11 +1,11 @@
 <template>
     <div class="ww-image" :class="{'bg': wwAttrs.wwCategory == 'background'}">
-        <div class="wrapper" :style="c_styles.wrapper">
+        <div class="wrapper" :style="_styles.wrapper">
             <!-- wwManager:start -->
-            <div class="controls-desktop" :class="{'lock': d_lockControls}">
+            <div class="controls-desktop" :class="{'lock': lockControls}">
                 <div class="zoom-bar">
                     <div class="zoom-line"></div>
-                    <div class="zoom-handle" :style="{'top' : c_zoomPercentY + '%'}" @mousedown="startZoomDesktop($event)">
+                    <div class="zoom-handle" :style="{'top' : zoomPercentY + '%'}" @mousedown="startZoomDesktop($event)">
                         <div></div>
                     </div>
                 </div>
@@ -14,29 +14,29 @@
                 <i class="fa fa-expand" aria-hidden="true"></i>
             </div>
             <!-- wwManager:end -->
-            <div class="format" :style="c_styles.format">
-                <!-- Background -->
-                <div class="container" v-if="wwAttrs.wwCategory == 'background'">
-                    <div v-if="!wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="c_focusPoint" data-background-transform="auto/quality=85" :style="c_styles.image"></div>
-                    <div v-if="wwAttrs.wwNoTwicPics" class="image bg" :style="c_styles.image"></div>
-                </div>
+            <div class="format" :style="_styles.format">
+                <div class="container">
+                    <!-- Background -->
+                    <div class="hover" v-if="wwAttrs.wwCategory == 'background'">
+                        <div v-if="!wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="focusPoint" data-background-transform="auto/quality=85" :style="_styles.image"></div>
+                        <div v-if="wwAttrs.wwNoTwicPics" class="image bg" :style="_styles.image"></div>
+                    </div>
 
-                <!-- Image Manager -->
-                <div class="container" v-if="wwAttrs.wwCategory != 'background'">
-                    <!-- wwManager:start -->
-                    <span class="img-manager">
-                        <img draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image">
-                    </span>
-                    <!-- wwManager:end -->
-                    <!-- wwFront:start -->
-                    <span class="img-front">
-                        <img v-if="!wwAttrs.wwNoTwicPics" class="image twic" src="https://i.twic.pics/v1/placeholder:1x1:transparent" :data-src="wwObject.content.data.url" :data-src-transform="c_twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image">
-                        <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image">
-                    </span>
-                    <!-- wwFront:end -->
+                    <!-- Image Manager -->
+                    <div class="hover" v-if="wwAttrs.wwCategory != 'background'">
+                        <!-- wwManager:start -->
+                        <span class="img-manager" v-show="editing">
+                            <img draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="_styles.image">
+                        </span>
+                        <!-- wwManager:end -->
+                        <span class="img-front" v-show="!editing">
+                            <img v-if="!wwAttrs.wwNoTwicPics" class="image twic" :src="placeholderSrc" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="_styles.image">
+                            <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="_styles.image">
+                        </span>
+                    </div>
                 </div>
             </div>
-            <div class="border" :style="c_styles.border"></div>
+            <div class="border" :style="_styles.border"></div>
         </div>
     </div>
 </template>
@@ -59,30 +59,16 @@ export default {
     },
     data() {
         return {
-            d_zoomMin: 0.2,
-            d_zoomFactor: 1,
-            d_el: null,
+            wwControlsElements: {},
+            imageLoaded: true,
+            zoomMin: 0.2,
+            zoomFactor: 1,
+            el: null,
 
-            /* wwManager:start */
-            d_lastMovePosition: { x: 0, y: 0 },
-            d_moving: false,
-            d_lastTouchDist: 0,
-            d_zoomBarElement: null,
-            d_lockControls: false,
-            d_moveDirection: null,
-            /* wwManager:end */
-        };
-    },
-    computed: {
-        wwObject() {
-            return this.wwObjectCtrl.get();
-        },
-        c_styles() {
-            if (!this.d_el) {
-                return {}
-            }
-
-            const styles = {
+            /*=============================================m_ÔÔ_m=============================================\
+              STYLES
+            \================================================================================================*/
+            styles: {
                 image: {
                     backgroundImage: '',
                     width: '100%',
@@ -90,7 +76,6 @@ export default {
                     minHeight: 'none',
                     top: '50%',
                     left: '50%',
-                    filter: 'none'
                 },
                 format: {
                     paddingBottom: '',
@@ -109,111 +94,130 @@ export default {
                 wrapper: {
                     width: null
                 }
+            },
+
+            /* wwManager:start */
+            lastMovePosition: { x: 0, y: 0 },
+            moving: false,
+            lastTouchDist: 0,
+            zoomBarElement: null,
+            lockControls: false,
+            moveDirection: null,
+            /* wwManager:end */
+        };
+    },
+    computed: {
+        wwObject() {
+            return this.wwObjectCtrl.get();
+        },
+        _styles() {
+            if (!this.el) {
+                return {}
             }
+
+            const w = this.$el.getBoundingClientRect().width;
 
             this.wwObject.content.data.style = this.wwObject.content.data.style || {}
 
             //IMAGE
-            styles.image.filter = this.wwObject.content.data.style.filter || null;
+            this.styles.image.filter = this.wwObject.content.data.style.filter || null;
 
-            if (wwLib.manager || this.wwAttrs.wwNoTwicPics) {
-                styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
-                styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
-                styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
+            if (this.editing || this.wwAttrs.wwNoTwicPics) {
+                this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
+                this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
+                this.styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
                 if (this.wwAttrs.wwCategory != 'background') {
                     let position = this.wwObject.content.data.position || { x: 0, y: 0 }
-                    styles.image.left = '50%';
-                    styles.image.top = '50%';
-                    styles.image['-webkit-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                    styles.image['-moz-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                    styles.image['-ms-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                    styles.image['-o-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                    styles.image.transform = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                    this.styles.image.left = '50%';
+                    this.styles.image.top = '50%';
+                    this.styles.image['-webkit-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                    this.styles.image['-moz-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                    this.styles.image['-ms-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                    this.styles.image['-o-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                    this.styles.image.transform = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
                 }
             }
-            else if (this.wwAttrs.wwCategory != 'background') {
-                let defaultPosition = { left: '0px', top: '0px', width: '100%', height: '100%' };
-                let position = this.wwObject.content.data.pos;
+            else {
+                if (this.wwAttrs.wwCategory != 'background') {
+                    let defaultPosition = { left: '0px', top: '0px', width: '100%', height: '100%' };
+                    let position = this.wwObject.content.data.pos;
 
-                styles.image.left = position.left || defaultPosition.left;
-                styles.image.top = position.top || defaultPosition.top;
-                styles.image.width = position.width && position.width != "0%" ? position.width : defaultPosition.width;
-                styles.image.height = position.height && position.height != "0%" ? position.height : defaultPosition.height;
-                styles.image['-webkit-transform'] = 'none';
-                styles.image['-moz-transform'] = 'none';
-                styles.image['-ms-transform'] = 'none';
-                styles.image['-o-transform'] = 'none';
-                styles.image.transform = 'none';
+                    this.styles.image.left = position.left || defaultPosition.left;
+                    this.styles.image.top = position.top || defaultPosition.top;
+                    this.styles.image.width = position.width && position.width != "0%" ? position.width : defaultPosition.width;
+                    this.styles.image.height = position.height && position.height != "0%" ? position.height : defaultPosition.height;
+                    this.styles.image['-webkit-transform'] = 'none';
+                    this.styles.image['-moz-transform'] = 'none';
+                    this.styles.image['-ms-transform'] = 'none';
+                    this.styles.image['-o-transform'] = 'none';
+                    this.styles.image.transform = 'none';
+
+                }
             }
+
+
 
             //FORMAT
-            styles.format.boxShadow = this.getShadow();
-            styles.format.minWidth = this.wwObject.content.data.style.minWidth ? this.wwObject.content.data.style.minWidth + 'px' : '20px';
+            this.styles.format.boxShadow = this.getShadow();
+            this.styles.format.minWidth = this.wwObject.content.data.style.minWidth ? this.wwObject.content.data.style.minWidth + 'px' : '20px';
 
             if (this.wwAttrs.wwCategory != 'background') {
-                styles.format.paddingBottom = this.getRatio() + '%';
+                this.styles.format.paddingBottom = this.getRatio() + '%';
             }
             else {
-                styles.format.paddingBottom = 0;
+                this.styles.format.paddingBottom = 0;
             }
 
 
             //BORDER
             const unit = this.wwObject.content.data.style.borderRadiusUnit || '%';
             const borderRadius = (this.wwObject.content.data.style.borderRadius / (unit == '%' ? 2 : 1) || 0) + unit;
-            styles.border.borderRadius = borderRadius;
-            styles.format.borderRadius = borderRadius;
+            this.styles.border.borderRadius = borderRadius;
+            this.styles.format.borderRadius = borderRadius;
 
-            styles.border.borderWidth = (this.wwObject.content.data.style.borderWidth || 0) + 'px';
+            this.styles.border.borderWidth = (this.wwObject.content.data.style.borderWidth || 0) + 'px';
 
-            styles.border.borderColor = this.wwObject.content.data.style.borderColor || 'black';
-            styles.border.borderStyle = this.wwObject.content.data.style.borderStyle || 'none';
-            styles.border.background = this.wwObject.content.data.style.overlay || '';
+            this.styles.border.borderColor = this.wwObject.content.data.style.borderColor || 'black';
+            this.styles.border.borderStyle = this.wwObject.content.data.style.borderStyle || 'none';
+            this.styles.border.background = this.wwObject.content.data.style.overlay || '';
 
             //WRAPPER
             if (this.wwObject.content.data.style.maxHeight) {
-                styles.wrapper.width = (parseInt(this.wwObject.content.data.style.maxHeight) / this.getRatio() * 100) + 'px';
+                this.styles.wrapper.width = (parseInt(this.wwObject.content.data.style.maxHeight) / this.getRatio() * 100) + 'px';
             } else {
-                styles.wrapper.width = null;
+                this.styles.wrapper.width = null;
             }
 
 
-            return styles;
+            return this.styles;
         },
-        c_twicTransform() {
-            if (typeof (this.wwObject.content.data.crop) == 'string') {
-                if (!this.wwObject.content.data.crop || this.wwObject.content.data.crop.indexOf('NaN') !== -1) {
-                    return 'cover/quality=85/auto';
-                }
-                return 'crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/quality=85/auto';
-            }
-            else {
-                const crop = this.wwObject.content.data.crop || {};
-                crop.cw = Math.max(0, (crop.cw) || 100);
-                crop.ch = Math.max(0, (crop.ch) || 100);
-                crop.cx = Math.max(0, crop.cx || 0);
-                crop.cy = Math.max(0, crop.cy || 0);
-
-                return 'crop=' + crop.cw + 'px' + crop.ch + 'p@' + crop.cx + 'px' + crop.cy + 'p';
-            }
+        twicTransform() {
+            //TODO: Correct crop when it's 99 instead of 100.
+            return this.wwObject.content.data.crop && this.wwObject.content.data.crop.indexOf('NaN') === -1 ? 'crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/quality=85/auto' : '';
         },
-        c_focusPoint() {
+        loaderSrc() {
+            return this.wwObject.content.data.dataUrl;
+        },
+        placeholderSrc() {
+            return 'https://i.twic.pics/v1/placeholder:1x1:transparent';
+            //return 'https://i.twic.pics/v1/crop=' + this.wwObject.content.data.crop + '/resize=10/quality=10/' + this.wwObject.content.data.url
+        },
+        focusPoint() {
             let focusPoint = this.wwObject.content.data.focusPoint || [50, 50];
             return focusPoint[0] + 'px' + focusPoint[1] + 'p';
         },
-        c_editing() {
+        editing() {
             return this.wwObjectCtrl.getSectionCtrl().getEditMode() == 'CONTENT';
         },
-
         /* wwManager:start */
-        c_zoomPercentY() {
-            return 100 - this.d_zoomFactor * Math.sqrt(Math.max(this.wwObject.content.data.zoom, 0) - this.d_zoomMin);
+        zoomPercentY() {
+            return 100 - this.zoomFactor * Math.sqrt(Math.max(this.wwObject.content.data.zoom, 0) - this.zoomMin);
         },
         /* wwManager:end */
     },
     watch: {
-        c_editing() {
-            if (this.c_editing) {
+        editing() {
+            if (this.editing) {
                 this.checkRecalcTwicPics();
             }
         }
@@ -224,7 +228,7 @@ export default {
     },
     methods: {
         init() {
-            this.d_zoomFactor = Math.sqrt(100 * 100 / (10 - this.d_zoomMin));
+            this.zoomFactor = Math.sqrt(100 * 100 / (10 - this.zoomMin));
             this.loadImage();
         },
         loadImage() {
@@ -246,6 +250,33 @@ export default {
         /*=============================================m_ÔÔ_m=============================================\
           GET PARAMS
         \================================================================================================*/
+        getScale() {
+            var classes = this.$el.classList;
+
+            var hasScale = false;
+
+            for (let i = 0; i < classes.length; i++) {
+                if (classes[i].indexOf("ww-anim-") === 0) {
+                    hasScale = true;
+                }
+            }
+
+            if (!hasScale) {
+                return 1;
+            }
+
+            var matrixRegex = /matrix\((-?\d*\.?\d+),\s*0,\s*0,\s*(-?\d*\.?\d+),\s*0,\s*0\)/;
+
+            var matrix = this.$el.style.transform;
+
+            var matches = matrix.match(matrixRegex);
+
+            if (!matches || matches.length < 1 || !matches[1]) {
+                return 1;
+            }
+
+            return matches[1];
+        },
         getRatio() {
             //If ratio is fixed in ww-object directive, override it here
             if (this.wwAttrs.wwFixedRatio) {
@@ -312,11 +343,11 @@ export default {
             return false;
         },
         startZoomDesktop(event) {
-            this.d_lockControls = true;
+            this.lockControls = true;
 
             wwLib.wwObjectHover.setLock(this);
 
-            this.d_zoomBarElement = this.$el.querySelector('.zoom-bar');
+            this.zoomBarElement = this.$el.querySelector('.zoom-bar');
 
             window.addEventListener("mousemove", this.zoomDesktop);
             window.addEventListener("mouseup", this.stopZoomDesktop);
@@ -329,11 +360,11 @@ export default {
         },
         zoomDesktop(event) {
 
-            let zoomPositionY = (event.clientY - this.d_zoomBarElement.getBoundingClientRect().top) * 100 / this.d_zoomBarElement.getBoundingClientRect().height;
+            let zoomPositionY = (event.clientY - this.zoomBarElement.getBoundingClientRect().top) * 100 / this.zoomBarElement.getBoundingClientRect().height;
             zoomPositionY = Math.min(Math.max(zoomPositionY, 0), 100);
 
 
-            this.wwObject.content.data.zoom = Math.pow((100 - zoomPositionY) / this.d_zoomFactor, 2) + this.d_zoomMin;
+            this.wwObject.content.data.zoom = Math.pow((100 - zoomPositionY) / this.zoomFactor, 2) + this.zoomMin;
 
             this.preventEvent(event);
 
@@ -343,7 +374,7 @@ export default {
             return false;
         },
         stopZoomDesktop(event) {
-            this.d_lockControls = false;
+            this.lockControls = false;
 
             wwLib.wwObjectHover.removeLock();
 
@@ -414,10 +445,10 @@ export default {
                 return;
             }
 
-            this.d_moving = false;
+            this.moving = false;
 
-            this.d_lastMovePosition = this.getEventPosition(event);
-            if (this.d_lastMovePosition) {
+            this.lastMovePosition = this.getEventPosition(event);
+            if (this.lastMovePosition) {
 
                 wwLib.getFrontDocument().addEventListener("mousemove", this.move);
                 wwLib.getManagerDocument().addEventListener("mousemove", this.move);
@@ -446,28 +477,28 @@ export default {
                 return;
             }
 
-            var offsetXpx = position.x - this.d_lastMovePosition.x;
-            var offsetYpx = position.y - this.d_lastMovePosition.y;
+            var offsetXpx = position.x - this.lastMovePosition.x;
+            var offsetYpx = position.y - this.lastMovePosition.y;
 
-            if (!this.d_moving && Math.abs(offsetXpx) + Math.abs(offsetYpx) < 4) {
+            if (!this.moving && Math.abs(offsetXpx) + Math.abs(offsetYpx) < 4) {
                 return;
             }
 
-            this.d_moving = true;
+            this.moving = true;
 
-            if (this.d_moveDirection == 'x') {
+            if (this.moveDirection == 'x') {
                 offsetYpx = 0;
             }
-            else if (this.d_moveDirection == 'y') {
+            else if (this.moveDirection == 'y') {
                 offsetXpx = 0;
             }
             else if (wwLib.wwShortcuts.hasModifiers('SHIFT') && Math.abs(offsetXpx) > Math.abs(offsetYpx)) {
                 offsetYpx = 0;
-                this.d_moveDirection = 'x';
+                this.moveDirection = 'x';
             }
             else if (wwLib.wwShortcuts.hasModifiers('SHIFT')) {
                 offsetXpx = 0;
-                this.d_moveDirection = 'y';
+                this.moveDirection = 'y';
             }
 
             var offsetXpercent = offsetXpx * 100 / this.$el.querySelector('.container').getBoundingClientRect().width;
@@ -479,35 +510,36 @@ export default {
             if (this.isTouch(event)) {
                 const touchDist = this.getTouchDist(event);
 
-                this.wwObject.content.data.zoom += (touchDist - this.d_lastTouchDist) / 100 * (this.wwObject.content.data.zoom === 0 ? 1 : this.wwObject.content.data.zoom);
+                this.wwObject.content.data.zoom += (touchDist - this.lastTouchDist) / 100 * (this.wwObject.content.data.zoom === 0 ? 1 : this.wwObject.content.data.zoom);
 
-                if (this.wwObject.content.data.zoom < this.d_zoomMin) {
-                    this.wwObject.content.data.zoom = this.d_zoomMin;
+                if (this.wwObject.content.data.zoom < this.zoomMin) {
+                    this.wwObject.content.data.zoom = this.zoomMin;
                 }
                 if (this.wwObject.content.data.zoom > 10) {
                     this.wwObject.content.data.zoom = 10;
                 }
 
-                this.d_lastTouchDist = touchDist;
+                this.lastTouchDist = touchDist;
             }
 
-            this.d_lastMovePosition.x = position.x;
-            this.d_lastMovePosition.y = position.y;
+            this.lastMovePosition.x = position.x;
+            this.lastMovePosition.y = position.y;
 
             this.preventEvent(event);
+
             this.calcTwicPics();
             this.wwObjectCtrl.update(this.wwObject);
 
         },
         stopMove(event) {
 
-            if (this.d_moving) {
+            if (this.moving) {
                 wwLib.wwObjectMenu.preventOpen();
             }
 
-            this.d_lockControls = false;
+            this.lockControls = false;
 
-            this.d_moving = false;
+            this.moving = false;
 
             // wwLib.wwObjectHover.removeLock();
 
@@ -521,7 +553,7 @@ export default {
             wwLib.getFrontDocument().removeEventListener("touchend", this.stopMove);
             wwLib.getManagerDocument().removeEventListener("touchend", this.stopMove);
 
-            this.d_moveDirection = null;
+            this.moveDirection = null;
 
             this.calcTwicPics();
             this.wwObjectCtrl.update(this.wwObject);
@@ -856,6 +888,17 @@ export default {
                     this.wwObject.content.data.focusPoint = result.focusPoint;
                 }
 
+                /*
+                this.resizeImage({
+                    image: this.wwObject.content.data.url,
+                    maxSize: 20,
+                    ratio: this.getRatio(),
+                    zoom: this.wwObject.content.data.zoom,
+                    x: this.wwObject.content.data.position.x,
+                    y: this.wwObject.content.data.position.y
+                })
+                */
+
 
                 /*=============================================m_ÔÔ_m=============================================\
                   STYLE
@@ -908,22 +951,98 @@ export default {
 
             wwLib.wwObjectHover.removeLock();
         },
+        resizeImage(options) {
 
-        checkRecalcTwicPics() {
-            if (typeof (this.wwObject.content.data.crop) == 'string') {
-                if (!this.wwObject.content.data.crop || this.wwObject.content.data.crop == '100px100p@0px0p' || this.wwObject.content.data.crop.toLowerCase().indexOf('nan') !== -1) {
-                    this.$nextTick(() => {
-                        this.calcTwicPics();
-                        this.wwObjectCtrl.update(this.wwObject);
-                    });
+            if (!options.image || !options.maxSize) {
+                return null;
+            }
+
+            options.zoom = options.zoom || 0;
+            options.x = options.x || 0;
+            options.y = options.y || 0;
+
+            return new Promise(function (resolve, reject) {
+
+                return resolve();
+
+                /*
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext("2d");
+                const img = document.createElement('img');
+     
+                let canvasInfo = {
+                    width: 0,
+                    height: 0,
+                    ratio: 0
                 }
+     
+                img.onload = function () {
+     
+                    try {
+     
+                        canvasInfo.width = this.width;
+                        canvasInfo.height = this.height;
+                        canvasInfo.ratio = options.ratio / 100 || this.width / this.height;
+     
+                        if (canvasInfo.width > options.maxSize) {
+                            canvasInfo.height = options.maxSize / canvasInfo.ratio;
+                            canvasInfo.width = options.maxSize;
+                        }
+                        if (canvasInfo.height > options.maxSize) {
+                            canvasInfo.width = canvasInfo.ratio * options.maxSize;
+                            canvasInfo.height = options.maxSize;
+                        }
+                        canvas.width = canvasInfo.width;
+                        canvas.height = canvasInfo.height;
+     
+                        context.save();
+     
+                        context.translate(canvas.width / 2, canvas.height / 2);
+     
+                        const imgSize = {
+                            w: options.zoom * canvas.width,
+                            h: (options.zoom * canvas.width) * this.height / this.width
+                        }
+     
+                        const origin = {
+                            x: (options.x - 50) / 100 * imgSize.w,
+                            y: (options.y - 50) / 100 * imgSize.h
+                        }
+     
+                        context.drawImage(img, origin.x, origin.y, imgSize.w, imgSize.h);
+     
+                        context.restore();
+                        return resolve(canvas.toDataURL("image/bmp"));
+                    } catch (error) {
+                        console.log('ww-image preview error', error)
+                        return resolve(null);
+                    }
+                }
+     
+                img.onerror = function () {
+                    return resolve(null);
+                }
+     
+                img.setAttribute('crossOrigin', 'anonymous');
+     
+                img.src = options.image
+                */
+            });
+
+
+        },
+        checkRecalcTwicPics() {
+            if (!this.wwObject.content.data.crop || this.wwObject.content.data.crop == '100px100p@0px0p' || this.wwObject.content.data.crop.toLowerCase().indexOf('nan') !== -1) {
+                this.$nextTick(() => {
+                    this.calcTwicPics();
+                    this.wwObjectCtrl.update(this.wwObject);
+                });
             }
         },
         calcTwicPics() {
-            if (!this.c_editing) {
+            if (!this.editing) {
                 return;
             }
-
             const img = this.$el.querySelector('.image');
 
             //Set image size before calculating crop
@@ -946,11 +1065,8 @@ export default {
             const x = Math.max(Math.min(0.5 - z * (1 / 2 - px / 100), 100), 0);
             const y = Math.max(Math.min(0.5 - zh * (1 / 2 - py / 100), 100), 0);
 
-            const bx = Math.max(Math.min(0.5 - z * (1 / 2 + px / 100), 100), 0);
-            const by = Math.max(Math.min(0.5 - zh * (1 / 2 + py / 100), 100), 0);
-
-            const w = Math.max(Math.min(1, z, 1 - bx - x), 0);
-            const h = Math.max(Math.min(1, zh, 1 - by - y), 0);
+            const w = Math.max(Math.min(1, z, 1 - x), 0);
+            const h = Math.max(Math.min(1, zh, 1 - y), 0);
 
             //CROP
             const _cx = Math.max(Math.min((0.5 * (1 - 1 / z) * 100) - px, 100), 0);
@@ -958,18 +1074,10 @@ export default {
             const cx = Math.floor(_cx);
             const cy = Math.floor(_cy);
 
-            const _cw = Math.max(Math.min(100 / z, 100 - _cx, w * rectCtn.width * 100 / rectImg.width), 0);
-            const _ch = Math.max(Math.min(100 / zh, 100 - _cy, h * rectCtn.height * 100 / rectImg.height), 0);
-            const cw = Math.ceil(_cw);
-            const ch = Math.ceil(_ch);
+            const cw = Math.ceil(Math.max(Math.min(100 / z, 100 - _cx, w * rectCtn.width * 100 / rectImg.width), 0));
+            const ch = Math.ceil(Math.max(Math.min(100 / zh, 100 - _cy, h * rectCtn.height * 100 / rectImg.height), 0));
 
-            this.wwObject.content.data.crop = {
-                cw: Math.min(_cw, 100 - _cx),
-                ch: Math.min(_ch, 100 - _cy),
-                cx: _cx,
-                cy: _cy
-            }
-
+            this.wwObject.content.data.crop = cw + 'px' + ch + 'p@' + Math.min(cx, cw - cx) + 'px' + Math.min(cy, ch - cy) + 'p';
             this.wwObject.content.data.pos = {
                 left: (x * 100) + '%',
                 top: (y * 100) + '%',
@@ -977,13 +1085,18 @@ export default {
                 height: (h * 100) + '%'
             }
 
+            if (this.wwObject.uniqueId == 9285301786) {
+                console.log(this.wwObject.content.data.pos);
+            }
+
+
         }
         /* wwManager:end */
     },
     mounted() {
         this.init();
 
-        this.d_el = this.$el;
+        this.el = this.$el;
 
         /* wwManager:start */
         this.$el.querySelector('.container').addEventListener('touchstart', this.startMove);
@@ -991,21 +1104,19 @@ export default {
         /* wwManager:end */
     },
     created() {
-        /* wwManager:start */
         let u = this.wwObject.content.data.url;
         this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp.s3.eu-west-3.amazonaws.com', 'cdn.weweb.app');
         this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp-preprod.s3.eu-west-3.amazonaws.com', 'cdn.weweb.dev');
         if (u != this.wwObject.content.data.url) {
             this.wwObjectCtrl.update(this.wwObject);
         }
-        /* wwManager:end */
     }
 };
 </script>
 
 
 <style scoped lang="scss">
-.ww-image {
+:not(.ww-editing) .ww-image {
     position: relative;
     user-select: none;
     display: flex;
@@ -1035,28 +1146,48 @@ export default {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
+                // overflow: hidden;
+                /* +2px to avoid white borders */
                 width: calc(100% + 1px);
                 height: calc(100% + 1px);
                 transition: background-color 0.1s ease;
 
-                .image {
-                    position: absolute;
-                    transition: opacity 0.3s ease;
+                .hover {
                     width: 100%;
                     height: 100%;
+                    position: relative;
 
-                    &.bg {
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
+                    .image {
+                        position: absolute;
+                        transition: opacity 0.3s ease;
+                        /*opacity: 0;*/
 
-                        background-repeat: no-repeat;
-                        background-position: center;
-                        background-size: cover;
-                    }
+                        width: 100%;
+                        height: 100%;
 
-                    &.loaded {
-                        opacity: 1 !important;
+                        &.bg {
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+
+                            background-repeat: no-repeat;
+                            background-position: center;
+                            background-size: cover;
+                        }
+
+                        // &.twic {
+                        //     filter: blur(5px);
+                        //     // opacity: 0;
+                        //     &.twic-background-done,
+                        //     &.twic-done {
+                        //         filter: blur(0);
+                        //         // opacity: 1;
+                        //     }
+                        // }
+
+                        &.loaded {
+                            opacity: 1 !important;
+                        }
                     }
                 }
             }
@@ -1065,102 +1196,163 @@ export default {
 }
 
 /* wwManager:start */
+
+.ww-editing .ww-image {
+    position: relative;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+
+    .wrapper {
+        width: 100%;
+        position: relative;
+
+        .border {
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            pointer-events: none;
+        }
+
+        .format {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+
+            .container {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                // overflow: hidden;
+                /* +2px to avoid white borders */
+                width: calc(100% + 1px);
+                height: calc(100% + 1px);
+                transition: background-color 0.1s ease;
+
+                .hover {
+                    width: 100%;
+                    height: 100%;
+                    position: relative;
+
+                    .image {
+                        position: absolute;
+                        transition: opacity 0.3s ease;
+                        /*opacity: 0;*/
+
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+
+                        &.bg {
+                            background-repeat: no-repeat;
+                            background-position: center;
+                            background-size: cover;
+                        }
+
+                        // &.twic {
+                        //     filter: blur(5px);
+                        //     // opacity: 0;
+                        //     &.twic-background-done,
+                        //     &.twic-done {
+                        //         filter: blur(0);
+                        //         // opacity: 1;
+                        //     }
+                        // }
+
+                        &.loaded {
+                            opacity: 1 !important;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.ww-edit-mode-content .container {
+    cursor: move;
+    cursor: grab;
+}
+
+.bg {
+    & .controls-desktop,
+    & .controls-mobile {
+        display: none;
+    }
+}
+
 .controls-desktop {
+    position: absolute;
+    right: 4px;
+    min-height: 20px;
+    bottom: 5px;
+    top: 5px;
+    width: 20px;
+    z-index: 5;
+    opacity: 0;
     display: none;
+    transition: opacity 0.15s ease;
+
+    .zoom-bar {
+        position: relative;
+        width: 100%;
+        height: 100%;
+
+        .zoom-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 3px;
+            background-color: white;
+            width: 3px;
+            border-radius: 50px;
+            transform: translateX(-50%);
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .zoom-handle {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            background-color: #e73055;
+            width: 20px;
+            height: 20px;
+            border-radius: 100%;
+            cursor: move;
+            cursor: grab;
+            box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
+        }
+    }
 }
 
 .reset-zoom {
+    position: absolute;
+    z-index: 1;
+    left: 5px;
+    bottom: 5px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    line-height: 25px;
+    font-size: 15px;
+    text-align: center;
+    cursor: pointer;
+    color: #757575;
+    box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.5);
+    opacity: 0;
     display: none;
+    transition: opacity 0.15s ease;
 }
 
-.ww-image {
-    .image {
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-
-        &.bg {
-            top: auto;
-            left: auto;
-            transform: "none";
-
-            & .controls-desktop,
-            & .controls-mobile {
-                display: none;
-            }
-        }
-    }
-}
-
-.ww-edit-mode-content {
-    .container {
-        cursor: move;
-        cursor: grab;
-    }
-
-    .controls-desktop {
-        position: absolute;
-        right: 4px;
-        min-height: 20px;
-        bottom: 5px;
-        top: 5px;
-        width: 20px;
-        z-index: 5;
-        opacity: 0;
-        display: block;
-        transition: opacity 0.15s ease;
-
-        .zoom-bar {
-            position: relative;
-            width: 100%;
-            height: 100%;
-
-            .zoom-line {
-                position: absolute;
-                left: 50%;
-                top: 0;
-                bottom: 3px;
-                background-color: white;
-                width: 3px;
-                border-radius: 50px;
-                transform: translateX(-50%);
-                box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.5);
-            }
-
-            .zoom-handle {
-                position: absolute;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                top: 50%;
-                background-color: #e73055;
-                width: 20px;
-                height: 20px;
-                border-radius: 100%;
-                cursor: move;
-                cursor: grab;
-                box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
-            }
-        }
-    }
-
-    .reset-zoom {
-        position: absolute;
-        z-index: 1;
-        left: 5px;
-        bottom: 5px;
-        width: 20px;
-        height: 20px;
-        background-color: white;
-        line-height: 25px;
-        font-size: 15px;
-        text-align: center;
-        cursor: pointer;
-        color: #757575;
-        box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.5);
-        opacity: 0;
-        display: block;
-        transition: opacity 0.15s ease;
-    }
+.ww-edit-mode-content .controls-desktop,
+.ww-edit-mode-content .reset-zoom,
+.controls-desktop.lock {
+    display: block;
 }
 
 .ww-image:not(.bg):hover .controls-desktop,
@@ -1168,6 +1360,7 @@ export default {
 .controls-desktop.lock {
     opacity: 1;
 }
+
 /* wwManager:end */
 </style>
 
