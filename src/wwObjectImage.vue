@@ -16,19 +16,23 @@
             <!-- wwManager:end -->
             <div class="format" :style="_styles.format">
                 <div class="container">
-                    <div class="hover">
-                        <!-- TO DO : data-background-transform="quality=85" -->
-                        <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="focusPoint" data-background-transform="auto/quality=85" :style="_styles.image"></div>
-                        <div v-if="wwAttrs.wwCategory == 'background' && wwAttrs.wwNoTwicPics" class="image bg" :style="_styles.image"></div>
+                    <!-- Background -->
+                    <div class="hover" v-if="wwAttrs.wwCategory == 'background'">
+                        <div v-if="!wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="focusPoint" data-background-transform="auto/quality=85" :style="_styles.image"></div>
+                        <div v-if="wwAttrs.wwNoTwicPics" class="image bg" :style="_styles.image"></div>
+                    </div>
 
-                        <!-- Image -->
+                    <!-- Image Manager -->
+                    <div class="hover" v-if="wwAttrs.wwCategory != 'background'">
                         <!-- wwManager:start -->
-                        <img v-if="wwAttrs.wwCategory != 'background'" draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="_styles.image">
+                        <span class="img-manager" v-show="editing">
+                            <img draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="_styles.image">
+                        </span>
                         <!-- wwManager:end -->
-                        <!-- wwFront:start -->
-                        <img v-if="wwAttrs.wwCategory != 'background' && !wwAttrs.wwNoTwicPics" class="image twic" :src="placeholderSrc" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="_styles.image">
-                        <img v-if="wwAttrs.wwCategory != 'background' && wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="_styles.image">
-                        <!-- wwFront:end -->
+                        <span class="img-front" v-show="!editing">
+                            <img v-if="!wwAttrs.wwNoTwicPics" class="image twic" :src="placeholderSrc" :data-src="wwObject.content.data.url" :data-src-transform="twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="_styles.image">
+                            <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="_styles.image">
+                        </span>
                     </div>
                 </div>
             </div>
@@ -118,13 +122,14 @@ export default {
             //IMAGE
             this.styles.image.filter = this.wwObject.content.data.style.filter || null;
 
-            let position
-            if (wwLib.manager || this.wwAttrs.wwNoTwicPics) {
+            if (this.editing || this.wwAttrs.wwNoTwicPics) {
                 this.styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
                 this.styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
                 this.styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
                 if (this.wwAttrs.wwCategory != 'background') {
-                    position = this.wwObject.content.data.position || { x: 0, y: 0 }
+                    let position = this.wwObject.content.data.position || { x: 0, y: 0 }
+                    this.styles.image.left = '50%';
+                    this.styles.image.top = '50%';
                     this.styles.image['-webkit-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
                     this.styles.image['-moz-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
                     this.styles.image['-ms-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
@@ -134,11 +139,19 @@ export default {
             }
             else {
                 if (this.wwAttrs.wwCategory != 'background') {
-                    position = this.wwObject.content.data.pos || { left: 0, right: 0, top: 0, bottom: 0 };
-                    this.styles.image.left = this.wwObject.content.data.pos.left;
-                    this.styles.image.top = this.wwObject.content.data.pos.top;
-                    this.styles.image.width = this.wwObject.content.data.pos.width;
-                    this.styles.image.height = this.wwObject.content.data.pos.height;
+                    let defaultPosition = { left: '0px', top: '0px', width: '100%', height: '100%' };
+                    let position = this.wwObject.content.data.pos;
+
+                    this.styles.image.left = position.left || defaultPosition.left;
+                    this.styles.image.top = position.top || defaultPosition.top;
+                    this.styles.image.width = position.width && position.width != "0%" ? position.width : defaultPosition.width;
+                    this.styles.image.height = position.height && position.height != "0%" ? position.height : defaultPosition.height;
+                    this.styles.image['-webkit-transform'] = 'none';
+                    this.styles.image['-moz-transform'] = 'none';
+                    this.styles.image['-ms-transform'] = 'none';
+                    this.styles.image['-o-transform'] = 'none';
+                    this.styles.image.transform = 'none';
+
                 }
             }
 
@@ -180,7 +193,7 @@ export default {
         },
         twicTransform() {
             //TODO: Correct crop when it's 99 instead of 100.
-            return this.wwObject.content.data.crop ? 'crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/quality=85/auto' : '';
+            return this.wwObject.content.data.crop && this.wwObject.content.data.crop.indexOf('NaN') === -1 ? 'crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/quality=85/auto' : '';
         },
         loaderSrc() {
             return this.wwObject.content.data.dataUrl;
@@ -203,6 +216,11 @@ export default {
         /* wwManager:end */
     },
     watch: {
+        editing() {
+            if (this.editing) {
+                this.checkRecalcTwicPics();
+            }
+        }
     },
     beforeDestroy() {
         this.$el.querySelector('.container').removeEventListener('mousedown', this.startMove);
@@ -216,12 +234,7 @@ export default {
         loadImage() {
             /* wwManager:start */
             var wwHiddenLoadImg = new Image();
-            wwHiddenLoadImg.onload = () => {
-                if (!this.wwObject.content.data.crop) {
-                    this.calcTwicPics();
-                    this.wwObjectCtrl.update(this.wwObject);
-                }
-            };
+            wwHiddenLoadImg.onload = this.checkRecalcTwicPics;
             wwHiddenLoadImg.src = this.wwObject.content.data.url;
             /* wwManager:end */
         },
@@ -544,6 +557,7 @@ export default {
 
             this.calcTwicPics();
             this.wwObjectCtrl.update(this.wwObject);
+
 
             window.document.body.classList.remove('ww-image-dragging');
 
@@ -1017,7 +1031,18 @@ export default {
 
 
         },
+        checkRecalcTwicPics() {
+            if (!this.wwObject.content.data.crop || this.wwObject.content.data.crop == '100px100p@0px0p' || this.wwObject.content.data.crop.toLowerCase().indexOf('nan') !== -1) {
+                this.$nextTick(() => {
+                    this.calcTwicPics();
+                    this.wwObjectCtrl.update(this.wwObject);
+                });
+            }
+        },
         calcTwicPics() {
+            if (!this.editing) {
+                return;
+            }
             const img = this.$el.querySelector('.image');
 
             //Set image size before calculating crop
@@ -1052,13 +1077,19 @@ export default {
             const cw = Math.ceil(Math.max(Math.min(100 / z, 100 - _cx, w * rectCtn.width * 100 / rectImg.width), 0));
             const ch = Math.ceil(Math.max(Math.min(100 / zh, 100 - _cy, h * rectCtn.height * 100 / rectImg.height), 0));
 
-            this.wwObject.content.data.crop = cw + 'px' + ch + 'p@' + cx + 'px' + cy + 'p';
+            this.wwObject.content.data.crop = cw + 'px' + ch + 'p@' + Math.min(cx, cw - cx) + 'px' + Math.min(cy, ch - cy) + 'p';
             this.wwObject.content.data.pos = {
                 left: (x * 100) + '%',
                 top: (y * 100) + '%',
                 width: (w * 100) + '%',
                 height: (h * 100) + '%'
             }
+
+            if (this.wwObject.uniqueId == 9285301786) {
+                console.log(this.wwObject.content.data.pos);
+            }
+
+
         }
         /* wwManager:end */
     },
@@ -1085,7 +1116,7 @@ export default {
 
 
 <style scoped lang="scss">
-.ww-image {
+:not(.ww-editing) .ww-image {
     position: relative;
     user-select: none;
     display: flex;
@@ -1131,23 +1162,13 @@ export default {
                         transition: opacity 0.3s ease;
                         /*opacity: 0;*/
 
-                        /* wwFront:start */
                         width: 100%;
                         height: 100%;
-                        /* wwFront:end */
-
-                        /* wwManager:start */
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        /* wwManager:end */
 
                         &.bg {
-                            /* wwFront:start */
                             top: 50%;
                             left: 50%;
                             transform: translate(-50%, -50%);
-                            /* wwFront:end */
 
                             background-repeat: no-repeat;
                             background-position: center;
@@ -1175,6 +1196,83 @@ export default {
 }
 
 /* wwManager:start */
+
+.ww-editing .ww-image {
+    position: relative;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+
+    .wrapper {
+        width: 100%;
+        position: relative;
+
+        .border {
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            pointer-events: none;
+        }
+
+        .format {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+
+            .container {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                // overflow: hidden;
+                /* +2px to avoid white borders */
+                width: calc(100% + 1px);
+                height: calc(100% + 1px);
+                transition: background-color 0.1s ease;
+
+                .hover {
+                    width: 100%;
+                    height: 100%;
+                    position: relative;
+
+                    .image {
+                        position: absolute;
+                        transition: opacity 0.3s ease;
+                        /*opacity: 0;*/
+
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+
+                        &.bg {
+                            background-repeat: no-repeat;
+                            background-position: center;
+                            background-size: cover;
+                        }
+
+                        // &.twic {
+                        //     filter: blur(5px);
+                        //     // opacity: 0;
+                        //     &.twic-background-done,
+                        //     &.twic-done {
+                        //         filter: blur(0);
+                        //         // opacity: 1;
+                        //     }
+                        // }
+
+                        &.loaded {
+                            opacity: 1 !important;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 .ww-edit-mode-content .container {
     cursor: move;
     cursor: grab;
@@ -1266,7 +1364,7 @@ export default {
 /* wwManager:end */
 </style>
 
-<style >
+<style>
 .ww-image-dragging {
     cursor: move;
     cursor: grab;
