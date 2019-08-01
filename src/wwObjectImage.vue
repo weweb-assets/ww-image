@@ -25,13 +25,13 @@
                 <div class="container" v-if="wwAttrs.wwCategory != 'background'">
                     <!-- wwManager:start -->
                     <span class="img-manager">
-                        <img draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image">
+                        <img draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
                     </span>
                     <!-- wwManager:end -->
                     <!-- wwFront:start -->
                     <span class="img-front">
-                        <img v-if="!wwAttrs.wwNoTwicPics" class="image twic" :src="c_twicTransformPlaceholder" :data-src="wwObject.content.data.url" :data-src-transform="c_twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image">
-                        <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image">
+                        <img v-if="!wwAttrs.wwNoTwicPics" class="image twic" :src="c_twicTransformPlaceholder" :data-src="wwObject.content.data.url" :data-src-transform="c_twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+                        <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
                     </span>
                     <!-- wwFront:end -->
                 </div>
@@ -97,7 +97,7 @@ export default {
                     borderRadius: 0,
                     boxShadow: '',
                     filter: '',
-                    minWidth: '20',
+                    minWidth: '40',
                 },
                 border: {
                     borderRadius: 0,
@@ -1049,6 +1049,7 @@ export default {
             height: 100%;
             position: relative;
             overflow: hidden;
+            min-width: 40px;
 
             .container {
                 position: absolute;
