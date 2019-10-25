@@ -14,10 +14,10 @@
         "upload": "weweb-upload"
     },
     "dependencies": {
-        "vue": "^2.5.16"
+        "vue": "^2.6.10"
     },
     "devDependencies": {
-        "weweb-client": "^1.0.37"
+        "weweb-client": "^1.0.50"
     },
     "browserslist": [
         "> 1%",

@@ -11,6 +11,7 @@ const addComponent = function () {
                 type: name,
                 data: {
                     url: 'https://cdn.weweb.app/public/images/no_image_selected.png',
+                    twicUrl: 'https://cdn.weweb.app/public/images/no_image_selected.png',
                     alt: '',
                     position: { x: 0, y: 0 },
                     pos: {},

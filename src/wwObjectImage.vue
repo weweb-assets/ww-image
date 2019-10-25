@@ -1,43 +1,40 @@
 <template>
     <div class="ww-image" :class="{'bg': wwAttrs.wwCategory == 'background'}">
-        <div class="wrapper" :style="c_styles.wrapper">
-            <!-- wwManager:start -->
-            <div class="controls-desktop" :class="{'lock': d_lockControls}">
-                <div class="zoom-bar">
-                    <div class="zoom-line"></div>
-                    <div class="zoom-handle" :style="{'top' : c_zoomPercentY + '%'}" @mousedown="startZoomDesktop($event)">
-                        <div></div>
-                    </div>
+        <!-- wwManager:start -->
+        <div class="controls-desktop" :class="{'lock': d_lockControls}">
+            <div class="zoom-bar">
+                <div class="zoom-line"></div>
+                <div class="zoom-handle" :style="{'top' : c_zoomPercentY + '%'}" @mousedown="startZoomDesktop($event)">
+                    <div></div>
                 </div>
             </div>
-            <div class="reset-zoom" @click="resetZoom($event)">
-                <i class="fa fa-expand" aria-hidden="true"></i>
-            </div>
-            <!-- wwManager:end -->
-            <div class="format" :style="c_styles.format">
-                <!-- Background -->
-                <div class="container" v-if="wwAttrs.wwCategory == 'background'">
-                    <div v-if="!wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="c_focusPoint" data-background-transform="auto/quality=85" :style="c_styles.image"></div>
-                    <div v-if="wwAttrs.wwNoTwicPics" class="image bg" :style="c_styles.image"></div>
-                </div>
-
-                <!-- Image Manager -->
-                <div class="container" v-if="wwAttrs.wwCategory != 'background'">
-                    <!-- wwManager:start -->
-                    <span class="img-manager">
-                        <img draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
-                    </span>
-                    <!-- wwManager:end -->
-                    <!-- wwFront:start -->
-                    <span class="img-front">
-                        <img v-if="!wwAttrs.wwNoTwicPics" class="image twic" :src="c_twicTransformPlaceholder" :data-src="wwObject.content.data.url" :data-src-transform="c_twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
-                        <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
-                    </span>
-                    <!-- wwFront:end -->
-                </div>
-            </div>
-            <div class="border" :style="c_styles.border"></div>
         </div>
+        <div class="reset-zoom" @click="resetZoom($event)">
+            <i class="fa fa-expand" aria-hidden="true"></i>
+        </div>
+        <div class="format" :style="c_styles.format">
+            <!-- Background -->
+            <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="c_focusPoint" data-background-transform="auto/quality=85" :style="c_styles.image"></div>
+            <div v-if="wwAttrs.wwCategory == 'background' && wwAttrs.wwNoTwicPics" class="image bg" :style="c_styles.image"></div>
+
+            <!-- Image Manager -->
+            <img v-if="wwAttrs.wwCategory != 'background'" draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+        </div>
+        <div class="border" :style="c_styles.border"></div>
+        <!-- wwManager:end -->
+
+        <!-- wwFront:start -->
+        <div class="format" :style="c_styles.format">
+            <!-- Background -->
+            <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="c_focusPoint" data-background-transform="auto/quality=85" :style="c_styles.image"></div>
+            <div v-if="wwAttrs.wwCategory == 'background' && wwAttrs.wwNoTwicPics" class="image bg" :style="c_styles.image"></div>
+
+            <!-- Image Manager -->
+            <img v-if="wwAttrs.wwCategory != 'background' && !wwAttrs.wwNoTwicPics" class="image twic" :src="c_twicTransformPlaceholder" :data-src="wwObject.content.data.url" :data-src-transform="c_twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+            <img v-if="wwAttrs.wwCategory != 'background' && wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+        </div>
+        <div class="border" :style="c_styles.border"></div>
+        <!-- wwFront:end -->
     </div>
 </template>
  
@@ -157,6 +154,12 @@ export default {
                 styles.format.paddingBottom = 0;
             }
 
+            if (this.wwObject.content.data.style.maxHeight) {
+                styles.format.width = (parseInt(this.wwObject.content.data.style.maxHeight) / this.getRatio() * 100) + 'px';
+            } else {
+                styles.format.width = null;
+            }
+
 
             //BORDER
             const unit = this.wwObject.content.data.style.borderRadiusUnit || '%';
@@ -170,42 +173,31 @@ export default {
             styles.border.borderStyle = this.wwObject.content.data.style.borderStyle || 'none';
             styles.border.background = this.wwObject.content.data.style.overlay || '';
 
-            //WRAPPER
-            if (this.wwObject.content.data.style.maxHeight) {
-                styles.wrapper.width = (parseInt(this.wwObject.content.data.style.maxHeight) / this.getRatio() * 100) + 'px';
-            } else {
-                styles.wrapper.width = null;
-            }
 
 
             return styles;
         },
         c_twicTransform() {
-            if (typeof (this.wwObject.content.data.crop) == 'string') {
-                if (!this.wwObject.content.data.crop || this.wwObject.content.data.crop.indexOf('NaN') !== -1) {
-                    return 'cover/quality=85/auto';
-                }
-                return 'crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/quality=85/auto';
-            }
-            else {
-                const crop = this.wwObject.content.data.crop || {};
+            let crop = this.wwObject.content.data.crop || {};
+            if (typeof (this.wwObject.content.data.crop) == 'object' && typeof (this.wwObject.content.data.crop.cw) !== 'undefined') {
                 crop.cw = Math.max(0, (crop.cw) || 100);
                 crop.ch = Math.max(0, (crop.ch) || 100);
                 crop.cx = Math.max(0, crop.cx || 0);
                 crop.cy = Math.max(0, crop.cy || 0);
 
-                return 'crop=' + crop.cw + 'px' + crop.ch + 'p@' + crop.cx + 'px' + crop.cy + 'p/quality=85/auto';
+                return 'crop=' + crop.cw + 'px' + crop.ch + 'p@' + crop.cx + 'px' + crop.cy + 'p/cover/quality=85/auto';
             }
+            else if (typeof (this.wwObject.content.data.crop) == 'string' && this.wwObject.content.data.crop.length > 0 && this.wwObject.content.data.crop.indexOf('NaN') === -1) {
+                return 'crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/cover/quality=85/auto';
+            }
+
+            return 'cover/quality=85/auto';
         },
         c_twicTransformPlaceholder() {
-            if (typeof (this.wwObject.content.data.crop) == 'string') {
-                if (!this.wwObject.content.data.crop || this.wwObject.content.data.crop.indexOf('NaN') !== -1) {
-                    return 'https://i.twic.pics/v1/cover/resize=20/' + this.wwObject.content.data.url;
-                }
-                return 'https://i.twic.pics/v1/crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/resize=20/' + this.wwObject.content.data.url;
-            }
-            else {
-                const crop = this.wwObject.content.data.crop || {};
+            return '';
+
+            let crop = this.wwObject.content.data.crop || {};
+            if (typeof (this.wwObject.content.data.crop) == 'object' && typeof (this.wwObject.content.data.crop.cw) !== 'undefined') {
                 crop.cw = Math.max(0, (crop.cw) || 100);
                 crop.ch = Math.max(0, (crop.ch) || 100);
                 crop.cx = Math.max(0, crop.cx || 0);
@@ -213,6 +205,16 @@ export default {
 
                 return 'https://i.twic.pics/v1/crop=' + crop.cw + 'px' + crop.ch + 'p@' + crop.cx + 'px' + crop.cy + 'p/resize=20/' + this.wwObject.content.data.url;
             }
+            else if (typeof (this.wwObject.content.data.crop) == 'string' && this.wwObject.content.data.crop.length > 0 && this.wwObject.content.data.crop.indexOf('NaN') === -1) {
+                return 'https://i.twic.pics/v1/crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/resize=20/' + this.wwObject.content.data.url;
+            }
+
+            return 'https://i.twic.pics/v1/cover/resize=20/' + this.wwObject.content.data.url;
+
+
+
+
+
         },
         c_focusPoint() {
             let focusPoint = this.wwObject.content.data.focusPoint || [50, 50];
@@ -235,10 +237,6 @@ export default {
             }
         }
     },
-    beforeDestroy() {
-        this.$el.querySelector('.container').removeEventListener('mousedown', this.startMove);
-        this.$el.querySelector('.container').removeEventListener('touchstart', this.startMove);
-    },
     methods: {
         init() {
             this.d_zoomFactor = Math.sqrt(100 * 100 / (10 - this.d_zoomMin));
@@ -247,7 +245,10 @@ export default {
         loadImage() {
             /* wwManager:start */
             var wwHiddenLoadImg = new Image();
-            wwHiddenLoadImg.onload = this.checkRecalcTwicPics;
+            wwHiddenLoadImg.onload = () => {
+                this.calcTwicPics();
+                this.wwObjectCtrl.update(this.wwObject);
+            }
             wwHiddenLoadImg.src = this.wwObject.content.data.url;
             /* wwManager:end */
         },
@@ -307,9 +308,10 @@ export default {
             this.wwObject.content.data.position = { x: 0, y: 0 };
 
             //Reset zoom
+            const rectImg = this.$el.querySelector('.image').getBoundingClientRect();
             const imgSize = {
-                w: this.$el.querySelector('.image').getBoundingClientRect().width,
-                h: this.$el.querySelector('.image').getBoundingClientRect().height,
+                w: rectImg.width,
+                h: rectImg.height,
             }
 
             const ratio = imgSize.h / imgSize.w;
@@ -318,9 +320,10 @@ export default {
                 this.wwObject.content.data.zoom = 1;
             }
             else {
-                const rationContainer = this.$el.querySelector('.container').getBoundingClientRect().height / this.$el.querySelector('.container').getBoundingClientRect().width;
+                const rectEl = this.$el.getBoundingClientRect();
+                const ratioContainer = rectEl.height / rectEl.width;
 
-                this.wwObject.content.data.zoom = rationContainer / ratio;
+                this.wwObject.content.data.zoom = ratioContainer / ratio;
             }
 
             this.$nextTick(() => {
@@ -489,11 +492,13 @@ export default {
                 this.d_moveDirection = 'y';
             }
 
-            var offsetXpercent = offsetXpx * 100 / this.$el.querySelector('.container').getBoundingClientRect().width;
-            var offsetYpercent = offsetYpx * 100 / this.$el.querySelector('.container').getBoundingClientRect().height;
+            const rectEl = this.$el.getBoundingClientRect();
+            const rectImg = this.$el.querySelector('.image').getBoundingClientRect();
+            var offsetXpercent = offsetXpx * 100 / rectImg.width;
+            var offsetYpercent = offsetYpx * 100 / rectImg.height;
 
-            this.wwObject.content.data.position.x += offsetXpercent / this.wwObject.content.data.zoom;
-            this.wwObject.content.data.position.y += offsetYpercent / this.wwObject.content.data.zoom * this.$el.querySelector('.image').getBoundingClientRect().width * this.$el.querySelector('.container').getBoundingClientRect().height / (this.$el.querySelector('.image').getBoundingClientRect().height * this.$el.querySelector('.container').getBoundingClientRect().width);
+            this.wwObject.content.data.position.x += offsetXpercent;
+            this.wwObject.content.data.position.y += offsetYpercent * rectImg.width * rectEl.height / (rectImg.height * rectEl.width);
 
             if (this.isTouch(event)) {
                 const touchDist = this.getTouchDist(event);
@@ -577,7 +582,6 @@ export default {
                 this.wwObject.content.data.zoom = 1;
                 this.wwObject.content.data.position = { x: 0, y: 0 };
 
-                this.calcTwicPics();
                 this.wwObjectCtrl.update(this.wwObject);
 
                 this.loadImage();
@@ -914,7 +918,6 @@ export default {
                 }
 
                 this.$nextTick(() => {
-                    this.calcTwicPics();
                     this.wwObjectCtrl.update(this.wwObject);
 
                     this.wwObjectCtrl.globalEdit(result);
@@ -930,7 +933,7 @@ export default {
         },
 
         checkRecalcTwicPics() {
-            if (typeof (this.wwObject.content.data.crop) == 'string') {
+            if (!this.wwObject.content.data.crop || typeof (this.wwObject.content.data.crop) == 'string') {
                 if (!this.wwObject.content.data.crop || this.wwObject.content.data.crop == '100px100p@0px0p' || this.wwObject.content.data.crop.toLowerCase().indexOf('nan') !== -1) {
                     this.$nextTick(() => {
                         this.calcTwicPics();
@@ -996,18 +999,7 @@ export default {
                 width: (w * 100) + '%',
                 height: (h * 100) + '%'
             }
-
         }
-        /* wwManager:end */
-    },
-    mounted() {
-        this.init();
-
-        this.d_el = this.$el;
-
-        /* wwManager:start */
-        this.$el.querySelector('.container').addEventListener('touchstart', this.startMove);
-        this.$el.querySelector('.container').addEventListener('mousedown', this.startMove);
         /* wwManager:end */
     },
     created() {
@@ -1019,7 +1011,27 @@ export default {
             this.wwObjectCtrl.update(this.wwObject);
         }
         /* wwManager:end */
-    }
+    },
+    mounted() {
+        this.init();
+
+        this.d_el = this.$el;
+
+        /* wwManager:start */
+        if (this.wwAttrs.wwCategory != 'background') {
+            this.$el.querySelector('.image:not(.bg)').addEventListener('touchstart', this.startMove);
+            this.$el.querySelector('.image:not(.bg)').addEventListener('mousedown', this.startMove);
+        }
+        /* wwManager:end */
+    },
+    beforeDestroy() {
+        /* wwManager:start */
+        if (this.wwAttrs.wwCategory != 'background') {
+            this.$el.querySelector('.image:not(.bg)').removeEventListener('mousedown', this.startMove);
+            this.$el.querySelector('.image:not(.bg)').removeEventListener('touchstart', this.startMove);
+        }
+        /* wwManager:end */
+    },
 };
 </script>
 
@@ -1031,55 +1043,40 @@ export default {
     display: flex;
     justify-content: center;
 
-    .wrapper {
+    .border {
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        right: -1px;
+        bottom: -1px;
+        pointer-events: none;
+    }
+
+    .format {
         width: 100%;
+        height: 100%;
         position: relative;
+        overflow: hidden;
+        min-width: 40px;
 
-        .border {
+        .image {
             position: absolute;
-            top: -1px;
-            left: -1px;
-            right: -1px;
-            bottom: -1px;
-            pointer-events: none;
-        }
-
-        .format {
+            transition: opacity 0.3s ease;
             width: 100%;
             height: 100%;
-            position: relative;
-            overflow: hidden;
-            min-width: 40px;
 
-            .container {
-                position: absolute;
+            &.bg {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                width: calc(100% + 1px);
-                height: calc(100% + 1px);
-                transition: background-color 0.1s ease;
 
-                .image {
-                    position: absolute;
-                    transition: opacity 0.3s ease;
-                    width: 100%;
-                    height: 100%;
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: cover;
+            }
 
-                    &.bg {
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-
-                        background-repeat: no-repeat;
-                        background-position: center;
-                        background-size: cover;
-                    }
-
-                    &.loaded {
-                        opacity: 1 !important;
-                    }
-                }
+            &.loaded {
+                opacity: 1 !important;
             }
         }
     }
@@ -1114,7 +1111,7 @@ export default {
 }
 
 .ww-edit-mode-content {
-    .container {
+    .image:not(.bg) {
         cursor: move;
         cursor: grab;
     }
