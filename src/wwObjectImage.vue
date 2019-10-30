@@ -1,5 +1,5 @@
 <template>
-    <div class="ww-image" :class="{'bg': wwAttrs.wwCategory == 'background'}">
+    <div class="ww-image" :class="{'bg': wwAttrs.wwCategory == 'background'}" :style="c_styles.wrapper">
         <!-- wwManager:start -->
         <div class="controls-desktop" :class="{'lock': d_lockControls}">
             <div class="zoom-bar">
@@ -104,7 +104,7 @@ export default {
                     background: null,
                 },
                 wrapper: {
-                    width: null
+                    maxWidth: null
                 }
             }
 
@@ -155,9 +155,9 @@ export default {
             }
 
             if (this.wwObject.content.data.style.maxHeight) {
-                styles.format.width = (parseInt(this.wwObject.content.data.style.maxHeight) / this.getRatio() * 100) + 'px';
+                styles.wrapper.maxWidth = (parseInt(this.wwObject.content.data.style.maxHeight) / this.getRatio() * 100) + 'px';
             } else {
-                styles.format.width = null;
+                styles.wrapper.maxWidth = null;
             }
 
 
