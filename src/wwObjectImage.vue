@@ -30,7 +30,7 @@
             <div v-if="wwAttrs.wwCategory == 'background' && wwAttrs.wwNoTwicPics" class="image bg" :style="c_styles.image"></div>
 
             <!-- Image Manager -->
-            <img v-if="wwAttrs.wwCategory != 'background' && !wwAttrs.wwNoTwicPics" class="image twic" :src="c_twicTransformPlaceholder" :data-src="wwObject.content.data.url" :data-src-transform="c_twicTransform" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+            <img v-if="wwAttrs.wwCategory != 'background' && !wwAttrs.wwNoTwicPics" class="image twic" :data-src="wwObject.content.data.url" data-src-transform="quality=85/auto" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
             <img v-if="wwAttrs.wwCategory != 'background' && wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
         </div>
         <div class="border" :style="c_styles.border"></div>
@@ -113,34 +113,18 @@ export default {
             //IMAGE
             styles.image.filter = this.wwObject.content.data.style.filter || null;
 
-            if (wwLib.manager || this.wwAttrs.wwNoTwicPics) {
-                styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
-                styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
-                styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
-                if (this.wwAttrs.wwCategory != 'background') {
-                    let position = this.wwObject.content.data.position || { x: 0, y: 0 }
-                    styles.image.left = '50%';
-                    styles.image.top = '50%';
-                    styles.image['-webkit-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                    styles.image['-moz-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                    styles.image['-ms-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                    styles.image['-o-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                    styles.image.transform = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                }
-            }
-            else if (this.wwAttrs.wwCategory != 'background') {
-                let defaultPosition = { left: '0px', top: '0px', width: '100%', height: '100%' };
-                let position = this.wwObject.content.data.pos;
-
-                styles.image.left = position.left || defaultPosition.left;
-                styles.image.top = position.top || defaultPosition.top;
-                styles.image.width = position.width && position.width != "0%" ? position.width : defaultPosition.width;
-                styles.image.height = position.height && position.height != "0%" ? position.height : defaultPosition.height;
-                styles.image['-webkit-transform'] = 'none';
-                styles.image['-moz-transform'] = 'none';
-                styles.image['-ms-transform'] = 'none';
-                styles.image['-o-transform'] = 'none';
-                styles.image.transform = 'none';
+            styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
+            styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
+            styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
+            if (this.wwAttrs.wwCategory != 'background') {
+                let position = this.wwObject.content.data.position || { x: 0, y: 0 }
+                styles.image.left = '50%';
+                styles.image.top = '50%';
+                styles.image['-webkit-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                styles.image['-moz-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                styles.image['-ms-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                styles.image['-o-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+                styles.image.transform = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
             }
 
             //FORMAT
@@ -177,45 +161,6 @@ export default {
 
             return styles;
         },
-        c_twicTransform() {
-            let crop = this.wwObject.content.data.crop || {};
-            if (typeof (this.wwObject.content.data.crop) == 'object' && typeof (this.wwObject.content.data.crop.cw) !== 'undefined') {
-                crop.cw = Math.max(0, (crop.cw) || 100);
-                crop.ch = Math.max(0, (crop.ch) || 100);
-                crop.cx = Math.max(0, crop.cx || 0);
-                crop.cy = Math.max(0, crop.cy || 0);
-
-                return 'crop=' + crop.cw + 'px' + crop.ch + 'p@' + crop.cx + 'px' + crop.cy + 'p/cover/quality=85/auto';
-            }
-            else if (typeof (this.wwObject.content.data.crop) == 'string' && this.wwObject.content.data.crop.length > 0 && this.wwObject.content.data.crop.indexOf('NaN') === -1) {
-                return 'crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/cover/quality=85/auto';
-            }
-
-            return 'cover/quality=85/auto';
-        },
-        c_twicTransformPlaceholder() {
-            return '';
-
-            let crop = this.wwObject.content.data.crop || {};
-            if (typeof (this.wwObject.content.data.crop) == 'object' && typeof (this.wwObject.content.data.crop.cw) !== 'undefined') {
-                crop.cw = Math.max(0, (crop.cw) || 100);
-                crop.ch = Math.max(0, (crop.ch) || 100);
-                crop.cx = Math.max(0, crop.cx || 0);
-                crop.cy = Math.max(0, crop.cy || 0);
-
-                return 'https://i.twic.pics/v1/crop=' + crop.cw + 'px' + crop.ch + 'p@' + crop.cx + 'px' + crop.cy + 'p/resize=20/' + this.wwObject.content.data.url;
-            }
-            else if (typeof (this.wwObject.content.data.crop) == 'string' && this.wwObject.content.data.crop.length > 0 && this.wwObject.content.data.crop.indexOf('NaN') === -1) {
-                return 'https://i.twic.pics/v1/crop=' + this.wwObject.content.data.crop.replace(/99/gi, '100') + '/resize=20/' + this.wwObject.content.data.url;
-            }
-
-            return 'https://i.twic.pics/v1/cover/resize=20/' + this.wwObject.content.data.url;
-
-
-
-
-
-        },
         c_focusPoint() {
             let focusPoint = this.wwObject.content.data.focusPoint || [50, 50];
             return focusPoint[0] + 'px' + focusPoint[1] + 'p';
@@ -231,26 +176,10 @@ export default {
         /* wwManager:end */
     },
     watch: {
-        c_editing() {
-            if (this.c_editing) {
-                this.checkRecalcTwicPics();
-            }
-        }
     },
     methods: {
         init() {
             this.d_zoomFactor = Math.sqrt(100 * 100 / (10 - this.d_zoomMin));
-            this.loadImage();
-        },
-        loadImage() {
-            /* wwManager:start */
-            var wwHiddenLoadImg = new Image();
-            wwHiddenLoadImg.onload = () => {
-                this.calcTwicPics();
-                this.wwObjectCtrl.update(this.wwObject);
-            }
-            wwHiddenLoadImg.src = this.wwObject.content.data.url;
-            /* wwManager:end */
         },
         preventEvent(event) {
             if (!this.isTouch(event)) {
@@ -326,14 +255,14 @@ export default {
                 this.wwObject.content.data.zoom = ratioContainer / ratio;
             }
 
-            this.$nextTick(() => {
-                this.calcTwicPics();
-                this.wwObjectCtrl.update(this.wwObject);
-            })
+            this.wwObjectCtrl.update(this.wwObject);
 
             return false;
         },
         startZoomDesktop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
             this.d_lockControls = true;
 
             wwLib.wwObjectHover.setLock(this);
@@ -350,7 +279,6 @@ export default {
             return false;
         },
         zoomDesktop(event) {
-
             let zoomPositionY = (event.clientY - this.d_zoomBarElement.getBoundingClientRect().top) * 100 / this.d_zoomBarElement.getBoundingClientRect().height;
             zoomPositionY = Math.min(Math.max(zoomPositionY, 0), 100);
 
@@ -359,7 +287,6 @@ export default {
 
             this.preventEvent(event);
 
-            this.calcTwicPics();
             this.wwObjectCtrl.update(this.wwObject);
 
             return false;
@@ -371,9 +298,6 @@ export default {
 
             window.removeEventListener("mousemove", this.zoomDesktop);
             window.removeEventListener("mouseup", this.stopZoomDesktop);
-
-            this.calcTwicPics();
-            this.wwObjectCtrl.update(this.wwObject);
 
             window.document.body.classList.remove('ww-image-dragging');
 
@@ -498,7 +422,7 @@ export default {
             var offsetYpercent = offsetYpx * 100 / rectImg.height;
 
             this.wwObject.content.data.position.x += offsetXpercent;
-            this.wwObject.content.data.position.y += offsetYpercent * rectImg.width * rectEl.height / (rectImg.height * rectEl.width);
+            this.wwObject.content.data.position.y += offsetYpercent;// * rectImg.width * rectEl.height / (rectImg.height * rectEl.width);
 
             if (this.isTouch(event)) {
                 const touchDist = this.getTouchDist(event);
@@ -519,7 +443,6 @@ export default {
             this.d_lastMovePosition.y = position.y;
 
             this.preventEvent(event);
-            this.calcTwicPics();
             this.wwObjectCtrl.update(this.wwObject);
 
         },
@@ -533,8 +456,6 @@ export default {
 
             this.d_moving = false;
 
-            // wwLib.wwObjectHover.removeLock();
-
             wwLib.getFrontDocument().removeEventListener("mousemove", this.move);
             wwLib.getManagerDocument().removeEventListener("mousemove", this.move);
             wwLib.getFrontDocument().removeEventListener("mouseup", this.stopMove);
@@ -547,7 +468,6 @@ export default {
 
             this.d_moveDirection = null;
 
-            this.calcTwicPics();
             this.wwObjectCtrl.update(this.wwObject);
 
 
@@ -583,8 +503,6 @@ export default {
                 this.wwObject.content.data.position = { x: 0, y: 0 };
 
                 this.wwObjectCtrl.update(this.wwObject);
-
-                this.loadImage();
             } catch (error) {
 
             }
@@ -921,8 +839,6 @@ export default {
                     this.wwObjectCtrl.update(this.wwObject);
 
                     this.wwObjectCtrl.globalEdit(result);
-
-                    this.loadImage();
                 });
 
             } catch (error) {
@@ -931,75 +847,6 @@ export default {
 
             wwLib.wwObjectHover.removeLock();
         },
-
-        checkRecalcTwicPics() {
-            if (!this.wwObject.content.data.crop || typeof (this.wwObject.content.data.crop) == 'string') {
-                if (!this.wwObject.content.data.crop || this.wwObject.content.data.crop == '100px100p@0px0p' || this.wwObject.content.data.crop.toLowerCase().indexOf('nan') !== -1) {
-                    this.$nextTick(() => {
-                        this.calcTwicPics();
-                        this.wwObjectCtrl.update(this.wwObject);
-                    });
-                }
-            }
-        },
-        calcTwicPics() {
-            if (!this.c_editing) {
-                return;
-            }
-
-            const img = this.$el.querySelector('.image');
-
-            //Set image size before calculating crop
-            img.style.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
-            img.style.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
-
-            const rectCtn = this.$el.getBoundingClientRect();
-            const rectImg = img.getBoundingClientRect();
-
-            const z = Math.abs(this.wwObject.content.data.zoom);
-            const px = this.wwObject.content.data.position.x;
-            const py = this.wwObject.content.data.position.y;
-
-            const r = rectCtn.height / rectCtn.width;
-            const R = this.wwObject.content.data.imgSize.h / this.wwObject.content.data.imgSize.w;
-
-            const zh = rectImg.height / rectCtn.height;
-
-            //SIZE
-            const x = Math.max(Math.min(0.5 - z * (1 / 2 - px / 100), 100), 0);
-            const y = Math.max(Math.min(0.5 - zh * (1 / 2 - py / 100), 100), 0);
-
-            const bx = Math.max(Math.min(0.5 - z * (1 / 2 + px / 100), 100), 0);
-            const by = Math.max(Math.min(0.5 - zh * (1 / 2 + py / 100), 100), 0);
-
-            const w = Math.max(Math.min(1, z, 1 - bx - x), 0);
-            const h = Math.max(Math.min(1, zh, 1 - by - y), 0);
-
-            //CROP
-            const _cx = Math.max(Math.min((0.5 * (1 - 1 / z) * 100) - px, 100), 0);
-            const _cy = Math.max(Math.min((0.5 * (1 - 1 / zh) * 100) - py, 100), 0);
-            const cx = Math.floor(_cx);
-            const cy = Math.floor(_cy);
-
-            const _cw = Math.max(Math.min(100 / z, 100 - _cx, w * rectCtn.width * 100 / rectImg.width), 0);
-            const _ch = Math.max(Math.min(100 / zh, 100 - _cy, h * rectCtn.height * 100 / rectImg.height), 0);
-            const cw = Math.ceil(_cw);
-            const ch = Math.ceil(_ch);
-
-            this.wwObject.content.data.crop = {
-                cw: Math.min(_cw, 100 - _cx),
-                ch: Math.min(_ch, 100 - _cy),
-                cx: _cx,
-                cy: _cy
-            }
-
-            this.wwObject.content.data.pos = {
-                left: (x * 100) + '%',
-                top: (y * 100) + '%',
-                width: (w * 100) + '%',
-                height: (h * 100) + '%'
-            }
-        }
         /* wwManager:end */
     },
     created() {
@@ -1019,16 +866,16 @@ export default {
 
         /* wwManager:start */
         if (this.wwAttrs.wwCategory != 'background') {
-            this.$el.querySelector('.image:not(.bg)').addEventListener('touchstart', this.startMove);
-            this.$el.querySelector('.image:not(.bg)').addEventListener('mousedown', this.startMove);
+            this.$el.addEventListener('touchstart', this.startMove);
+            this.$el.addEventListener('mousedown', this.startMove);
         }
         /* wwManager:end */
     },
     beforeDestroy() {
         /* wwManager:start */
         if (this.wwAttrs.wwCategory != 'background') {
-            this.$el.querySelector('.image:not(.bg)').removeEventListener('mousedown', this.startMove);
-            this.$el.querySelector('.image:not(.bg)').removeEventListener('touchstart', this.startMove);
+            this.$el.removeEventListener('mousedown', this.startMove);
+            this.$el.removeEventListener('touchstart', this.startMove);
         }
         /* wwManager:end */
     },
@@ -1064,12 +911,14 @@ export default {
             transition: opacity 0.3s ease;
             width: 100%;
             height: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
 
             &.bg {
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-
+                top: auto;
+                left: auto;
+                transform: "none";
                 background-repeat: no-repeat;
                 background-position: center;
                 background-size: cover;
@@ -1091,27 +940,8 @@ export default {
     display: none;
 }
 
-.ww-image {
-    .image {
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-
-        &.bg {
-            top: auto;
-            left: auto;
-            transform: "none";
-
-            & .controls-desktop,
-            & .controls-mobile {
-                display: none;
-            }
-        }
-    }
-}
-
 .ww-edit-mode-content {
-    .image:not(.bg) {
+    .ww-image:not(.bg) {
         cursor: move;
         cursor: grab;
     }
