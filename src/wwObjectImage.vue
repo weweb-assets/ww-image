@@ -26,12 +26,12 @@
         <!-- wwFront:start -->
         <div class="format" :style="c_styles.format">
             <!-- Background -->
-            <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="c_focusPoint" data-background-transform="auto/quality=85" :style="c_styles.image"></div>
-            <div v-if="wwAttrs.wwCategory == 'background' && wwAttrs.wwNoTwicPics" class="image bg" :style="c_styles.image"></div>
+            <div v-if="wwAttrs.wwCategory == 'background' && !wwAttrs.wwNoTwicPics && !c_isSVG" class="image bg twic" :data-background="'url(' + wwObject.content.data.url + ')'" data-background-step="400" :data-background-focus="c_focusPoint" data-background-transform="auto/quality=85" :style="c_styles.image"></div>
+            <div v-if="wwAttrs.wwCategory == 'background' && (wwAttrs.wwNoTwicPics || c_isSVG)" class="image bg" :style="c_styles.image"></div>
 
             <!-- Image Manager -->
-            <img v-if="wwAttrs.wwCategory != 'background' && !wwAttrs.wwNoTwicPics" class="image twic" :data-src="wwObject.content.data.url" data-src-transform="quality=85/auto" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
-            <img v-if="wwAttrs.wwCategory != 'background' && wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+            <img v-if="wwAttrs.wwCategory != 'background' && !wwAttrs.wwNoTwicPics && !c_isSVG" class="image twic" :data-src="wwObject.content.data.url" data-src-transform="quality=85/auto" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+            <img v-if="wwAttrs.wwCategory != 'background' && (wwAttrs.wwNoTwicPics || c_isSVG)" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
         </div>
         <div class="border" :style="c_styles.border"></div>
         <!-- wwFront:end -->
@@ -41,8 +41,8 @@
 
 <script>
 /* wwManager:start */
-import wwImagePopupFocusPoint from './wwImagePopupFocusPoint.vue'
-wwLib.wwPopups.addPopup('wwImagePopupFocusPoint', wwImagePopupFocusPoint);
+import wwImagePopupFocusPoint from "./wwImagePopupFocusPoint.vue";
+wwLib.wwPopups.addPopup("wwImagePopupFocusPoint", wwImagePopupFocusPoint);
 /* wwManager:end */
 
 export default {
@@ -66,7 +66,7 @@ export default {
             d_lastTouchDist: 0,
             d_zoomBarElement: null,
             d_lockControls: false,
-            d_moveDirection: null,
+            d_moveDirection: null
             /* wwManager:end */
         };
     },
@@ -76,112 +76,117 @@ export default {
         },
         c_styles() {
             if (!this.d_el) {
-                return {}
+                return {};
             }
 
             const styles = {
                 image: {
-                    backgroundImage: '',
-                    width: '100%',
-                    height: '100%',
-                    minHeight: 'none',
-                    top: '50%',
-                    left: '50%',
-                    filter: 'none'
+                    backgroundImage: "",
+                    width: "100%",
+                    height: "100%",
+                    minHeight: "none",
+                    top: "50%",
+                    left: "50%",
+                    filter: "none"
                 },
                 format: {
-                    paddingBottom: '',
+                    paddingBottom: "",
                     borderRadius: 0,
-                    boxShadow: '',
-                    filter: '',
-                    minWidth: '40',
+                    boxShadow: "",
+                    filter: "",
+                    minWidth: "40"
                 },
                 border: {
                     borderRadius: 0,
                     borderWidth: 0,
                     borderColor: null,
                     borderStyle: null,
-                    background: null,
+                    background: null
                 },
                 wrapper: {
                     maxWidth: null
                 }
-            }
+            };
 
-            this.wwObject.content.data.style = this.wwObject.content.data.style || {}
+            this.wwObject.content.data.style = this.wwObject.content.data.style || {};
 
             //IMAGE
             styles.image.filter = this.wwObject.content.data.style.filter || null;
 
+            if (this.wwAttrs.wwCategory == "background" && (this.wwAttrs.wwNoTwicPics || this.c_isSVG)) {
+                styles.image.backgroundImage = "url(" + this.wwObject.content.data.url + ")";
+            }
+
             /* wwManager:start */
             // styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
             /* wwManager:end */
-            styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
-            styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
-            if (this.wwAttrs.wwCategory != 'background') {
-                let position = this.wwObject.content.data.position || { x: 0, y: 0 }
-                styles.image.left = '50%';
-                styles.image.top = '50%';
-                styles.image['-webkit-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                styles.image['-moz-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                styles.image['-ms-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                styles.image['-o-transform'] = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
-                styles.image.transform = 'translate(' + (position.x - 50) + '%, ' + (position.y - 50) + '%)';
+            styles.image.height = this.wwAttrs.wwCategory == "background" ? "100%" : "auto";
+            styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + "%";
+            if (this.wwAttrs.wwCategory != "background") {
+                let position = this.wwObject.content.data.position || { x: 0, y: 0 };
+                styles.image.left = "50%";
+                styles.image.top = "50%";
+                styles.image["-webkit-transform"] = "translate(" + (position.x - 50) + "%, " + (position.y - 50) + "%)";
+                styles.image["-moz-transform"] = "translate(" + (position.x - 50) + "%, " + (position.y - 50) + "%)";
+                styles.image["-ms-transform"] = "translate(" + (position.x - 50) + "%, " + (position.y - 50) + "%)";
+                styles.image["-o-transform"] = "translate(" + (position.x - 50) + "%, " + (position.y - 50) + "%)";
+                styles.image.transform = "translate(" + (position.x - 50) + "%, " + (position.y - 50) + "%)";
             }
 
             //FORMAT
             styles.format.boxShadow = this.getShadow();
-            styles.format.minWidth = this.wwObject.content.data.style.minWidth ? this.wwObject.content.data.style.minWidth + 'px' : '20px';
+            styles.format.minWidth = this.wwObject.content.data.style.minWidth ? this.wwObject.content.data.style.minWidth + "px" : "20px";
 
-            if (this.wwAttrs.wwCategory != 'background') {
-                styles.format.paddingBottom = this.getRatio() + '%';
-            }
-            else {
+            if (this.wwAttrs.wwCategory != "background") {
+                styles.format.paddingBottom = this.getRatio() + "%";
+            } else {
                 styles.format.paddingBottom = 0;
             }
 
             if (this.wwObject.content.data.style.maxHeight) {
-                styles.wrapper.maxWidth = (parseInt(this.wwObject.content.data.style.maxHeight) / this.getRatio() * 100) + 'px';
+                styles.wrapper.maxWidth = (parseInt(this.wwObject.content.data.style.maxHeight) / this.getRatio()) * 100 + "px";
             } else {
                 styles.wrapper.maxWidth = null;
             }
 
-
             //BORDER
-            const unit = this.wwObject.content.data.style.borderRadiusUnit || '%';
-            const borderRadius = (this.wwObject.content.data.style.borderRadius / (unit == '%' ? 2 : 1) || 0) + unit;
+            const unit = this.wwObject.content.data.style.borderRadiusUnit || "%";
+            const borderRadius = (this.wwObject.content.data.style.borderRadius / (unit == "%" ? 2 : 1) || 0) + unit;
             styles.border.borderRadius = borderRadius;
             styles.format.borderRadius = borderRadius;
 
-            styles.border.borderWidth = (this.wwObject.content.data.style.borderWidth || 0) + 'px';
+            styles.border.borderWidth = (this.wwObject.content.data.style.borderWidth || 0) + "px";
 
-            styles.border.borderColor = this.wwObject.content.data.style.borderColor || 'black';
-            styles.border.borderStyle = this.wwObject.content.data.style.borderStyle || 'none';
-            styles.border.background = this.wwObject.content.data.style.overlay || '';
-
-
+            styles.border.borderColor = this.wwObject.content.data.style.borderColor || "black";
+            styles.border.borderStyle = this.wwObject.content.data.style.borderStyle || "none";
+            styles.border.background = this.wwObject.content.data.style.overlay || "";
 
             return styles;
         },
         c_focusPoint() {
             let focusPoint = this.wwObject.content.data.focusPoint || [50, 50];
-            return focusPoint[0] + 'px' + focusPoint[1] + 'p';
+            return focusPoint[0] + "px" + focusPoint[1] + "p";
         },
         c_editing() {
-            return this.wwObjectCtrl.getSectionCtrl().getEditMode() == 'CONTENT';
+            return this.wwObjectCtrl.getSectionCtrl().getEditMode() == "CONTENT";
         },
+        c_isSVG() {
+            return this.wwObject.content.data.url && this.wwObject.content.data.url.indexOf(".svg") !== -1;
+        },
+        // c_preview() {
+        //     return this.wwObject.content.data.url.indexOf(".gif") === -1 ? "https://i.twic.pics/v1/quality=85/resize=100/" + this.wwObject.content.data.url : null;
+        // },
 
         /* wwManager:start */
         c_zoomPercentY() {
             return 100 - this.d_zoomFactor * Math.sqrt(Math.max(this.wwObject.content.data.zoom, 0) - this.d_zoomMin);
-        },
+        }
         /* wwManager:end */
     },
-    watch: {
-    },
+    watch: {},
     methods: {
         init() {
-            this.d_zoomFactor = Math.sqrt(100 * 100 / (10 - this.d_zoomMin));
+            this.d_zoomFactor = Math.sqrt((100 * 100) / (10 - this.d_zoomMin));
         },
         preventEvent(event) {
             if (!this.isTouch(event)) {
@@ -203,8 +208,7 @@ export default {
                     if (ratio) {
                         return ratio;
                     }
-                }
-                catch (error) {
+                } catch (error) {
                     console.log("wwRatio error", error);
                 }
             }
@@ -212,9 +216,8 @@ export default {
             if (!this.wwObject.ratio || this.wwObject.ratio < 0) {
                 if (this.wwAttrs.wwDefaultRatio) {
                     return this.wwAttrs.wwDefaultRatio;
-                }
-                else {
-                    return 100 / 3 * 2;
+                } else {
+                    return (100 / 3) * 2;
                 }
             }
 
@@ -223,9 +226,9 @@ export default {
         getShadow() {
             const shadow = this.wwObject.content.data.style.boxShadow || {};
             if (shadow.x || shadow.y || shadow.b || shadow.s || shadow.c) {
-                return shadow.x + 'px ' + shadow.y + 'px ' + shadow.b + 'px ' + shadow.s + 'px ' + shadow.c;
+                return shadow.x + "px " + shadow.y + "px " + shadow.b + "px " + shadow.s + "px " + shadow.c;
             }
-            return '';
+            return "";
         },
 
         /* wwManager:start */
@@ -239,18 +242,17 @@ export default {
             this.wwObject.content.data.position = { x: 0, y: 0 };
 
             //Reset zoom
-            const rectImg = this.$el.querySelector('.image').getBoundingClientRect();
+            const rectImg = this.$el.querySelector(".image").getBoundingClientRect();
             const imgSize = {
                 w: rectImg.width,
-                h: rectImg.height,
-            }
+                h: rectImg.height
+            };
 
             const ratio = imgSize.h / imgSize.w;
 
             if (this.wwObject.content.data.zoom !== 1) {
                 this.wwObject.content.data.zoom = 1;
-            }
-            else {
+            } else {
                 const rectEl = this.$el.getBoundingClientRect();
                 const ratioContainer = rectEl.height / rectEl.width;
 
@@ -269,21 +271,20 @@ export default {
 
             wwLib.wwObjectHover.setLock(this);
 
-            this.d_zoomBarElement = this.$el.querySelector('.zoom-bar');
+            this.d_zoomBarElement = this.$el.querySelector(".zoom-bar");
 
             window.addEventListener("mousemove", this.zoomDesktop);
             window.addEventListener("mouseup", this.stopZoomDesktop);
 
-            window.document.body.classList.add('ww-image-dragging');
+            window.document.body.classList.add("ww-image-dragging");
 
             wwLib.wwObjectMenu.preventOpen();
 
             return false;
         },
         zoomDesktop(event) {
-            let zoomPositionY = (event.clientY - this.d_zoomBarElement.getBoundingClientRect().top) * 100 / this.d_zoomBarElement.getBoundingClientRect().height;
+            let zoomPositionY = ((event.clientY - this.d_zoomBarElement.getBoundingClientRect().top) * 100) / this.d_zoomBarElement.getBoundingClientRect().height;
             zoomPositionY = Math.min(Math.max(zoomPositionY, 0), 100);
-
 
             this.wwObject.content.data.zoom = Math.pow((100 - zoomPositionY) / this.d_zoomFactor, 2) + this.d_zoomMin;
 
@@ -301,7 +302,7 @@ export default {
             window.removeEventListener("mousemove", this.zoomDesktop);
             window.removeEventListener("mouseup", this.stopZoomDesktop);
 
-            window.document.body.classList.remove('ww-image-dragging');
+            window.document.body.classList.remove("ww-image-dragging");
 
             return false;
         },
@@ -313,18 +314,16 @@ export default {
             var position = { x: 0, y: 0 };
 
             if (this.isTouch(event)) {
-
                 position.x = 0;
                 position.y = 0;
 
                 for (let touch of event.touches) {
-                    position.x += touch.clientX
-                    position.y += touch.clientY
+                    position.x += touch.clientX;
+                    position.y += touch.clientY;
                 }
 
                 position.x = position.x / event.touches.length;
                 position.y = position.y / event.touches.length;
-
             } else {
                 position.x = event.clientX;
                 position.y = event.clientY;
@@ -353,8 +352,7 @@ export default {
             return event.touches && event.touches.length;
         },
         startMove(event) {
-
-            if (this.wwObjectCtrl.getSectionCtrl().getEditMode() != 'CONTENT' || this.wwAttrs.wwCategory == 'background') {
+            if (this.wwObjectCtrl.getSectionCtrl().getEditMode() != "CONTENT" || this.wwAttrs.wwCategory == "background") {
                 return;
             }
 
@@ -366,7 +364,6 @@ export default {
 
             this.d_lastMovePosition = this.getEventPosition(event);
             if (this.d_lastMovePosition) {
-
                 wwLib.getFrontDocument().addEventListener("mousemove", this.move);
                 wwLib.getManagerDocument().addEventListener("mousemove", this.move);
                 wwLib.getFrontDocument().addEventListener("mouseup", this.stopMove);
@@ -377,10 +374,9 @@ export default {
                 wwLib.getFrontDocument().addEventListener("touchend", this.stopMove);
                 wwLib.getManagerDocument().addEventListener("touchend", this.stopMove);
 
-                document.body.classList.add('ww-image-dragging');
+                document.body.classList.add("ww-image-dragging");
                 return false;
             }
-
         },
         move(event) {
             if (wwLib.wwObjectMenu.list.length) {
@@ -403,33 +399,30 @@ export default {
 
             this.d_moving = true;
 
-            if (this.d_moveDirection == 'x') {
+            if (this.d_moveDirection == "x") {
                 offsetYpx = 0;
-            }
-            else if (this.d_moveDirection == 'y') {
+            } else if (this.d_moveDirection == "y") {
                 offsetXpx = 0;
-            }
-            else if (wwLib.wwShortcuts.hasModifiers('SHIFT') && Math.abs(offsetXpx) > Math.abs(offsetYpx)) {
+            } else if (wwLib.wwShortcuts.hasModifiers("SHIFT") && Math.abs(offsetXpx) > Math.abs(offsetYpx)) {
                 offsetYpx = 0;
-                this.d_moveDirection = 'x';
-            }
-            else if (wwLib.wwShortcuts.hasModifiers('SHIFT')) {
+                this.d_moveDirection = "x";
+            } else if (wwLib.wwShortcuts.hasModifiers("SHIFT")) {
                 offsetXpx = 0;
-                this.d_moveDirection = 'y';
+                this.d_moveDirection = "y";
             }
 
             const rectEl = this.$el.getBoundingClientRect();
-            const rectImg = this.$el.querySelector('.image').getBoundingClientRect();
-            var offsetXpercent = offsetXpx * 100 / rectImg.width;
-            var offsetYpercent = offsetYpx * 100 / rectImg.height;
+            const rectImg = this.$el.querySelector(".image").getBoundingClientRect();
+            var offsetXpercent = (offsetXpx * 100) / rectImg.width;
+            var offsetYpercent = (offsetYpx * 100) / rectImg.height;
 
             this.wwObject.content.data.position.x += offsetXpercent;
-            this.wwObject.content.data.position.y += offsetYpercent;// * rectImg.width * rectEl.height / (rectImg.height * rectEl.width);
+            this.wwObject.content.data.position.y += offsetYpercent; // * rectImg.width * rectEl.height / (rectImg.height * rectEl.width);
 
             if (this.isTouch(event)) {
                 const touchDist = this.getTouchDist(event);
 
-                this.wwObject.content.data.zoom += (touchDist - this.d_lastTouchDist) / 100 * (this.wwObject.content.data.zoom === 0 ? 1 : this.wwObject.content.data.zoom);
+                this.wwObject.content.data.zoom += ((touchDist - this.d_lastTouchDist) / 100) * (this.wwObject.content.data.zoom === 0 ? 1 : this.wwObject.content.data.zoom);
 
                 if (this.wwObject.content.data.zoom < this.d_zoomMin) {
                     this.wwObject.content.data.zoom = this.d_zoomMin;
@@ -446,10 +439,8 @@ export default {
 
             this.preventEvent(event);
             this.wwObjectCtrl.update(this.wwObject);
-
         },
         stopMove(event) {
-
             if (this.d_moving) {
                 wwLib.wwObjectMenu.preventOpen();
             }
@@ -472,8 +463,7 @@ export default {
 
             this.wwObjectCtrl.update(this.wwObject);
 
-
-            window.document.body.classList.remove('ww-image-dragging');
+            window.document.body.classList.remove("ww-image-dragging");
 
             return false;
         },
@@ -484,30 +474,27 @@ export default {
         async changeImage() {
             wwLib.wwObjectHover.setLock(this);
 
-            wwLib.wwPopups.addStory('WWIMAGE_SELECT', {
+            wwLib.wwPopups.addStory("WWIMAGE_SELECT", {
                 title: {
-                    en: 'Select image',
-                    fr: 'Choisir une image'
+                    en: "Select image",
+                    fr: "Choisir une image"
                 },
-                type: 'wwPopupSelectImage'
-            },
-            )
+                type: "wwPopupSelectImage"
+            });
 
             let options = {
-                firstPage: 'WWIMAGE_SELECT'
-            }
+                firstPage: "WWIMAGE_SELECT"
+            };
 
             try {
-                const result = await wwLib.wwPopups.open(options)
+                const result = await wwLib.wwPopups.open(options);
                 this.wwObject.content.data.url = result.image;
 
                 this.wwObject.content.data.zoom = 1;
                 this.wwObject.content.data.position = { x: 0, y: 0 };
 
                 this.wwObjectCtrl.update(this.wwObject);
-            } catch (error) {
-
-            }
+            } catch (error) {}
 
             wwLib.wwObjectHover.removeLock();
         },
@@ -517,203 +504,193 @@ export default {
             let editOptionsList = {
                 EDIT_IMAGE_SELECT: {
                     separator: {
-                        en: 'Image',
-                        fr: 'Image'
+                        en: "Image",
+                        fr: "Image"
                     },
                     title: {
-                        en: 'Select image',
-                        fr: 'Sélectionner une image'
+                        en: "Select image",
+                        fr: "Sélectionner une image"
                     },
                     desc: {
-                        en: 'Accepted formats (Max 5Mb) : .png, .jpg, .gif',
-                        fr: 'Formats acceptés (Max 5Mb) : .png, .jpg, .gif'
+                        en: "Accepted formats (Max 5Mb) : .png, .jpg, .gif",
+                        fr: "Formats acceptés (Max 5Mb) : .png, .jpg, .gif"
                     },
-                    icon: 'wwi wwi-image',
-                    shortcut: 'i',
-                    next: 'WWIMAGE_SELECT'
+                    icon: "wwi wwi-image",
+                    shortcut: "i",
+                    next: "WWIMAGE_SELECT"
                 }
-            }
+            };
 
-            if (this.wwAttrs.wwCategory == 'background') {
+            if (this.wwAttrs.wwCategory == "background") {
                 editOptionsList.WWIMAGE_FOCUSPOINT = {
                     title: {
-                        en: 'Background focus point',
-                        fr: 'Point focal pour font'
+                        en: "Background focus point",
+                        fr: "Point focal pour font"
                     },
                     desc: {
-                        en: 'Select a focus point that should always be visible.',
-                        fr: 'Selectionner un point focal qui doit toujours être visible.'
+                        en: "Select a focus point that should always be visible.",
+                        fr: "Selectionner un point focal qui doit toujours être visible."
                     },
-                    icon: 'wwi wwi-show',
-                    shortcut: 'f',
-                    next: 'WWIMAGE_FOCUSPOINT'
-                }
+                    icon: "wwi wwi-show",
+                    shortcut: "f",
+                    next: "WWIMAGE_FOCUSPOINT"
+                };
             }
 
             editOptionsList.EDIT_IMAGE_ALT = {
                 title: {
-                    en: '\'Alt\' text',
-                    fr: 'Texte \'Alt\''
+                    en: "'Alt' text",
+                    fr: "Texte 'Alt'"
                 },
                 desc: {
-                    en: 'Description to help blind people and Google SOE',
-                    fr: 'Description pour aider les personnes mal voyantes et le référencement de Google'
+                    en: "Description to help blind people and Google SOE",
+                    fr: "Description pour aider les personnes mal voyantes et le référencement de Google"
                 },
-                icon: 'wwi wwi-text',
-                shortcut: 'a',
-                next: 'WWIMAGE_ALT'
-            }
+                icon: "wwi wwi-text",
+                shortcut: "a",
+                next: "WWIMAGE_ALT"
+            };
             editOptionsList.EDIT_IMAGE_STYLE = {
                 separator: {
-                    en: 'Style',
-                    fr: 'Style'
+                    en: "Style",
+                    fr: "Style"
                 },
                 title: {
-                    en: 'Change image style',
-                    fr: 'Changer l\'apparence de l\'image'
+                    en: "Change image style",
+                    fr: "Changer l'apparence de l'image"
                 },
                 desc: {
-                    en: 'Borders, shadow, ...',
-                    fr: 'Bordures, ombres, ...'
+                    en: "Borders, shadow, ...",
+                    fr: "Bordures, ombres, ..."
                 },
-                icon: 'wwi wwi-edit-style',
-                shortcut: 's',
-                next: 'WWIMAGE_STYLE'
-            }
+                icon: "wwi wwi-edit-style",
+                shortcut: "s",
+                next: "WWIMAGE_STYLE"
+            };
             editOptionsList.EDIT_IMAGE_RATIO = {
                 title: {
-                    en: 'Change image ratio',
-                    fr: 'Changer le ratio de l\'image'
+                    en: "Change image ratio",
+                    fr: "Changer le ratio de l'image"
                 },
                 desc: {
-                    en: 'Portrait, square, landscape, ...',
-                    fr: 'Portrait, carré, paysage, ...'
+                    en: "Portrait, square, landscape, ...",
+                    fr: "Portrait, carré, paysage, ..."
                 },
-                icon: 'wwi wwi-ratio',
-                shortcut: 'r',
-                next: 'WWIMAGE_RATIO'
-            }
+                icon: "wwi wwi-ratio",
+                shortcut: "r",
+                next: "WWIMAGE_RATIO"
+            };
             editOptionsList.EDIT_IMAGE_MINWIDTH = {
                 title: {
-                    en: 'Set image minimum width',
-                    fr: 'Changer la largeur minimale de l\'image'
+                    en: "Set image minimum width",
+                    fr: "Changer la largeur minimale de l'image"
                 },
                 desc: {
-                    en: 'In pixels',
-                    fr: 'En pixels'
+                    en: "In pixels",
+                    fr: "En pixels"
                 },
-                icon: 'fas fa-arrows-alt-h',
-                shortcut: 'm',
-                next: 'WWIMAGE_MINWIDTH'
-            }
+                icon: "fas fa-arrows-alt-h",
+                shortcut: "m",
+                next: "WWIMAGE_MINWIDTH"
+            };
             editOptionsList.EDIT_IMAGE_LINK = {
                 separator: {
-                    en: 'Link',
-                    fr: 'Lien'
+                    en: "Link",
+                    fr: "Lien"
                 },
                 title: {
-                    en: 'Change image link',
-                    fr: 'Changer le lien de l\'image'
+                    en: "Change image link",
+                    fr: "Changer le lien de l'image"
                 },
                 desc: {
-                    en: 'External, internal, ...',
-                    fr: 'Externe, interne, ...'
+                    en: "External, internal, ...",
+                    fr: "Externe, interne, ..."
                 },
-                icon: 'wwi wwi-link-external',
-                shortcut: 's',
-                next: 'WWIMAGE_LINKS'
-            }
+                icon: "wwi wwi-link-external",
+                shortcut: "s",
+                next: "WWIMAGE_LINKS"
+            };
 
-
-            wwLib.wwPopups.addStory('WWIMAGE_EDIT', {
+            wwLib.wwPopups.addStory("WWIMAGE_EDIT", {
                 title: {
-                    en: 'Edit Image',
-                    fr: 'Editer l\'image'
+                    en: "Edit Image",
+                    fr: "Editer l'image"
                 },
-                type: 'wwPopupEditWwObject',
+                type: "wwPopupEditWwObject",
                 buttons: null,
                 storyData: {
                     list: editOptionsList
                 }
-            })
-            wwLib.wwPopups.addStory('WWIMAGE_SELECT', {
+            });
+            wwLib.wwPopups.addStory("WWIMAGE_SELECT", {
                 title: {
-                    en: 'Select image',
-                    fr: 'Choisir une image'
+                    en: "Select image",
+                    fr: "Choisir une image"
                 },
-                type: 'wwPopupSelectImage',
-                next: 'WWIMAGE_RATIO'
-            })
-            wwLib.wwPopups.addStory('WWIMAGE_RATIO', {
+                type: "wwPopupSelectImage",
+                next: "WWIMAGE_RATIO"
+            });
+            wwLib.wwPopups.addStory("WWIMAGE_RATIO", {
                 title: {
-                    en: 'Image Ratio',
-                    fr: 'Ratio de l\'image'
+                    en: "Image Ratio",
+                    fr: "Ratio de l'image"
                 },
-                type: 'wwPopupWwObjectRatio',
+                type: "wwPopupWwObjectRatio",
                 buttons: {
                     NEXT: {
                         text: {
-                            en: 'Next',
-                            fr: 'Suivant'
+                            en: "Next",
+                            fr: "Suivant"
                         },
-                        next: 'WWIMAGE_STYLE'
+                        next: "WWIMAGE_STYLE"
                     }
                 }
-            })
-            wwLib.wwPopups.addStory('WWIMAGE_STYLE', {
+            });
+            wwLib.wwPopups.addStory("WWIMAGE_STYLE", {
                 title: {
-                    en: 'Image style',
-                    fr: 'Style de l\'image'
+                    en: "Image style",
+                    fr: "Style de l'image"
                 },
-                type: 'wwPopupWwObjectStyle',
+                type: "wwPopupWwObjectStyle",
                 buttons: {
                     NEXT: {
                         text: {
-                            en: 'Next',
-                            fr: 'Suivant'
+                            en: "Next",
+                            fr: "Suivant"
                         },
-                        next: 'WWIMAGE_ALT'
+                        next: "WWIMAGE_ALT"
                     }
                 }
-            })
-            wwLib.wwPopups.addStory('WWIMAGE_LINKS', {
+            });
+            wwLib.wwPopups.addStory("WWIMAGE_LINKS", {
                 title: {
-                    en: 'Link',
-                    fr: 'Lien'
+                    en: "Link",
+                    fr: "Lien"
                 },
-                type: 'wwPopupLinks',
+                type: "wwPopupLinks",
                 storyData: {
-                    links: [
-                        'EXTERNAL',
-                        'INTERNAL',
-                        'SECTION',
-                        'POPUP',
-                        'DOWNLOAD',
-                        'ZOOM',
-                        'TOGGLE_NAVBAR',
-                        'NO_LINK'
-                    ]
+                    links: ["EXTERNAL", "INTERNAL", "SECTION", "POPUP", "DOWNLOAD", "ZOOM", "TOGGLE_NAVBAR", "NO_LINK"]
                 }
-            })
-            wwLib.wwPopups.addStory('WWIMAGE_ALT', {
+            });
+            wwLib.wwPopups.addStory("WWIMAGE_ALT", {
                 title: {
-                    en: '\'Alt\' text',
-                    fr: 'Text \'Alt\''
+                    en: "'Alt' text",
+                    fr: "Text 'Alt'"
                 },
-                type: 'wwPopupForm',
+                type: "wwPopupForm",
                 storyData: {
                     fields: [
                         {
                             label: {
-                                en: '\'Alt\' text :',
-                                fr: 'Texte \'Alt\' :'
+                                en: "'Alt' text :",
+                                fr: "Texte 'Alt' :"
                             },
-                            type: 'text',
-                            key: 'altText',
-                            valueData: 'wwObject.content.data.alt',
+                            type: "text",
+                            key: "altText",
+                            valueData: "wwObject.content.data.alt",
                             desc: {
-                                en: 'Short description of the image to help blind people and Google for SOE',
-                                fr: 'Déscription courte de l\'image pour aider les personnes mal voyantes et Google (référencement)'
+                                en: "Short description of the image to help blind people and Google for SOE",
+                                fr: "Déscription courte de l'image pour aider les personnes mal voyantes et Google (référencement)"
                             }
                         }
                     ]
@@ -721,67 +698,66 @@ export default {
                 buttons: {
                     OK: {
                         text: {
-                            en: 'Ok',
-                            fr: 'Valider'
+                            en: "Ok",
+                            fr: "Valider"
                         },
                         next: false
                     }
                 }
-            })
-            wwLib.wwPopups.addStory('WWIMAGE_MINWIDTH', {
+            });
+            wwLib.wwPopups.addStory("WWIMAGE_MINWIDTH", {
                 title: {
-                    en: 'Minimum width',
-                    fr: 'Largeur minimale'
+                    en: "Minimum width",
+                    fr: "Largeur minimale"
                 },
-                type: 'wwPopupForm',
+                type: "wwPopupForm",
                 storyData: {
                     fields: [
                         {
                             label: {
-                                en: 'Min width (px) :',
-                                fr: 'Largeur minimale (px) :'
+                                en: "Min width (px) :",
+                                fr: "Largeur minimale (px) :"
                             },
-                            type: 'text',
-                            key: 'minWidth',
-                            valueData: 'wwObject.content.data.style.minWidth'
+                            type: "text",
+                            key: "minWidth",
+                            valueData: "wwObject.content.data.style.minWidth"
                         }
                     ]
                 },
                 buttons: {
                     OK: {
                         text: {
-                            en: 'Ok',
-                            fr: 'Valider'
+                            en: "Ok",
+                            fr: "Valider"
                         },
                         next: false
                     }
                 }
-            })
-            wwLib.wwPopups.addStory('WWIMAGE_FOCUSPOINT', {
+            });
+            wwLib.wwPopups.addStory("WWIMAGE_FOCUSPOINT", {
                 title: {
-                    en: 'Background focus point',
-                    fr: 'Point focal pour le font'
+                    en: "Background focus point",
+                    fr: "Point focal pour le font"
                 },
-                type: 'wwImagePopupFocusPoint',
-                storyData: {
-                },
+                type: "wwImagePopupFocusPoint",
+                storyData: {},
                 buttons: {
                     OK: {
                         text: {
-                            en: 'Ok',
-                            fr: 'Valider'
+                            en: "Ok",
+                            fr: "Valider"
                         },
                         next: false
                     }
                 }
-            })
+            });
 
             let options = {
-                firstPage: 'WWIMAGE_EDIT',
+                firstPage: "WWIMAGE_EDIT",
                 data: {
                     wwObject: this.wwObject
                 }
-            }
+            };
 
             try {
                 const result = await wwLib.wwPopups.open(options);
@@ -789,51 +765,50 @@ export default {
                 /*=============================================m_ÔÔ_m=============================================\
                   IMAGE
                 \================================================================================================*/
-                if (typeof (result.image) != 'undefined') {
+                if (typeof result.image != "undefined") {
                     this.wwObject.content.data.url = result.image;
                 }
-                if (typeof (result.altText) != 'undefined') {
+                if (typeof result.altText != "undefined") {
                     this.wwObject.content.data.alt = result.altText;
                 }
-                if (typeof (result.focusPoint) != 'undefined') {
+                if (typeof result.focusPoint != "undefined") {
                     this.wwObject.content.data.focusPoint = result.focusPoint;
                 }
-
 
                 /*=============================================m_ÔÔ_m=============================================\
                   STYLE
                 \================================================================================================*/
-                if (typeof (result.borderColor) != 'undefined') {
+                if (typeof result.borderColor != "undefined") {
                     this.wwObject.content.data.style.borderColor = result.borderColor;
                 }
-                if (typeof (result.borderRadius) != 'undefined') {
+                if (typeof result.borderRadius != "undefined") {
                     this.wwObject.content.data.style.borderRadius = result.borderRadius;
                 }
-                if (typeof (result.borderRadiusUnit) != 'undefined') {
+                if (typeof result.borderRadiusUnit != "undefined") {
                     this.wwObject.content.data.style.borderRadiusUnit = result.borderRadiusUnit;
                 }
-                if (typeof (result.borderStyle) != 'undefined') {
+                if (typeof result.borderStyle != "undefined") {
                     this.wwObject.content.data.style.borderStyle = result.borderStyle;
                 }
-                if (typeof (result.borderWidth) != 'undefined') {
+                if (typeof result.borderWidth != "undefined") {
                     this.wwObject.content.data.style.borderWidth = result.borderWidth;
                 }
-                if (typeof (result.boxShadow) != 'undefined') {
+                if (typeof result.boxShadow != "undefined") {
                     this.wwObject.content.data.style.boxShadow = result.boxShadow;
                 }
-                if (typeof (result.filter) != 'undefined') {
+                if (typeof result.filter != "undefined") {
                     this.wwObject.content.data.style.filter = result.filter;
                 }
-                if (typeof (result.overlay) != 'undefined') {
+                if (typeof result.overlay != "undefined") {
                     this.wwObject.content.data.style.overlay = result.overlay;
                 }
-                if (typeof (result.ratio) != 'undefined') {
+                if (typeof result.ratio != "undefined") {
                     this.wwObject.ratio = result.ratio;
                 }
-                if (typeof (result.maxHeight) != 'undefined') {
+                if (typeof result.maxHeight != "undefined") {
                     this.wwObject.content.data.style.maxHeight = result.maxHeight;
                 }
-                if (typeof (result.minWidth) != 'undefined') {
+                if (typeof result.minWidth != "undefined") {
                     this.wwObject.content.data.style.minWidth = result.minWidth;
                 }
 
@@ -842,20 +817,19 @@ export default {
 
                     this.wwObjectCtrl.globalEdit(result);
                 });
-
             } catch (error) {
                 console.log(error);
             }
 
             wwLib.wwObjectHover.removeLock();
-        },
+        }
         /* wwManager:end */
     },
     created() {
         /* wwManager:start */
         let u = this.wwObject.content.data.url;
-        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp.s3.eu-west-3.amazonaws.com', 'cdn.weweb.app');
-        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp-preprod.s3.eu-west-3.amazonaws.com', 'cdn.weweb.dev');
+        this.wwObject.content.data.url = this.wwObject.content.data.url.replace("wewebapp.s3.eu-west-3.amazonaws.com", "cdn.weweb.app");
+        this.wwObject.content.data.url = this.wwObject.content.data.url.replace("wewebapp-preprod.s3.eu-west-3.amazonaws.com", "cdn.weweb.dev");
         if (u != this.wwObject.content.data.url) {
             this.wwObjectCtrl.update(this.wwObject);
         }
@@ -867,20 +841,20 @@ export default {
         this.d_el = this.$el;
 
         /* wwManager:start */
-        if (this.wwAttrs.wwCategory != 'background') {
-            this.$el.addEventListener('touchstart', this.startMove);
-            this.$el.addEventListener('mousedown', this.startMove);
+        if (this.wwAttrs.wwCategory != "background") {
+            this.$el.addEventListener("touchstart", this.startMove);
+            this.$el.addEventListener("mousedown", this.startMove);
         }
         /* wwManager:end */
     },
     beforeDestroy() {
         /* wwManager:start */
-        if (this.wwAttrs.wwCategory != 'background') {
-            this.$el.removeEventListener('mousedown', this.startMove);
-            this.$el.removeEventListener('touchstart', this.startMove);
+        if (this.wwAttrs.wwCategory != "background") {
+            this.$el.removeEventListener("mousedown", this.startMove);
+            this.$el.removeEventListener("touchstart", this.startMove);
         }
         /* wwManager:end */
-    },
+    }
 };
 </script>
 
@@ -929,6 +903,15 @@ export default {
             &.loaded {
                 opacity: 1 !important;
             }
+
+            // &.twic {
+            //     filter: blur(3px);
+            //     transition: filter 0.2s ease;
+            // }
+
+            // &.twic-done {
+            //     filter: none;
+            // }
         }
     }
 }
