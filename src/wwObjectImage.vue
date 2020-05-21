@@ -19,46 +19,49 @@
             <!-- Normal Image -->
             <img v-if="wwAttrs.wwCategory != 'background'" draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
         </div>
-        <div class="border" :style="c_styles.border"></div>
         <!-- wwManager:end -->
 
         <!-- wwFront:start -->
-        <!-- Background -->
-        <template v-if="wwAttrs.wwCategory == 'background'">
-            <!-- No Twicpics -->
-            <div v-if="wwAttrs.wwNoTwicPics" class="image bg" :style="c_styles.image"></div>
+        <div class="format" :style="c_styles.format">
+            <!-- Background -->
+            <template v-if="wwAttrs.wwCategory == 'background'">
+                <!-- No Twicpics -->
+                <div v-if="wwAttrs.wwNoTwicPics" class="image bg" :style="c_styles.image"></div>
 
-            <!-- Twicpics -->
-            <div
-                v-else
-                class="image bg twic"
-                :data-background="'url(' + wwObject.content.data.url + ')'"
-                data-background-step="400"
-                :data-background-focus="c_focusPoint"
-                data-background-transform="auto/quality=85"
-                :style="c_styles.image"
-            ></div>
-        </template>
+                <!-- Twicpics -->
+                <div
+                    v-else
+                    class="image bg twic"
+                    :data-background="'url(' + wwObject.content.data.url + ')'"
+                    data-background-step="400"
+                    :data-background-focus="c_focusPoint"
+                    data-background-transform="auto/quality=85"
+                    :style="c_styles.image"
+                ></div>
+            </template>
 
-        <!-- Normal Image -->
-        <template v-else>
-            <!-- No Twicpics -->
-            <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" :loading="d_isLazy ? 'lazy' : 'auto'" />
+            <!-- Normal Image -->
+            <template v-else>
+                <!-- No Twicpics -->
+                <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" :loading="d_isLazy ? 'lazy' : 'auto'" />
 
-            <!-- Twicpics -->
-            <img
-                v-else
-                class="image twic"
-                :src="d_preview"
-                :data-src="wwObject.content.data.url"
-                data-src-transform="quality=85/auto"
-                data-src-step="10"
-                :alt="wwObject.content.data.alt"
-                :style="c_styles.image"
-                :loading="d_isLazy ? 'lazy' : 'auto'"
-            />
-        </template>
+                <!-- Twicpics -->
+                <img
+                    v-else
+                    class="image twic"
+                    :src="d_preview"
+                    :data-src="wwObject.content.data.url"
+                    data-src-transform="quality=85/auto"
+                    data-src-step="10"
+                    :alt="wwObject.content.data.alt"
+                    :style="c_styles.image"
+                    :loading="d_isLazy ? 'lazy' : 'auto'"
+                />
+            </template>
+        </div>
         <!-- wwFront:end -->
+
+        <div class="border" :style="c_styles.border"></div>
     </div>
 </template>
 
