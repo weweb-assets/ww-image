@@ -131,7 +131,7 @@ export default {
             styles.image.filter = this.wwObject.content.data.style.filter || null;
 
             if (this.wwAttrs.wwCategory == 'background') {
-                styles.image.background = `url(${this.wwAttrs.wwNoTwicPics ? this.wwObject.content.data.url : this.d_preview})`;
+                styles.image.backgroundImage = `url(${this.wwAttrs.wwNoTwicPics ? this.wwObject.content.data.url : this.d_preview})`;
             }
 
             /* wwManager:start */
@@ -918,7 +918,8 @@ export default {
                 filter: blur(5px);
                 will-change: filter;
 
-                &.twic-done {
+                &.twic-done,
+                &.twic-background-done {
                     transition: filter 0.3s ease;
                     filter: none;
                 }
