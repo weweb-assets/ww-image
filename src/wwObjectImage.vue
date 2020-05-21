@@ -46,17 +46,7 @@
                 <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" :loading="d_isLazy ? 'lazy' : 'auto'" />
 
                 <!-- Twicpics -->
-                <img
-                    v-else
-                    class="image twic"
-                    :src="d_preview"
-                    :data-src="wwObject.content.data.url"
-                    data-src-transform="quality=85/auto"
-                    data-src-step="10"
-                    :alt="wwObject.content.data.alt"
-                    :style="c_styles.image"
-                    :loading="d_isLazy ? 'lazy' : 'auto'"
-                />
+                <img v-else class="image twic" :src="d_preview" :data-src="wwObject.content.data.url" data-src-transform="quality=85/auto" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
             </template>
         </div>
         <!-- wwFront:end -->
@@ -86,7 +76,6 @@ export default {
             d_zoomFactor: 1,
             d_el: null,
             d_preview: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-            d_isLazy: true,
 
             /* wwManager:start */
             d_lastMovePosition: { x: 0, y: 0 },
@@ -210,10 +199,9 @@ export default {
         init() {
             this.d_zoomFactor = Math.sqrt((100 * 100) / (10 - this.d_zoomMin));
 
-            this.d_preview = `https://i.twic.pics/${this.wwObject.content.data.url}${this.wwObject.content.data.url.indexOf('?') === -1 ? '?' : '&'}twic=v1/resize=50`;
             const section = this.$el.closest('.ww-section');
             if (section && section.getAttribute('section-index') && section.getAttribute('section-index') < 2) {
-                this.d_isLazy = false;
+                this.d_preview = `https://i.twic.pics/${this.wwObject.content.data.url}${this.wwObject.content.data.url.indexOf('?') === -1 ? '?' : '&'}twic=v1/resize=50`;
             }
         },
         preventEvent(event) {
