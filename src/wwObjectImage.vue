@@ -135,7 +135,7 @@ export default {
             }
 
             /* wwManager:start */
-            // styles.image.backgroundImage = this.wwAttrs.wwCategory == 'background' ? 'url(' + this.wwObject.content.data.url + ')' : '';
+            this.wwAttrs.wwCategory == 'background' && (styles.image.backgroundImage = 'url(' + this.wwObject.content.data.url + ')');
             /* wwManager:end */
             styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
             styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
