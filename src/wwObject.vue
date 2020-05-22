@@ -1,6 +1,6 @@
 <template>
-    <Hydrate ssr-only>
-        <wwObjectImage :ww-object-ctrl="wwObjectCtrl" :ww-attrs="wwAttrs"></wwObjectImage>
+    <Hydrate ssr-only class="ww-image">
+        <wwObjectImage class="ww-image" :ww-object-ctrl="wwObjectCtrl" :ww-attrs="wwAttrs"></wwObjectImage>
     </Hydrate>
 </template>
 
