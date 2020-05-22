@@ -1,5 +1,5 @@
 {
-    "componentPath": "./src/wwObjectImage.vue",
+    "componentPath": "./src/wwObject.vue",
     "content": {
         "type": "ww-image",
         "data": {
@@ -45,10 +45,7 @@
                 "name": "",
                 "options": {}
             },
-            "focusPoint": [
-                50,
-                50
-            ]
+            "focusPoint": [50, 50]
         }
     },
     "upsales": {
