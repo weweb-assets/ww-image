@@ -1,61 +1,65 @@
 <template>
-    <div class="ww-image" :class="{ bg: wwAttrs.wwCategory == 'background' }" :style="c_styles.wrapper">
-        <!-- wwManager:start -->
-        <div class="controls-desktop" :class="{ lock: d_lockControls }">
-            <div class="zoom-bar">
-                <div class="zoom-line"></div>
-                <div class="zoom-handle" :style="{ top: c_zoomPercentY + '%' }" @mousedown="startZoomDesktop($event)">
-                    <div></div>
+    <Hydrate ssr-only>
+        <div class="ww-image" :class="{ bg: wwAttrs.wwCategory == 'background' }" :style="c_styles.wrapper">
+            <!-- wwManager:start -->
+            <div class="controls-desktop" :class="{ lock: d_lockControls }">
+                <div class="zoom-bar">
+                    <div class="zoom-line"></div>
+                    <div class="zoom-handle" :style="{ top: c_zoomPercentY + '%' }" @mousedown="startZoomDesktop($event)">
+                        <div></div>
+                    </div>
                 </div>
             </div>
+            <div class="reset-zoom" @click="resetZoom($event)">
+                <i class="fa fa-expand" aria-hidden="true"></i>
+            </div>
+            <div class="format" :style="c_styles.format">
+                <!-- Background -->
+                <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :style="c_styles.image"></div>
+
+                <!-- Normal Image -->
+                <img v-if="wwAttrs.wwCategory != 'background'" draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+            </div>
+            <!-- wwManager:end -->
+
+            <!-- wwFront:start -->
+            <div class="format" :style="c_styles.format">
+                <!-- Background -->
+                <template v-if="wwAttrs.wwCategory == 'background'">
+                    <!-- No Twicpics -->
+                    <div v-if="wwAttrs.wwNoTwicPics" class="image bg" :style="c_styles.image"></div>
+
+                    <!-- Twicpics -->
+                    <div
+                        v-else
+                        class="image bg twic"
+                        :data-background="'url(' + wwObject.content.data.url + ')'"
+                        data-background-step="400"
+                        :data-background-focus="c_focusPoint"
+                        data-background-transform="auto/quality=85"
+                        :style="c_styles.image"
+                    ></div>
+                </template>
+
+                <!-- Normal Image -->
+                <template v-else>
+                    <!-- No Twicpics -->
+                    <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" :loading="d_isLazy ? 'lazy' : 'auto'" />
+
+                    <!-- Twicpics -->
+                    <img v-else class="image twic" :src="d_preview" :data-src="wwObject.content.data.url" data-src-transform="quality=85/auto" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+                </template>
+            </div>
+            <!-- wwFront:end -->
+
+            <div class="border" :style="c_styles.border"></div>
         </div>
-        <div class="reset-zoom" @click="resetZoom($event)">
-            <i class="fa fa-expand" aria-hidden="true"></i>
-        </div>
-        <div class="format" :style="c_styles.format">
-            <!-- Background -->
-            <div v-if="wwAttrs.wwCategory == 'background'" class="image bg" :style="c_styles.image"></div>
-
-            <!-- Normal Image -->
-            <img v-if="wwAttrs.wwCategory != 'background'" draggable="false" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" />
-        </div>
-        <!-- wwManager:end -->
-
-        <!-- wwFront:start -->
-        <div class="format" :style="c_styles.format">
-            <!-- Background -->
-            <template v-if="wwAttrs.wwCategory == 'background'">
-                <!-- No Twicpics -->
-                <div v-if="wwAttrs.wwNoTwicPics" class="image bg" :style="c_styles.image"></div>
-
-                <!-- Twicpics -->
-                <div
-                    v-else
-                    class="image bg twic"
-                    :data-background="'url(' + wwObject.content.data.url + ')'"
-                    data-background-step="400"
-                    :data-background-focus="c_focusPoint"
-                    data-background-transform="auto/quality=85"
-                    :style="c_styles.image"
-                ></div>
-            </template>
-
-            <!-- Normal Image -->
-            <template v-else>
-                <!-- No Twicpics -->
-                <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" :loading="d_isLazy ? 'lazy' : 'auto'" />
-
-                <!-- Twicpics -->
-                <img v-else class="image twic" :src="d_preview" :data-src="wwObject.content.data.url" data-src-transform="quality=85/auto" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
-            </template>
-        </div>
-        <!-- wwFront:end -->
-
-        <div class="border" :style="c_styles.border"></div>
-    </div>
+    </Hydrate>
 </template>
 
 <script>
+import Hydrate from 'vue-lazy-hydration';
+
 /* wwManager:start */
 import wwImagePopupFocusPoint from './wwImagePopupFocusPoint.vue';
 wwLib.wwPopups.addPopup('wwImagePopupFocusPoint', wwImagePopupFocusPoint);
@@ -63,6 +67,9 @@ wwLib.wwPopups.addPopup('wwImagePopupFocusPoint', wwImagePopupFocusPoint);
 
 export default {
     name: '__COMPONENT_NAME__',
+    components: {
+        Hydrate
+    },
     props: {
         wwObjectCtrl: Object,
         wwAttrs: {
