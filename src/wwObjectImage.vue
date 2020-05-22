@@ -1,6 +1,6 @@
 <template>
-    <Hydrate ssr-only>
-        <div class="ww-image" :class="{ bg: wwAttrs.wwCategory == 'background' }" :style="c_styles.wrapper">
+    <Hydrate class="ww-image" ssr-only>
+        <div :class="{ bg: wwAttrs.wwCategory == 'background' }" :style="c_styles.wrapper">
             <!-- wwManager:start -->
             <div class="controls-desktop" :class="{ lock: d_lockControls }">
                 <div class="zoom-bar">
