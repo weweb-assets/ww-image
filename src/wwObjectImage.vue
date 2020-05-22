@@ -199,10 +199,10 @@ export default {
         init() {
             this.d_zoomFactor = Math.sqrt((100 * 100) / (10 - this.d_zoomMin));
 
-            const section = this.$el.closest('.ww-section');
-            if (section && section.getAttribute('section-index') && section.getAttribute('section-index') < 2) {
-                this.d_preview = `https://i.twic.pics/${this.wwObject.content.data.url}${this.wwObject.content.data.url.indexOf('?') === -1 ? '?' : '&'}twic=v1/resize=50`;
-            }
+            // const section = this.$el.closest('.ww-section');
+            // if (section && section.getAttribute('section-index') && section.getAttribute('section-index') < 2) {
+            //     this.d_preview = `https://i.twic.pics/${this.wwObject.content.data.url}${this.wwObject.content.data.url.indexOf('?') === -1 ? '?' : '&'}twic=v1/resize=50`;
+            // }
         },
         preventEvent(event) {
             if (!this.isTouch(event)) {
@@ -914,16 +914,16 @@ export default {
                 background-size: cover;
             }
 
-            &.twic {
-                filter: blur(5px);
-                will-change: filter;
+            // &.twic {
+            //     filter: blur(5px);
+            //     will-change: filter;
 
-                &.twic-done,
-                &.twic-background-done {
-                    transition: filter 0.3s ease;
-                    filter: none;
-                }
-            }
+            //     &.twic-done,
+            //     &.twic-background-done {
+            //         transition: filter 0.3s ease;
+            //         filter: none;
+            //     }
+            // }
         }
     }
 }
