@@ -495,16 +495,13 @@ export default {
         let u = this.wwObject.content.data.url;
 
         //Replace for prod
-        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('cdn.weweb.app', 'weweb.twic.pics');
-        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp.s3.eu-west-3.amazonaws.com', 'weweb.twic.pics');
+        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp.s3.eu-west-3.amazonaws.com', 'cdn.weweb.app');
 
         //Replace for preprod
-        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('cdn.weweb.dev', 'weweb.twic.pics/preprod');
-        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp-preprod.s3.eu-west-3.amazonaws.com', 'weweb.twic.pics/preprod');
+        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp-preprod.s3.eu-west-3.amazonaws.com', 'cdn.weweb.dev');
 
         //Replace for staging
-        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('cdn.weweb.space', 'weweb.twic.pics/staging');
-        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp-dev.s3.eu-west-3.amazonaws.com', 'weweb.twic.pics/staging');
+        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp-dev.s3.eu-west-3.amazonaws.com', 'cdn.weweb.space');
 
         if (u != this.wwObject.content.data.url) {
             this.wwObjectCtrl.update(this.wwObject);
