@@ -495,12 +495,15 @@ export default {
         let u = this.wwObject.content.data.url;
 
         //Replace for prod
+        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('weweb.twic.pics', 'cdn.weweb.app');
         this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp.s3.eu-west-3.amazonaws.com', 'cdn.weweb.app');
 
         //Replace for preprod
+        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('weweb.twic.pics/preprod', 'cdn.weweb.dev');
         this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp-preprod.s3.eu-west-3.amazonaws.com', 'cdn.weweb.dev');
 
         //Replace for staging
+        this.wwObject.content.data.url = this.wwObject.content.data.url.replace('weweb.twic.pics/staging', 'cdn.weweb.space');
         this.wwObject.content.data.url = this.wwObject.content.data.url.replace('wewebapp-dev.s3.eu-west-3.amazonaws.com', 'cdn.weweb.space');
 
         if (u != this.wwObject.content.data.url) {
