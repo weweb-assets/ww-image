@@ -30,7 +30,7 @@
 
                 <!-- Twicpics -->
                 <div
-                    v-else
+                    v-else-if="!c_imgSrcSet"
                     class="image bg twic"
                     :data-background="'url(' + wwObject.content.data.url + ')'"
                     data-background-step="400"
@@ -38,6 +38,9 @@
                     data-background-transform="auto/quality=85"
                     :style="c_styles.image"
                 ></div>
+
+                <!-- SRCSET -->
+                <div v-else class="image bg" :style="c_styles.image" v-style="c_imgSrcSet"></div>
             </template>
 
             <!-- Normal Image -->
@@ -46,7 +49,13 @@
                 <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" :loading="d_isLazy ? 'lazy' : 'auto'" />
 
                 <!-- Twicpics -->
-                <img v-else class="image twic" :src="d_preview" :data-src="wwObject.content.data.url" data-src-transform="quality=85/auto" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+                <img v-else-if="!c_imgSrcSet" class="image twic" :src="d_preview" :data-src="wwObject.content.data.url" data-src-transform="quality=85/auto" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+
+                <!-- SRCSET -->
+                <picture v-else class="image" :style="c_styles.image">
+                    <source :srcset="c_imgSrcSet" />
+                    <img :src="`https://weweb.twic.pics/${wwObject.content.data.url}?twic=v1/quality=85/resize=1024`" :alt="wwObject.content.data.alt" />
+                </picture>
             </template>
         </div>
         <!-- wwFront:end -->
@@ -83,7 +92,8 @@ export default {
             d_lastTouchDist: 0,
             d_zoomBarElement: null,
             d_lockControls: false,
-            d_moveDirection: null
+            d_moveDirection: null,
+            d_imgSize: {}
             /* wwManager:end */
         };
     },
@@ -130,7 +140,7 @@ export default {
             //IMAGE
             styles.image.filter = this.wwObject.content.data.style.filter || null;
 
-            if (this.wwAttrs.wwCategory == 'background') {
+            if (this.wwAttrs.wwCategory == 'background' && !this.c_imgSrcSet) {
                 styles.image.backgroundImage = `url(${this.wwAttrs.wwNoTwicPics ? this.wwObject.content.data.url : this.d_preview})`;
             }
 
@@ -187,14 +197,68 @@ export default {
         c_editing() {
             return this.wwObjectCtrl.getSectionCtrl().getEditMode() == 'CONTENT';
         },
+        c_imgSrcSet() {
+            if (!Object.keys(this.wwObject.content.data.imgSize).length) {
+                return null;
+            }
+            const screens = {
+                xs: 400,
+                sm: 770,
+                md: 1150,
+                lg: 1920
+            };
+
+            if (this.wwAttrs.wwCategory !== 'background') {
+                const sources = [];
+
+                for (const screen in screens) {
+                    if (this.wwObject.content.data.imgSize[screen]) {
+                        sources.push(`https://weweb.twic.pics/${this.wwObject.content.data.url}?twic=v1/quality=85/resize=${this.wwObject.content.data.imgSize[screen][0]} ${screens[screen]}w`);
+                    }
+                }
+
+                return sources.join(', ');
+            } else {
+                const sources = {};
+
+                for (const screen in screens) {
+                    if (this.wwObject.content.data.imgSize[screen]) {
+                        const sizes = this.wwObject.content.data.imgSize[screen];
+                        sources[screen] = {
+                            backgroundImage: `url(https://weweb.twic.pics/${this.wwObject.content.data.url}?twic=v1/quality=85/focus=${this.c_focusPoint}/cover=${sizes[0]}x${sizes[1]}/resize=${sizes[0]})`
+                        };
+                    }
+                }
+                return sources;
+            }
+        },
 
         /* wwManager:start */
         c_zoomPercentY() {
             return 100 - this.d_zoomFactor * Math.sqrt(Math.max(this.wwObject.content.data.zoom, 0) - this.d_zoomMin);
+        },
+        c_screenSize() {
+            return wwLib.$store.getters['front/getScreenSize'];
         }
         /* wwManager:end */
     },
-    watch: {},
+    watch: {
+        /* wwManager:start */
+        c_screenSize(oldValue, newValue) {
+            if (oldValue != newValue) {
+                this.d_imgSize = this.d_imgSize || {};
+                const image = this.$el && this.$el.querySelector('.image') ? this.$el.querySelector('.image') : null;
+
+                if (image) {
+                    const rect = image.getBoundingClientRect();
+                    if (rect && rect.width && rect.height) {
+                        this.d_imgSize[this.c_screenSize] = [Math.floor(rect.width), Math.floor(rect.height)];
+                    }
+                }
+            }
+        }
+        /* wwManager:end */
+    },
     methods: {
         init() {
             this.d_zoomFactor = Math.sqrt((100 * 100) / (10 - this.d_zoomMin));
@@ -483,11 +547,6 @@ export default {
 
             return false;
         }
-
-        /*=============================================m_ÔÔ_m=============================================\
-          CHANGE IMAGE
-        \================================================================================================*/
-
         /* wwManager:end */
     },
     created() {
@@ -509,6 +568,15 @@ export default {
         if (u != this.wwObject.content.data.url) {
             this.wwObjectCtrl.update(this.wwObject);
         }
+
+        wwLib.$on('wwLib:resizeBeforeSave', () => {
+            if (this.d_imgSize && Object.keys(this.d_imgSize).length) {
+                this.wwObject.content.data.imgSize = this.d_imgSize;
+            } else {
+                delete this.wwObject.content.data.imgSize;
+            }
+            this.wwObjectCtrl.update(this.wwObject);
+        });
         /* wwManager:end */
     },
     mounted() {
@@ -564,6 +632,11 @@ export default {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+
+            img {
+                width: 100%;
+                height: 100%;
+            }
 
             &.bg {
                 top: auto;
