@@ -54,7 +54,7 @@
                 <!-- SRCSET -->
                 <picture v-else class="image" :style="c_styles.image">
                     <source :srcset="c_imgSrcSet" />
-                    <img :src="`https://weweb.twic.pics/${wwObject.content.data.url}?twic=v1/quality=85/resize=1024`" :alt="wwObject.content.data.alt" />
+                    <img :src="`https://weweb.twic.pics/${wwObject.content.data.url}${wwObject.content.data.url.indexOf('?') !== -1 ? '&' : '?'}twic=v1/quality=85/resize=1024`" :alt="wwObject.content.data.alt" loading="lazy" />
                 </picture>
             </template>
         </div>
@@ -85,6 +85,12 @@ export default {
             d_zoomFactor: 1,
             d_el: null,
             d_preview: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+            d_imageSizes: {
+                lg: 0,
+                md: 0,
+                sm: 0,
+                xs: 0
+            },
 
             /* wwManager:start */
             d_lastMovePosition: { x: 0, y: 0 },
@@ -147,7 +153,7 @@ export default {
             /* wwManager:start */
             this.wwAttrs.wwCategory == 'background' && (styles.image.backgroundImage = 'url(' + this.wwObject.content.data.url + ')');
             /* wwManager:end */
-            styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
+            // styles.image.height = this.wwAttrs.wwCategory == 'background' || this.c_imgSrcSet ? '100%' : 'auto';
             styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
             if (this.wwAttrs.wwCategory != 'background') {
                 let position = this.wwObject.content.data.position || { x: 0, y: 0 };
@@ -198,22 +204,31 @@ export default {
             return this.wwObjectCtrl.getSectionCtrl().getEditMode() == 'CONTENT';
         },
         c_imgSrcSet() {
-            if (!Object.keys(this.wwObject.content.data.imgSize).length) {
+            /* wwFront:start */
+            if (this.wwObject.content.data.url.indexOf('.gif') !== -1) {
                 return null;
             }
-            const screens = {
-                xs: 400,
-                sm: 770,
-                md: 1150,
+
+            const sum = this.d_imageSizes.lg + this.d_imageSizes.md + this.d_imageSizes.sm + this.d_imageSizes.xs;
+            if (!sum) {
+                return null;
+            }
+
+            const screenBreakpoints = {
+                xs: 768,
+                sm: 992,
+                md: 1200,
                 lg: 1920
             };
 
             if (this.wwAttrs.wwCategory !== 'background') {
                 const sources = [];
 
-                for (const screen in screens) {
-                    if (this.wwObject.content.data.imgSize[screen]) {
-                        sources.push(`https://weweb.twic.pics/${this.wwObject.content.data.url}?twic=v1/quality=85/resize=${this.wwObject.content.data.imgSize[screen][0]} ${screens[screen]}w`);
+                for (const screen in screenBreakpoints) {
+                    if (this.d_imageSizes[screen]) {
+                        sources.push(
+                            `https://weweb.twic.pics/${this.wwObject.content.data.url}${this.wwObject.content.data.url.indexOf('?') !== -1 ? '&' : '?'}twic=v1/quality=85/resize=${this.d_imageSizes[screen][0]} ${screenBreakpoints[screen]}w`
+                        );
                     }
                 }
 
@@ -221,16 +236,18 @@ export default {
             } else {
                 const sources = {};
 
-                for (const screen in screens) {
-                    if (this.wwObject.content.data.imgSize[screen]) {
-                        const sizes = this.wwObject.content.data.imgSize[screen];
+                for (const screen in screenBreakpoints) {
+                    if (this.d_imageSizes[screen]) {
                         sources[screen] = {
-                            backgroundImage: `url(https://weweb.twic.pics/${this.wwObject.content.data.url}?twic=v1/quality=85/focus=${this.c_focusPoint}/cover=${sizes[0]}x${sizes[1]}/resize=${sizes[0]})`
+                            backgroundImage: `url(https://weweb.twic.pics/${this.wwObject.content.data.url}${this.wwObject.content.data.url.indexOf('?') !== -1 ? '&' : '?'}twic=v1/quality=85/focus=${this.c_focusPoint}/cover=${
+                                this.d_imageSizes[screen][0]
+                            }x${this.d_imageSizes[screen][1]}/resize=${this.d_imageSizes[screen][0]})`
                         };
                     }
                 }
                 return sources;
             }
+            /* wwFront:end */
         },
 
         /* wwManager:start */
@@ -578,6 +595,15 @@ export default {
             this.wwObjectCtrl.update(this.wwObject);
         });
         /* wwManager:end */
+
+        /* wwFront:start */
+        const screens = ['lg', 'md', 'sm', 'xs'];
+        for (const screen of screens) {
+            if (window[`wwg_imageSize_${screen}_${this.wwObject.uniqueId}`]) {
+                this.d_imageSizes[screen] = window[`wwg_imageSize_${screen}_${this.wwObject.uniqueId}`];
+            }
+        }
+        /* wwFront:end */
     },
     mounted() {
         this.init();
