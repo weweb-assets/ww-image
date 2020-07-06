@@ -153,7 +153,7 @@ export default {
             /* wwManager:start */
             this.wwAttrs.wwCategory == 'background' && (styles.image.backgroundImage = 'url(' + this.wwObject.content.data.url + ')');
             /* wwManager:end */
-            // styles.image.height = this.wwAttrs.wwCategory == 'background' || this.c_imgSrcSet ? '100%' : 'auto';
+            styles.image.height = this.wwAttrs.wwCategory == 'background' ? '100%' : 'auto';
             styles.image.width = (this.wwObject.content.data.zoom > 0 ? this.wwObject.content.data.zoom : 1) * 100 + '%';
             if (this.wwAttrs.wwCategory != 'background') {
                 let position = this.wwObject.content.data.position || { x: 0, y: 0 };
