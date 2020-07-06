@@ -248,19 +248,19 @@ export default {
                 return sources;
             }
             /* wwFront:end */
+            return null;
+        },
+        c_screenSize() {
+            return wwLib.$store.getters['front/getScreenSize'];
         },
 
         /* wwManager:start */
         c_zoomPercentY() {
             return 100 - this.d_zoomFactor * Math.sqrt(Math.max(this.wwObject.content.data.zoom, 0) - this.d_zoomMin);
-        },
-        c_screenSize() {
-            return wwLib.$store.getters['front/getScreenSize'];
         }
         /* wwManager:end */
     },
     watch: {
-        /* wwManager:start */
         c_screenSize(oldValue, newValue) {
             if (oldValue != newValue) {
                 this.d_imgSize = this.d_imgSize || {};
@@ -274,7 +274,6 @@ export default {
                 }
             }
         }
-        /* wwManager:end */
     },
     methods: {
         init() {
