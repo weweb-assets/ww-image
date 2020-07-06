@@ -261,19 +261,29 @@ export default {
         /* wwManager:end */
     },
     watch: {
-        c_screenSize(oldValue, newValue) {
-            if (oldValue != newValue) {
-                this.d_imgSize = this.d_imgSize || {};
-                const image = this.$el && this.$el.querySelector('.image') ? this.$el.querySelector('.image') : null;
+        /* wwFront:start */
+        c_screenSize() {
+            if (window.__WW_IS_PRERENDER__ && this.$el) {
+                const elemOk = (this.wwAttrs.wwCategory !== 'background' && this.$el.querySelector('.image')) || (this.wwAttrs.wwCategory === 'background' && this.$el.querySelector('.format'));
 
-                if (image) {
-                    const rect = image.getBoundingClientRect();
-                    if (rect && rect.width && rect.height) {
-                        this.d_imgSize[this.c_screenSize] = [Math.floor(rect.width), Math.floor(rect.height)];
-                    }
+                if (!elemOk) return null;
+
+                if (this.wwAttrs.wwCategory !== 'background') {
+                    this.d_imageSizes[this.c_screenSize] = [Math.floor(this.$el.querySelector('.image').getBoundingClientRect().width), 0];
+                } else {
+                    this.d_imageSizes[this.c_screenSize] = [Math.floor(this.$el.querySelector('.format').getBoundingClientRect().width), Math.floor(this.$el.querySelector('.format').getBoundingClientRect().height)];
                 }
+
+                let imgSizeElm = document.getElementById(`ww-image-size`);
+                if (!imgSizeElm) {
+                    imgSizeElm = document.createElement('script');
+                    imgSizeElm.setAttribute('id', `ww-image-size`);
+                    document.head.append(imgSizeElm);
+                }
+                imgSizeElm.innerText += `window.wwg_imageSize_${this.c_screenSize}_${this.wwObject.uniqueId} = ${JSON.stringify(this.d_imageSizes[this.c_screenSize])};`;
             }
         }
+        /* wwFront:end */
     },
     methods: {
         init() {
