@@ -45,7 +45,7 @@ export default {
 
             try {
                 const result = await wwLib.wwPopups.open(options);
-                this.wwObject.content.data.url = result.image;
+                this.wwObject.content.data.url = result.image.replace('.dev', '.space');
 
                 this.wwObject.content.data.zoom = 1;
                 this.wwObject.content.data.position = { x: 0, y: 0 };

@@ -30,7 +30,7 @@
 
                 <!-- Twicpics -->
                 <div
-                    v-else
+                    v-else-if="!c_imgSrcSet"
                     class="image bg twic"
                     :data-background="'url(' + wwObject.content.data.url + ')'"
                     data-background-step="400"
@@ -38,6 +38,9 @@
                     data-background-transform="auto/quality=85"
                     :style="c_styles.image"
                 ></div>
+
+                <!-- SRCSET -->
+                <div v-else class="image bg" :style="c_styles.image" v-style="c_imgSrcSet"></div>
             </template>
 
             <!-- Normal Image -->
@@ -46,7 +49,13 @@
                 <img v-if="wwAttrs.wwNoTwicPics" class="image" :src="wwObject.content.data.url" :alt="wwObject.content.data.alt" :style="c_styles.image" :loading="d_isLazy ? 'lazy' : 'auto'" />
 
                 <!-- Twicpics -->
-                <img v-else class="image twic" :src="d_preview" :data-src="wwObject.content.data.url" data-src-transform="quality=85/auto" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+                <img v-else-if="!c_imgSrcSet" class="image twic" :src="d_preview" :data-src="wwObject.content.data.url" data-src-transform="quality=85/auto" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
+
+                <!-- SRCSET -->
+                <picture v-else class="image" :style="c_styles.image">
+                    <source :srcset="c_imgSrcSet" />
+                    <img :src="`https://weweb.twic.pics/${wwObject.content.data.url}${wwObject.content.data.url.indexOf('?') !== -1 ? '&' : '?'}twic=v1/quality=85/resize=1024`" :alt="wwObject.content.data.alt" loading="lazy" />
+                </picture>
             </template>
         </div>
         <!-- wwFront:end -->
@@ -76,6 +85,12 @@ export default {
             d_zoomFactor: 1,
             d_el: null,
             d_preview: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+            d_imageSizes: {
+                lg: 0,
+                md: 0,
+                sm: 0,
+                xs: 0
+            },
 
             /* wwManager:start */
             d_lastMovePosition: { x: 0, y: 0 },
@@ -83,7 +98,8 @@ export default {
             d_lastTouchDist: 0,
             d_zoomBarElement: null,
             d_lockControls: false,
-            d_moveDirection: null
+            d_moveDirection: null,
+            d_imgSize: {}
             /* wwManager:end */
         };
     },
@@ -130,7 +146,7 @@ export default {
             //IMAGE
             styles.image.filter = this.wwObject.content.data.style.filter || null;
 
-            if (this.wwAttrs.wwCategory == 'background') {
+            if (this.wwAttrs.wwCategory == 'background' && !this.c_imgSrcSet) {
                 styles.image.backgroundImage = `url(${this.wwAttrs.wwNoTwicPics ? this.wwObject.content.data.url : this.d_preview})`;
             }
 
@@ -187,6 +203,56 @@ export default {
         c_editing() {
             return this.wwObjectCtrl.getSectionCtrl().getEditMode() == 'CONTENT';
         },
+        c_imgSrcSet() {
+            /* wwFront:start */
+            if (this.wwObject.content.data.url.indexOf('.gif') !== -1) {
+                return null;
+            }
+
+            const sum = this.d_imageSizes.lg + this.d_imageSizes.md + this.d_imageSizes.sm + this.d_imageSizes.xs;
+            if (!sum) {
+                return null;
+            }
+
+            const screenBreakpoints = {
+                xs: 768,
+                sm: 992,
+                md: 1200,
+                lg: 1920
+            };
+
+            if (this.wwAttrs.wwCategory !== 'background') {
+                const sources = [];
+
+                for (const screen in screenBreakpoints) {
+                    if (this.d_imageSizes[screen]) {
+                        sources.push(
+                            `https://weweb.twic.pics/${this.wwObject.content.data.url}${this.wwObject.content.data.url.indexOf('?') !== -1 ? '&' : '?'}twic=v1/quality=85/resize=${this.d_imageSizes[screen][0]} ${screenBreakpoints[screen]}w`
+                        );
+                    }
+                }
+
+                return sources.join(', ');
+            } else {
+                const sources = {};
+
+                for (const screen in screenBreakpoints) {
+                    if (this.d_imageSizes[screen]) {
+                        sources[screen] = {
+                            backgroundImage: `url(https://weweb.twic.pics/${this.wwObject.content.data.url}${this.wwObject.content.data.url.indexOf('?') !== -1 ? '&' : '?'}twic=v1/quality=85/focus=${this.c_focusPoint}/cover=${
+                                this.d_imageSizes[screen][0]
+                            }x${this.d_imageSizes[screen][1]}/resize=${this.d_imageSizes[screen][0]})`
+                        };
+                    }
+                }
+                return sources;
+            }
+            /* wwFront:end */
+            return null;
+        },
+        c_screenSize() {
+            return wwLib.$store.getters['front/getScreenSize'];
+        },
 
         /* wwManager:start */
         c_zoomPercentY() {
@@ -194,7 +260,31 @@ export default {
         }
         /* wwManager:end */
     },
-    watch: {},
+    watch: {
+        /* wwFront:start */
+        c_screenSize() {
+            if (window.__WW_IS_PRERENDER__ && this.$el) {
+                const elemOk = (this.wwAttrs.wwCategory !== 'background' && this.$el.querySelector('.image')) || (this.wwAttrs.wwCategory === 'background' && this.$el.querySelector('.format'));
+
+                if (!elemOk) return null;
+
+                if (this.wwAttrs.wwCategory !== 'background') {
+                    this.d_imageSizes[this.c_screenSize] = [Math.floor(this.$el.querySelector('.image').getBoundingClientRect().width), 0];
+                } else {
+                    this.d_imageSizes[this.c_screenSize] = [Math.floor(this.$el.querySelector('.format').getBoundingClientRect().width), Math.floor(this.$el.querySelector('.format').getBoundingClientRect().height)];
+                }
+
+                let imgSizeElm = document.getElementById(`ww-image-size`);
+                if (!imgSizeElm) {
+                    imgSizeElm = document.createElement('script');
+                    imgSizeElm.setAttribute('id', `ww-image-size`);
+                    document.head.append(imgSizeElm);
+                }
+                imgSizeElm.innerText += `window.wwg_imageSize_${this.c_screenSize}_${this.wwObject.uniqueId} = ${JSON.stringify(this.d_imageSizes[this.c_screenSize])};`;
+            }
+        }
+        /* wwFront:end */
+    },
     methods: {
         init() {
             this.d_zoomFactor = Math.sqrt((100 * 100) / (10 - this.d_zoomMin));
@@ -483,11 +573,6 @@ export default {
 
             return false;
         }
-
-        /*=============================================m_ÔÔ_m=============================================\
-          CHANGE IMAGE
-        \================================================================================================*/
-
         /* wwManager:end */
     },
     created() {
@@ -509,7 +594,25 @@ export default {
         if (u != this.wwObject.content.data.url) {
             this.wwObjectCtrl.update(this.wwObject);
         }
+
+        wwLib.$on('wwLib:resizeBeforeSave', () => {
+            if (this.d_imgSize && Object.keys(this.d_imgSize).length) {
+                this.wwObject.content.data.imgSize = this.d_imgSize;
+            } else {
+                delete this.wwObject.content.data.imgSize;
+            }
+            this.wwObjectCtrl.update(this.wwObject);
+        });
         /* wwManager:end */
+
+        /* wwFront:start */
+        const screens = ['lg', 'md', 'sm', 'xs'];
+        for (const screen of screens) {
+            if (window[`wwg_imageSize_${screen}_${this.wwObject.uniqueId}`]) {
+                this.d_imageSizes[screen] = window[`wwg_imageSize_${screen}_${this.wwObject.uniqueId}`];
+            }
+        }
+        /* wwFront:end */
     },
     mounted() {
         this.init();
@@ -564,6 +667,11 @@ export default {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+
+            img {
+                width: 100%;
+                height: 100%;
+            }
 
             &.bg {
                 top: auto;
