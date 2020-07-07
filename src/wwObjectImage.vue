@@ -594,15 +594,6 @@ export default {
         if (u != this.wwObject.content.data.url) {
             this.wwObjectCtrl.update(this.wwObject);
         }
-
-        wwLib.$on('wwLib:resizeBeforeSave', () => {
-            if (this.d_imgSize && Object.keys(this.d_imgSize).length) {
-                this.wwObject.content.data.imgSize = this.d_imgSize;
-            } else {
-                delete this.wwObject.content.data.imgSize;
-            }
-            this.wwObjectCtrl.update(this.wwObject);
-        });
         /* wwManager:end */
 
         /* wwFront:start */
@@ -610,6 +601,7 @@ export default {
         for (const screen of screens) {
             if (window[`wwg_imageSize_${screen}_${this.wwObject.uniqueId}`]) {
                 this.d_imageSizes[screen] = window[`wwg_imageSize_${screen}_${this.wwObject.uniqueId}`];
+                this.d_imageSizes[screen][0] = this.d_imageSizes[screen][0] || 1024;
             }
         }
         /* wwFront:end */
