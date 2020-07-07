@@ -213,7 +213,12 @@ export default {
                 return null;
             }
 
-            const sum = this.d_imageSizes.lg + this.d_imageSizes.md + this.d_imageSizes.sm + this.d_imageSizes.xs;
+            const lg = this.d_imageSizes.lg ? this.d_imageSizes.lg[0] : 0;
+            const md = this.d_imageSizes.md ? this.d_imageSizes.md[0] : 0;
+            const sm = this.d_imageSizes.sm ? this.d_imageSizes.sm[0] : 0;
+            const xs = this.d_imageSizes.xs ? this.d_imageSizes.xs[0] : 0;
+
+            const sum = lg + md + sm + xs;
             if (!sum) {
                 return null;
             }
@@ -242,6 +247,9 @@ export default {
 
                 for (const screen in screenBreakpoints) {
                     if (this.d_imageSizes[screen]) {
+                        if (!this.d_imageSizes[screen][0] || !this.d_imageSizes[screen][1]) {
+                            return null;
+                        }
                         sources[screen] = {
                             backgroundImage: `url(https://weweb.twic.pics/${this.wwObject.content.data.url}${this.wwObject.content.data.url.indexOf('?') !== -1 ? '&' : '?'}twic=v1/quality=85/focus=${this.c_focusPoint}/cover=${
                                 this.d_imageSizes[screen][0]
