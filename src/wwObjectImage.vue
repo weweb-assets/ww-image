@@ -52,10 +52,14 @@
                 <img v-else-if="!c_imgSrcSet" class="image twic" :src="d_preview" :data-src="wwObject.content.data.url" data-src-transform="quality=85/auto" data-src-step="10" :alt="wwObject.content.data.alt" :style="c_styles.image" />
 
                 <!-- SRCSET -->
-                <picture v-else class="image" :style="c_styles.image">
-                    <source :srcset="c_imgSrcSet" />
-                    <img :src="`https://weweb.twic.pics/${wwObject.content.data.url}${wwObject.content.data.url.indexOf('?') !== -1 ? '&' : '?'}twic=v1/quality=85/resize=1024`" :alt="wwObject.content.data.alt" loading="lazy" />
-                </picture>
+                <img
+                    class="image"
+                    :style="c_styles.image"
+                    :srcset="c_imgSrcSet"
+                    :src="`https://weweb.twic.pics/${wwObject.content.data.url}${wwObject.content.data.url.indexOf('?') !== -1 ? '&' : '?'}twic=v1/quality=85/resize=1024`"
+                    :alt="wwObject.content.data.alt"
+                    loading="lazy"
+                />
             </template>
         </div>
         <!-- wwFront:end -->
