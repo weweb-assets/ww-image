@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import Hydrate from 'vue-lazy-hydration';
+import Hydrate from 'lazy-hydration';
 import wwObjectImage from './wwObjectImage.vue';
 
 export default {

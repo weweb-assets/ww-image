@@ -5526,6 +5526,11 @@ launch-editor@^2.2.1:
     chalk "^2.3.0"
     shell-quote "^1.6.1"
 
+lazy-hydration@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/lazy-hydration/-/lazy-hydration-1.0.4.tgz#2f687cea76e804fff6f516a2dd966a4c218fc9c6"
+  integrity sha512-rbgNLgjEIPy0P8Qtnihn2ENO9dK0sazILdko7gvHDG5cepnlgvMj1Jnts8EYDJ5C/HA1g/Pijg0NqRhMK0Tevg==
+
 lcid@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/lcid/-/lcid-1.0.0.tgz#308accafa0bc483a3867b4b6f2b9506251d1b835"
@@ -9138,11 +9143,6 @@ vue-hot-reload-api@^2.3.0:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/vue-hot-reload-api/-/vue-hot-reload-api-2.3.3.tgz#2756f46cb3258054c5f4723de8ae7e87302a1ccf"
   integrity sha512-KmvZVtmM26BQOMK1rwUZsrqxEGeKiYSZGA7SNWE6uExx8UX/cj9hq2MRV/wWC3Cq6AoeDGk57rL9YMFRel/q+g==
-
-vue-lazy-hydration@^1.0.0-beta.12:
-  version "1.0.0-beta.12"
-  resolved "https://registry.yarnpkg.com/vue-lazy-hydration/-/vue-lazy-hydration-1.0.0-beta.12.tgz#d578dc86059eb0a147e6e553585dd22c41dfbae2"
-  integrity sha512-0innXtjaqNodh0aw1/3dgGdEfL76eqDzo3CETSKolyjm3Z++hqBS7GQkrAAfp4JYBE12mb5yP2YnJxK6tJSGIA==
 
 vue-loader@15.7.1:
   version "15.7.1"
