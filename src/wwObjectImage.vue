@@ -281,7 +281,9 @@ export default {
                 if (!elemOk) return null;
 
                 if (this.wwAttrs.wwCategory !== 'background') {
-                    this.d_imageSizes[this.c_screenSize] = [Math.floor(this.$el.querySelector('.image').getBoundingClientRect().width), 0];
+                    let width = this.$el.querySelector('.image').getBoundingClientRect().width;
+                    width += width * 0.2;
+                    this.d_imageSizes[this.c_screenSize] = [Math.floor(width), 0];
                 } else {
                     this.d_imageSizes[this.c_screenSize] = [Math.floor(this.$el.querySelector('.format').getBoundingClientRect().width), Math.floor(this.$el.querySelector('.format').getBoundingClientRect().height)];
                 }
