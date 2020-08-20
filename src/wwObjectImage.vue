@@ -83,7 +83,7 @@ export default {
             default: {}
         },
         /* wwManager: start */
-        isFocused: Boolean,
+        isSelected: Boolean,
         /* wwManager: end */
     },
     data() {
@@ -273,7 +273,7 @@ export default {
             return 100 - this.d_zoomFactor * Math.sqrt(Math.max(this.wwObject.content.data.zoom, 0) - this.d_zoomMin);
         },
         isControlsDisplayed() {
-            return this.isFocused && this.wwAttrs.wwCategory !== 'background'
+            return this.isSelected && this.wwAttrs.wwCategory !== 'background'
         }
         /* wwManager:end */
     },
@@ -471,7 +471,7 @@ export default {
             return event.touches && event.touches.length;
         },
         startMove(event) {
-            if (!this.isFocused) return
+            if (!this.isSelected) return
             if (this.wwObjectCtrl.getSectionCtrl().getEditMode() != 'CONTENT' || this.wwAttrs.wwCategory == 'background') {
                 return;
             }

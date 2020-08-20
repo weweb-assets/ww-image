@@ -1,6 +1,6 @@
 <template>
     <Hydrate ssr-only class="ww-image">
-        <wwObjectImage class="ww-image" :ww-object-ctrl="wwObjectCtrl" :ww-attrs="wwAttrs" :is-focused="isFocused"></wwObjectImage>
+        <wwObjectImage class="ww-image" :ww-object-ctrl="wwObjectCtrl" :ww-attrs="wwAttrs" :is-selected="isSelected"></wwObjectImage>
     </Hydrate>
 </template>
 
@@ -20,7 +20,7 @@ export default {
             type: Object,
             default: {}
         },
-        isFocused: Boolean
+        isSelected: { type: Boolean, default: false },
     },
     /* wwManager:start */
     computed: {
