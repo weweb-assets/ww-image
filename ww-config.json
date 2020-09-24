@@ -1,5 +1,6 @@
 {
     "componentPath": "./src/wwObject.vue",
+    "type": "wwObject",
     "editor": {
         "label": {
             "fr": "Image",

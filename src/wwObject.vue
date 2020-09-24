@@ -19,7 +19,9 @@ export default {
             y: 0,
         },
         zoom: 1,
-        style: {},
+        style: {
+            minWidth: 300,
+        },
         focusPoint: [50, 50],
         ratio: (100 / 3) * 2,
     },

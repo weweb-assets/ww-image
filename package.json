@@ -16,14 +16,9 @@
     "dependencies": {
         "@znck/prop-types": "^0.6.3",
         "lazy-hydration": "^1.0.4",
-        "vue": "^2.6.11"
+        "vue": "^2.6.12"
     },
     "devDependencies": {
         "weweb-client": "latest"
-    },
-    "browserslist": [
-        "> 1%",
-        "last 2 versions",
-        "not ie <= 8"
-    ]
+    }
 }

@@ -9,7 +9,7 @@
                 </div>
             </div>
         </div>
-        <div class="reset-zoom" @mousedown="resetZoom($event)" v-if="isControlsDisplayed">
+        <div data-is-ui class="reset-zoom" @mousedown="resetZoom($event)" v-if="isControlsDisplayed">
             <i class="fa fa-expand" aria-hidden="true"></i>
         </div>
         <div class="format" :style="formatStyle">
@@ -119,11 +119,12 @@ export default {
             },
 
             /* wwManager:start */
-            d_lastMovePosition: { x: 0, y: 0 },
-            d_moving: false,
-            d_lastTouchDist: 0,
-            d_zoomBarElement: null,
-            d_moveDirection: null,
+            lastMovePosition: { x: 0, y: 0 },
+            initialPosition: { x: 0, y: 0 },
+            lastTouchDist: 0,
+            isMoving: false,
+            zoomBarElement: null,
+            moveDirection: null,
             /* wwManager:end */
         };
     },
@@ -136,7 +137,7 @@ export default {
             return `https://weweb.twic.pics/${content.url}${hasParams ? "&" : "?"}twic=v1/quality=85/resize=1024`;
         },
         imageStyle() {
-            const style = {
+            let style = {
                 width: `${this.content.zoom > 0 ? this.content.zoom * 100 : 100}%`,
                 height: this.wwElementState.isBackground ? "100%" : "auto",
                 filter: this.content.style.filter || null,
@@ -156,7 +157,8 @@ export default {
             /* wwManager:end */
             const { x = 0, y = 0 } = this.content.position || {};
             const transform = `translate(${x - 50}%, ${y - 50}%)`;
-            style.image = {
+            style = {
+                ...style,
                 "-webkit-transform": transform,
                 "-moz-transform": transform,
                 "-ms-transform": transform,
@@ -240,7 +242,7 @@ export default {
 
         /* wwManager:start */
         zoomPercentY() {
-            return 100 - this.zoomFactor * Math.sqrt(Math.max(this.zoom, 0) - minZoom);
+            return 100 - this.zoomFactor * Math.sqrt(Math.max(this.content.zoom, 0) - minZoom);
         },
         isControlsDisplayed() {
             return this.wwEditorState.isSelected && !this.wwElementState.isBackground;
@@ -298,9 +300,6 @@ export default {
         resetZoom(event) {
             this.preventEvent(event);
 
-            //Reset position
-            this.wwObject.content.data.position = { x: 0, y: 0 };
-
             //Reset zoom
             const rectImg = this.$el.querySelector(".image").getBoundingClientRect();
             const imgSize = {
@@ -309,17 +308,17 @@ export default {
             };
 
             const ratio = imgSize.h / imgSize.w;
-
-            if (this.wwObject.content.data.zoom !== 1) {
-                this.wwObject.content.data.zoom = 1;
+            let zoom;
+            if (this.content.zoom !== 1) {
+                zoom = 1;
             } else {
                 const rectEl = this.$el.getBoundingClientRect();
                 const ratioContainer = rectEl.height / rectEl.width;
 
-                this.wwObject.content.data.zoom = ratioContainer / ratio;
+                zoom = ratioContainer / ratio;
             }
 
-            this.wwObjectCtrl.update(this.wwObject);
+            this.$emit("update", { position: { x: 0, y: 0 }, zoom });
 
             return false;
         },
@@ -329,7 +328,7 @@ export default {
 
             wwLib.wwManagerUI.lockSelection();
 
-            this.d_zoomBarElement = this.$el.querySelector(".zoom-bar");
+            this.zoomBarElement = this.$el.querySelector(".zoom-bar");
 
             window.addEventListener("mousemove", this.zoomDesktop);
             window.addEventListener("mouseup", this.stopZoomDesktop);
@@ -340,15 +339,15 @@ export default {
         },
         zoomDesktop(event) {
             let zoomPositionY =
-                ((event.clientY - this.d_zoomBarElement.getBoundingClientRect().top) * 100) /
-                this.d_zoomBarElement.getBoundingClientRect().height;
+                ((event.clientY - this.zoomBarElement.getBoundingClientRect().top) * 100) /
+                this.zoomBarElement.getBoundingClientRect().height;
             zoomPositionY = Math.min(Math.max(zoomPositionY, 0), 100);
 
-            this.wwObject.content.data.zoom = Math.pow((100 - zoomPositionY) / this.zoomFactor, 2) + minZoom;
+            const zoom = Math.pow((100 - zoomPositionY) / this.zoomFactor, 2) + minZoom;
 
             this.preventEvent(event);
 
-            this.wwObjectCtrl.update(this.wwObject);
+            this.$emit("update", { zoom });
 
             return false;
         },
@@ -410,23 +409,19 @@ export default {
             return event.touches && event.touches.length;
         },
         startMove(event) {
-            if (!this.isSelected) return;
-            if (
-                this.wwObjectCtrl.getSectionCtrl().getEditMode() != "CONTENT" ||
-                this.wwAttrs.wwCategory == "background"
-            ) {
+            if (!this.wwEditorState.isSelected) return;
+            if (this.wwEditorState.editMode !== "CONTENT" || this.wwElementState.isBackground) {
                 return;
             }
-
             if (event.ctrlKey || event.button == 2) {
                 return;
             }
-
-            this.d_moving = false;
+            this.isMoving = false;
             wwLib.wwManagerUI.lockSelection();
 
-            this.d_lastMovePosition = this.getEventPosition(event);
-            if (this.d_lastMovePosition) {
+            this.lastMovePosition = this.getEventPosition(event);
+            this.initialPosition = { ...this.content.position };
+            if (this.lastMovePosition) {
                 wwLib.getFrontDocument().addEventListener("mousemove", this.move);
                 wwLib.getManagerDocument().addEventListener("mousemove", this.move);
                 wwLib.getFrontDocument().addEventListener("click", this.stopMove);
@@ -448,25 +443,25 @@ export default {
                 return;
             }
 
-            var offsetXpx = position.x - this.d_lastMovePosition.x;
-            var offsetYpx = position.y - this.d_lastMovePosition.y;
+            var offsetXpx = position.x - this.lastMovePosition.x;
+            var offsetYpx = position.y - this.lastMovePosition.y;
 
-            if (!this.d_moving && Math.abs(offsetXpx) + Math.abs(offsetYpx) < 4) {
+            if (!this.isMoving && Math.abs(offsetXpx) + Math.abs(offsetYpx) < 4) {
                 return;
             }
 
-            this.d_moving = true;
+            this.isMoving = true;
 
-            if (this.d_moveDirection == "x") {
+            if (this.moveDirection == "x") {
                 offsetYpx = 0;
-            } else if (this.d_moveDirection == "y") {
+            } else if (this.moveDirection == "y") {
                 offsetXpx = 0;
             } else if (wwLib.wwShortcuts.hasModifiers("SHIFT") && Math.abs(offsetXpx) > Math.abs(offsetYpx)) {
                 offsetYpx = 0;
-                this.d_moveDirection = "x";
+                this.moveDirection = "x";
             } else if (wwLib.wwShortcuts.hasModifiers("SHIFT")) {
                 offsetXpx = 0;
-                this.d_moveDirection = "y";
+                this.moveDirection = "y";
             }
 
             const rectEl = this.$el.getBoundingClientRect();
@@ -474,34 +469,33 @@ export default {
             var offsetXpercent = (offsetXpx * 100) / rectImg.width;
             var offsetYpercent = (offsetYpx * 100) / rectImg.height;
 
-            this.wwObject.content.data.position.x += offsetXpercent;
-            this.wwObject.content.data.position.y += offsetYpercent; // * rectImg.width * rectEl.height / (rectImg.height * rectEl.width);
-
+            const update = {
+                position: {
+                    x: this.initialPosition.x + offsetXpercent,
+                    y: this.initialPosition.y + offsetYpercent,
+                },
+            };
             if (this.isTouch(event)) {
                 const touchDist = this.getTouchDist(event);
+                let zoom = this.content.zoom;
+                zoom += ((touchDist - this.lastTouchDist) / 100) * (zoom === 0 ? 1 : zoom);
 
-                this.wwObject.content.data.zoom +=
-                    ((touchDist - this.d_lastTouchDist) / 100) *
-                    (this.wwObject.content.data.zoom === 0 ? 1 : this.wwObject.content.data.zoom);
-
-                if (this.wwObject.content.data.zoom < minZoom) {
-                    this.wwObject.content.data.zoom = minZoom;
+                if (zoom < minZoom) {
+                    zoom = minZoom;
                 }
-                if (this.wwObject.content.data.zoom > 10) {
-                    this.wwObject.content.data.zoom = 10;
+                if (zoom > 10) {
+                    zoom = 10;
                 }
 
-                this.d_lastTouchDist = touchDist;
+                update.zoom = zoom;
+                this.lastTouchDist = touchDist;
             }
 
-            this.d_lastMovePosition.x = position.x;
-            this.d_lastMovePosition.y = position.y;
-
             this.preventEvent(event);
-            this.wwObjectCtrl.update(this.wwObject);
+            this.$emit("update", update);
         },
         stopMove(event) {
-            this.d_moving = false;
+            this.isMoving = false;
 
             wwLib.getFrontDocument().removeEventListener("mousemove", this.move);
             wwLib.getManagerDocument().removeEventListener("mousemove", this.move);
@@ -513,8 +507,7 @@ export default {
             wwLib.getFrontDocument().removeEventListener("touchend", this.stopMove);
             wwLib.getManagerDocument().removeEventListener("touchend", this.stopMove);
 
-            this.d_moveDirection = null;
-            this.wwObjectCtrl.update(this.wwObject);
+            this.moveDirection = null;
             window.document.body.classList.remove("ww-image-dragging");
 
             wwLib.wwManagerUI.unlockSelection();
@@ -556,7 +549,7 @@ export default {
     },
     mounted() {
         /* wwManager:start */
-        if (this.wwEditorState.isBackground) {
+        if (!this.wwElementState.isBackground) {
             this.$el.addEventListener("touchstart", this.startMove);
             this.$el.addEventListener("mousedown", this.startMove);
         }
@@ -564,7 +557,7 @@ export default {
     },
     beforeDestroy() {
         /* wwManager:start */
-        if (this.wwEditorState.isBackground) {
+        if (!this.wwElementState.isBackground) {
             this.$el.removeEventListener("mousedown", this.startMove);
             this.$el.removeEventListener("touchstart", this.startMove);
         }
