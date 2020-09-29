@@ -6,7 +6,7 @@
         "type": "git",
         "url": "https://github.com/WeWeb-Public/ww-image"
     },
-    "version": "2.1",
+    "version": "3.0",
     "private": true,
     "scripts": {
         "build": "weweb-build",
@@ -19,6 +19,12 @@
         "vue": "^2.6.12"
     },
     "devDependencies": {
-        "weweb-client": "latest"
+        "@vue/eslint-config-prettier": "^6.0.0",
+        "babel-eslint": "^10.1.0",
+        "eslint": "^7.10.0",
+        "eslint-plugin-prettier": "^3.1.4",
+        "eslint-plugin-vue": "^6.2.2",
+        "prettier": "^2.1.2",
+        "weweb-client": "^1.1.15"
     }
 }

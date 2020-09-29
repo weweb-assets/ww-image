@@ -1,19 +1,23 @@
 <template>
     <Hydrate ssr-only class="ww-image">
-        <wwObjectImage class="ww-image" v-bind="$attrs" v-on="$listeners"></wwObjectImage>
+        <wwImage class="ww-image" v-bind="$attrs" v-on="$listeners" ref="component" />
     </Hydrate>
 </template>
 
 <script>
-import Hydrate from "lazy-hydration";
-import wwObjectImage from "./wwObjectImage.vue";
+import Hydrate from 'lazy-hydration';
+import wwImage from './wwImage.vue';
+
+/* wwManager:start */
+import openPopup from './popups';
+/* wwManager:end */
 
 export default {
-    name: "__COMPONENT_NAME__",
+    name: '__COMPONENT_NAME__',
     inheritAttrs: false,
     wwDefaultContent: {
-        url: "https://cdn.weweb.app/public/images/no_image_selected.png",
-        alt: "",
+        url: 'https://cdn.weweb.app/public/images/no_image_selected.png',
+        alt: '',
         position: {
             x: 0,
             y: 0,
@@ -27,7 +31,18 @@ export default {
     },
     components: {
         Hydrate,
-        wwObjectImage,
+        wwImage,
+    },
+    methods: {
+        /* wwManager:start */
+        async edit() {
+            const update = await openPopup({
+                isBackground: this.$attrs['ww-element-state'].isBackground,
+                content: this.$attrs.content,
+            });
+            this.$emit('update', update);
+        },
+        /* wwManager:end */
     },
 };
 </script>

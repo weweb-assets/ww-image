@@ -5,6 +5,9 @@
         "label": {
             "fr": "Image",
             "en": "Image"
+        },
+        "editElementMenu": {
+            "items": [{ "name": "OPTIONS", "label": { "en": "Options", "fr": "Options" }, "action": "edit" }]
         }
     }
 }
