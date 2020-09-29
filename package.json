@@ -7,7 +7,6 @@
         "url": "https://github.com/WeWeb-Public/ww-image"
     },
     "version": "3.0",
-    "private": true,
     "scripts": {
         "build": "weweb-build",
         "serve": "weweb-serve",
