@@ -7,7 +7,7 @@
             "en": "Image"
         },
         "editElementMenu": {
-            "items": [{ "name": "OPTIONS", "label": { "en": "Options", "fr": "Options" }, "action": "edit" }]
+            "items": [{ "label": { "en": "Options", "fr": "Options" }, "action": "edit" }]
         }
     }
 }

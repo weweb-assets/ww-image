@@ -1,6 +1,6 @@
 # WW-IMAGE
 
-This an element for Weweb, to display an image.
+This is an element for Weweb, to display an image.
 
 -   Source of image can be change, and will be download on Weweb CDN.
 -   Focuspoint can be change
@@ -9,7 +9,6 @@ This an element for Weweb, to display an image.
 ## Installation
 
 To run locally, first install all dependencies with `yarn`
-​
 
 ## Start
 

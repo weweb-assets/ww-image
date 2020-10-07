@@ -1,6 +1,6 @@
 <template>
     <Hydrate ssr-only class="ww-image">
-        <wwImage class="ww-image" v-bind="$attrs" v-on="$listeners" ref="component" />
+        <wwImage class="ww-image" v-bind="$attrs" v-on="$listeners" />
     </Hydrate>
 </template>
 

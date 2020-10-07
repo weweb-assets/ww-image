@@ -128,7 +128,7 @@ export default {
             return Math.sqrt((100 * 100) / (10 - minZoom));
         },
         twicPicsSrc() {
-            const hasParam = content.url.indexOf('?') !== -1;
+            const hasParams = this.content.url.indexOf('?') !== -1;
             return `https://weweb.twic.pics/${content.url}${hasParams ? '&' : '?'}twic=v1/quality=85/resize=1024`;
         },
         imageStyle() {
@@ -190,7 +190,7 @@ export default {
             }
 
             const nonNullWidths = Object.keys(this.imageSizes).filter(
-                breakpoint => this.imageSizes[breakpoints] && this.imageSizes[breakpoint][0]
+                breakpoint => this.imageSizes[breakpoint] && this.imageSizes[breakpoint][0]
             );
             if (nonNullWidths.length === 0) {
                 return;
@@ -207,6 +207,7 @@ export default {
                 })
                 .join(', ');
             /* wwFront:end */
+            // eslint-disable-next-line no-unreachable
             return null;
         },
         backgroundVStyle() {
@@ -227,7 +228,7 @@ export default {
                     const hasParams = this.content.url.indexOf('?') !== -1;
                     const resize = this.imageSizes[breakpoint][0];
                     const cover = `${this.imageSizes[screen][0]}x${this.imageSizes[screen][1]}`;
-                    const params = `twic=v1/quality=85/focus=${this.focusPoint}resize=${resize}`;
+                    const params = `twic=v1/quality=85/focus=${this.focusPoint}/cover=${cover}/resize=${resize}`;
                     sources[breakpoint] = `${url}${hasParams ? '&' : '?'}${params} ${screenBreakpoints[breakpoint]}w`;
                 });
         },
@@ -346,7 +347,7 @@ export default {
 
             return false;
         },
-        stopZoomDesktop(event) {
+        stopZoomDesktop() {
             wwLib.wwManagerUI.unlockSelection();
 
             window.removeEventListener('mousemove', this.zoomDesktop);
@@ -459,7 +460,6 @@ export default {
                 this.moveDirection = 'y';
             }
 
-            const rectEl = this.$el.getBoundingClientRect();
             const rectImg = this.$el.querySelector('.image').getBoundingClientRect();
             var offsetXpercent = (offsetXpx * 100) / rectImg.width;
             var offsetYpercent = (offsetYpx * 100) / rectImg.height;
@@ -489,7 +489,7 @@ export default {
             this.preventEvent(event);
             this.$emit('update', update);
         },
-        stopMove(event) {
+        stopMove() {
             this.isMoving = false;
 
             wwLib.getFrontDocument().removeEventListener('mousemove', this.move);
@@ -596,17 +596,6 @@ export default {
                 background-position: center;
                 background-size: cover;
             }
-
-            // &.twic {
-            //     filter: blur(5px);
-            //     will-change: filter;
-
-            //     &.twic-done,
-            //     &.twic-background-done {
-            //         transition: filter 0.3s ease;
-            //         filter: none;
-            //     }
-            // }
         }
     }
 }

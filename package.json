@@ -1,12 +1,12 @@
 {
     "name": "ww-image",
     "type": "wwObject",
-    "wewebPublic": "true",
     "repository": {
         "type": "git",
-        "url": "https://github.com/WeWeb-Public/ww-image"
+        "url": "https://github.com/weweb-assets/ww-image"
     },
-    "version": "3.0",
+    "version": "1.0.0",
+    "license": "MIT",
     "scripts": {
         "build": "weweb-build",
         "serve": "weweb-serve",
