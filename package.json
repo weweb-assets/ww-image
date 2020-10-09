@@ -1,16 +1,15 @@
 {
     "name": "ww-image",
-    "type": "wwObject",
     "repository": {
         "type": "git",
         "url": "https://github.com/weweb-assets/ww-image"
     },
-    "version": "1.0.0",
+    "version": "1.0.1",
     "license": "MIT",
     "scripts": {
-        "build": "weweb-build",
-        "serve": "weweb-serve",
-        "create-config": "weweb-config"
+        "build": "weweb build",
+        "serve": "weweb serve",
+        "create-config": "weweb config"
     },
     "dependencies": {
         "@znck/prop-types": "^0.6.3",
@@ -24,6 +23,6 @@
         "eslint-plugin-prettier": "^3.1.4",
         "eslint-plugin-vue": "^6.2.2",
         "prettier": "^2.1.2",
-        "weweb-client": "^1.1.15"
+        "@weweb/cli": "latest"
     }
 }

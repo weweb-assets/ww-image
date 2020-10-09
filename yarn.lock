@@ -1399,6 +1399,37 @@
     "@webassemblyjs/wast-parser" "1.9.0"
     "@xtuc/long" "4.2.2"
 
+"@weweb/cli@latest":
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/@weweb/cli/-/cli-1.0.8.tgz#36a2d3c314f2a8912589b14c7e3b49ac24a68382"
+  integrity sha512-2f7U1siWLrH9hQTVSiXq9aRoPZNrB1qg3LuDM5ODIpD8I+rc/Qeah8FQ3KHJ9PeumF0zgCYYMM+e/73AmjEWGg==
+  dependencies:
+    "@babel/core" "^7.9.0"
+    "@babel/preset-env" "7.6.2"
+    "@vue/cli-plugin-babel" "3.11.0"
+    "@vue/cli-plugin-eslint" "3.11.0"
+    "@vue/cli-service" "3.11.0"
+    autoprefixer "9.6.1"
+    axios "0.19.0"
+    babel-loader "^8.0.6"
+    cache-loader "4.1.0"
+    css-loader "3.2.0"
+    inquirer "7.0.0"
+    node-sass "4.12.0"
+    postcss "7.0.18"
+    rxjs-compat "6.5.3"
+    sass-loader "8.0.0"
+    shelljs "0.8.3"
+    string-replace-loader "2.2.0"
+    url-loader "2.1.0"
+    vue-loader "15.7.1"
+    vue-style-loader "4.1.2"
+    vue-template-compiler "^2.6.11"
+    webpack "4.41.0"
+    webpack-cli "3.3.9"
+    webpack-dev-server "3.8.1"
+    weweb-strip-block "0.0.2"
+
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@xtuc/ieee754/-/ieee754-1.2.0.tgz#eef014a3145ae477a1cbc00cd1e552336dceb790"
@@ -9576,37 +9607,6 @@ websocket-extensions@>=0.1.1:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/websocket-extensions/-/websocket-extensions-0.1.4.tgz#7f8473bc839dfd87608adb95d7eb075211578a42"
   integrity sha512-OqedPIGOfsDlo31UNwYbCFMSaO9m9G/0faIHj5/dZFDMFqPTcx6UwqyOy3COEaEOg/9VsGIpdqn62W5KhoKSpg==
-
-weweb-client@^1.1.15:
-  version "1.1.15"
-  resolved "https://registry.yarnpkg.com/weweb-client/-/weweb-client-1.1.15.tgz#27b5ef28c7a653181f7387cdf049dae29928074a"
-  integrity sha512-WZqZm2J8T3WCqhF5K9qkK0PwNGyE8GNP66DsNnySAgLqo7T9pR1N15G2QApObov9LVcaYP10BqmLLZd4yE2wgA==
-  dependencies:
-    "@babel/core" "^7.9.0"
-    "@babel/preset-env" "7.6.2"
-    "@vue/cli-plugin-babel" "3.11.0"
-    "@vue/cli-plugin-eslint" "3.11.0"
-    "@vue/cli-service" "3.11.0"
-    autoprefixer "9.6.1"
-    axios "0.19.0"
-    babel-loader "^8.0.6"
-    cache-loader "4.1.0"
-    css-loader "3.2.0"
-    inquirer "7.0.0"
-    node-sass "4.12.0"
-    postcss "7.0.18"
-    rxjs-compat "6.5.3"
-    sass-loader "8.0.0"
-    shelljs "0.8.3"
-    string-replace-loader "2.2.0"
-    url-loader "2.1.0"
-    vue-loader "15.7.1"
-    vue-style-loader "4.1.2"
-    vue-template-compiler "^2.6.11"
-    webpack "4.41.0"
-    webpack-cli "3.3.9"
-    webpack-dev-server "3.8.1"
-    weweb-strip-block "0.0.2"
 
 weweb-strip-block@0.0.2:
   version "0.0.2"
