@@ -25,7 +25,7 @@ export default async function openPopup({ isBackground, content }) {
 
     let update = {};
     if (result.image !== undefined) {
-        update.src = result.image;
+        update.url = result.image;
     }
     if (result.alt !== undefined) {
         update.alt = result.alt;

@@ -95,7 +95,7 @@ const minZoom = 0.2;
 export default {
     name: '__COMPONENT_NAME__',
     props: {
-        uid: Number,
+        uid: String,
         content: Object,
         wwElementState: Object,
         wwFrontState: Object,

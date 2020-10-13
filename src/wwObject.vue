@@ -40,7 +40,9 @@ export default {
                 isBackground: this.$attrs['ww-element-state'].isBackground,
                 content: this.$attrs.content,
             });
-            this.$emit('update', update);
+            if (update) {
+                this.$emit('update', update);
+            }
         },
         /* wwManager:end */
     },
