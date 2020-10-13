@@ -141,15 +141,18 @@ export default {
                 minHeight: 'none',
             };
             if (this.wwElementState.isBackground) {
+                if (!this.backgroundVStyle) {
+                    style.backgroundImage = `url(${
+                        this.content.disableTwicPics ? this.content.url : this.placeholder
+                    })`;
+                }
+                /* wwManager:start */
+                style.backgroundImage = `url(${this.content.url})`;
+                /* wwManager:end */
+
                 return style;
             }
 
-            if (!this.backgroundVStyle) {
-                style.backgroundImage = `url(${this.content.disableTwicPics ? this.content.url : this.placeholder})`;
-            }
-            /* wwManager:start */
-            style.backgroundImage = `url(${this.content.url})`;
-            /* wwManager:end */
             const { x = 0, y = 0 } = this.content.position || {};
             const transform = `translate(${x - 50}%, ${y - 50}%)`;
             style = {
