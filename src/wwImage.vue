@@ -166,7 +166,7 @@ export default {
         formatStyle() {
             return {
                 minWidth: `${this.content.style.minWidth || 20}px`,
-                paddingBottom: this.wwElementState.isBackground ? `${this.content.ratio}%` : 0,
+                paddingBottom: this.wwElementState.isBackground ? 0 : `${this.content.ratio}%`,
             };
         },
         wrapperStyle() {
