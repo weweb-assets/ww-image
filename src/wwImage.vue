@@ -167,8 +167,9 @@ export default {
             return style;
         },
         formatStyle() {
+            let minWidth = this.content && this.content.style && this.content.style.minWidth
             return {
-                minWidth: `${this.content.style.minWidth || 20}px`,
+                minWidth: `${minWidth || 20}px`,
                 paddingBottom: this.wwElementState.isBackground ? 0 : `${this.content.ratio}%`,
             };
         },
