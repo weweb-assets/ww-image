@@ -173,7 +173,7 @@ export default {
             };
         },
         wrapperStyle() {
-            if (!this.content.style.maxHeight) {
+            if (!this.content || !this.content.style || !this.content.style.maxHeight) {
                 return { height: '100%' };
             }
 
