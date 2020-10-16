@@ -135,7 +135,7 @@ export default {
             let style = {
                 width: `${this.content.zoom > 0 ? this.content.zoom * 100 : 100}%`,
                 height: this.wwElementState.isBackground ? '100%' : 'auto',
-                filter: this.content.style.filter || null,
+                filter: (this.content && this.content.style && this.content.style.filter) ? this.content.style.filter : null,
                 top: '50%',
                 left: '50%',
                 minHeight: 'none',
