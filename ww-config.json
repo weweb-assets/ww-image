@@ -8,6 +8,7 @@
         },
         "editElementMenu": {
             "items": [{ "label": { "en": "Options", "fr": "Options" }, "action": "edit" }]
-        }
+        },
+        "sizable": true
     }
 }

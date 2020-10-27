@@ -135,7 +135,8 @@ export default {
             let style = {
                 width: `${this.content.zoom > 0 ? this.content.zoom * 100 : 100}%`,
                 height: this.wwElementState.isBackground ? '100%' : 'auto',
-                filter: (this.content && this.content.style && this.content.style.filter) ? this.content.style.filter : null,
+                filter:
+                    this.content && this.content.style && this.content.style.filter ? this.content.style.filter : null,
                 top: '50%',
                 left: '50%',
                 minHeight: 'none',
@@ -167,19 +168,21 @@ export default {
             return style;
         },
         formatStyle() {
-            let minWidth = this.content && this.content.style && this.content.style.minWidth
-            return {
-                minWidth: `${minWidth || 20}px`,
-                paddingBottom: this.wwElementState.isBackground ? 0 : `${this.content.ratio}%`,
-            };
+            return {};
+            // let minWidth = this.content && this.content.style && this.content.style.minWidth
+            // return {
+            //     minWidth: `${minWidth || 20}px`,
+            //     paddingBottom: this.wwElementState.isBackground ? 0 : `${this.content.ratio}%`,
+            // };
         },
         wrapperStyle() {
-            if (!this.content || !this.content.style || !this.content.style.maxHeight) {
-                return { height: '100%' };
-            }
+            return {};
+            // if (!this.content || !this.content.style || !this.content.style.maxHeight) {
+            //     return { height: '100%' };
+            // }
 
-            const maxHeight = (parseInt(this.content.style.maxHeight) / this.content.ratio) * 100;
-            return { maxHeight: `${maxHeight}px`, height: '100%' };
+            // const maxHeight = (parseInt(this.content.style.maxHeight) / this.content.ratio) * 100;
+            // return { maxHeight: `${maxHeight}px`, height: '100%' };
         },
         focusPoint() {
             return `${this.content.focusPoint[0]}px${this.content.focusPoint[1]}p`;
