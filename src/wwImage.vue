@@ -580,7 +580,7 @@ export default {
         height: 100%;
         position: relative;
         overflow: hidden;
-        min-width: 40px;
+        // min-width: 40px;
 
         .image {
             position: absolute;
