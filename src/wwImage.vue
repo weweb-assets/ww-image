@@ -528,16 +528,16 @@ export default {
         let url = this.content.url;
 
         //Replace for prod
-        url = url.replace('weweb.twic.pics', 'cdn.weweb.app');
-        url = url.replace('wewebapp.s3.eu-west-3.amazonaws.com', 'cdn.weweb.app');
+        // url = url.replace('weweb.twic.pics', 'cdn.weweb.app');
+        // url = url.replace('wewebapp.s3.eu-west-3.amazonaws.com', 'cdn.weweb.app');
 
-        //Replace for preprod
-        url = url.replace('weweb.twic.pics/preprod', 'cdn.weweb.dev');
-        url = url.replace('wewebapp-preprod.s3.eu-west-3.amazonaws.com', 'cdn.weweb.dev');
+        // //Replace for preprod
+        // url = url.replace('weweb.twic.pics/preprod', 'cdn.weweb.dev');
+        // url = url.replace('wewebapp-preprod.s3.eu-west-3.amazonaws.com', 'cdn.weweb.dev');
 
-        //Replace for staging
-        url = url.replace('weweb.twic.pics/staging', 'cdn.weweb.space');
-        url = url.replace('wewebapp-dev.s3.eu-west-3.amazonaws.com', 'cdn.weweb.space');
+        // //Replace for staging
+        // url = url.replace('weweb.twic.pics/staging', 'cdn.weweb.space');
+        // url = url.replace('wewebapp-dev.s3.eu-west-3.amazonaws.com', 'cdn.weweb.space');
 
         if (url != this.content.url) {
             this.$emit('update', { url });

@@ -9,6 +9,12 @@
         "editElementMenu": {
             "items": [{ "label": { "en": "Options", "fr": "Options" }, "action": "edit" }]
         },
+        "settingsOptions": {
+            "url": {
+                "label": { "en": "Image", "fr": "Image" },
+                "type": "Image"
+            }
+        },
         "sizable": true
     }
 }
