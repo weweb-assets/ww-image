@@ -412,8 +412,13 @@ export default {
             return event.touches && event.touches.length;
         },
         startMove(event) {
+            console.log(this.wwEditorState);
+
             if (!this.wwEditorState.isSelected) return;
-            if (this.wwEditorState.editMode !== 'CONTENT' || this.wwElementState.isBackground) {
+            if (
+                this.wwEditorState.editMode !== wwLib.wwEditorHelper.EDIT_MODES.EDITION ||
+                this.wwElementState.isBackground
+            ) {
                 return;
             }
             if (event.ctrlKey || event.button == 2) {
@@ -609,7 +614,7 @@ export default {
 
 /* wwManager:start */
 
-.ww-edit-mode-content {
+.ww-editing {
     .ww-image:not(.bg) {
         cursor: move;
         cursor: grab;
