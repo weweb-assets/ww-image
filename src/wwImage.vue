@@ -1,5 +1,5 @@
 <template>
-    <div class="ww-image" :class="{ bg: wwElementState.isBackground }" :style="wrapperStyle">
+    <div class="ww-image" :class="{ bg: wwElementState.isBackground }">
         <!-- wwManager:start -->
         <div class="controls-desktop" v-if="isControlsDisplayed">
             <div class="zoom-bar">
@@ -9,7 +9,7 @@
                 </div>
             </div>
         </div>
-        <div class="reset-zoom" @mousedown="resetZoom($event)" v-if="isControlsDisplayed">
+        <div data-is-ui class="reset-zoom" @mousedown="resetZoom($event)" v-if="isControlsDisplayed">
             <i class="fa fa-expand" aria-hidden="true"></i>
         </div>
         <div class="format" :style="formatStyle">
@@ -168,21 +168,18 @@ export default {
             return style;
         },
         formatStyle() {
-            return {};
-            // let minWidth = this.content && this.content.style && this.content.style.minWidth
-            // return {
-            //     minWidth: `${minWidth || 20}px`,
-            //     paddingBottom: this.wwElementState.isBackground ? 0 : `${this.content.ratio}%`,
-            // };
-        },
-        wrapperStyle() {
-            return {};
-            // if (!this.content || !this.content.style || !this.content.style.maxHeight) {
-            //     return { height: '100%' };
-            // }
-
-            // const maxHeight = (parseInt(this.content.style.maxHeight) / this.content.ratio) * 100;
-            // return { maxHeight: `${maxHeight}px`, height: '100%' };
+            let overlayBackground = 'none';
+            if (this.content.style && this.content.style.overlay) {
+                const overlay = this.content.style.overlay;
+                if (overlay.type === 'color') {
+                    overlayBackground = overlay.value;
+                } else if (overlay.type === 'gradient' && overlay.value) {
+                    overlayBackground = overlay.value.value;
+                }
+            }
+            return {
+                '--ww-image-overlay-background': overlayBackground,
+            };
         },
         focusPoint() {
             return `${this.content.focusPoint[0]}px${this.content.focusPoint[1]}p`;
@@ -302,26 +299,7 @@ export default {
         \================================================================================================*/
         resetZoom(event) {
             this.preventEvent(event);
-
-            //Reset zoom
-            const rectImg = this.$el.querySelector('.image').getBoundingClientRect();
-            const imgSize = {
-                w: rectImg.width,
-                h: rectImg.height,
-            };
-
-            const ratio = imgSize.h / imgSize.w;
-            let zoom;
-            if (this.content.zoom !== 1) {
-                zoom = 1;
-            } else {
-                const rectEl = this.$el.getBoundingClientRect();
-                const ratioContainer = rectEl.height / rectEl.width;
-
-                zoom = ratioContainer / ratio;
-            }
-
-            this.$emit('update', { position: { x: 0, y: 0 }, zoom });
+            this.$emit('update', { position: { x: 0, y: 0 }, zoom: 1 });
 
             return false;
         },
@@ -412,8 +390,6 @@ export default {
             return event.touches && event.touches.length;
         },
         startMove(event) {
-            console.log(this.wwEditorState);
-
             if (!this.wwEditorState.isSelected) return;
             if (
                 this.wwEditorState.editMode !== wwLib.wwEditorHelper.EDIT_MODES.EDITION ||
@@ -527,18 +503,6 @@ export default {
         /* wwManager:start */
         let url = this.content.url;
 
-        //Replace for prod
-        // url = url.replace('weweb.twic.pics', 'cdn.weweb.app');
-        // url = url.replace('wewebapp.s3.eu-west-3.amazonaws.com', 'cdn.weweb.app');
-
-        // //Replace for preprod
-        // url = url.replace('weweb.twic.pics/preprod', 'cdn.weweb.dev');
-        // url = url.replace('wewebapp-preprod.s3.eu-west-3.amazonaws.com', 'cdn.weweb.dev');
-
-        // //Replace for staging
-        // url = url.replace('weweb.twic.pics/staging', 'cdn.weweb.space');
-        // url = url.replace('wewebapp-dev.s3.eu-west-3.amazonaws.com', 'cdn.weweb.space');
-
         if (url != this.content.url) {
             this.$emit('update', { url });
         }
@@ -585,7 +549,17 @@ export default {
         height: 100%;
         position: relative;
         overflow: hidden;
-        // min-width: 40px;
+
+        &::after {
+            position: absolute;
+            content: '';
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--ww-image-overlay-background);
+            pointer-events: none;
+        }
 
         .image {
             position: absolute;

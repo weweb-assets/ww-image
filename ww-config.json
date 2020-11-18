@@ -6,13 +6,33 @@
             "fr": "Image",
             "en": "Image"
         },
-        "editElementMenu": {
-            "items": [{ "label": { "en": "Options", "fr": "Options" }, "action": "edit" }]
+        "styleOptions": {
+            "overlay": {
+                "type": "Color",
+                "path": "style.overlay",
+                "label": { "en": "Overlay", "fr": "Overlay" },
+                "options": {
+                    "nullable": true,
+                    "gradient": true
+                }
+            },
+            "filter": {
+                "type": "CssFilter",
+                "path": "style.filter",
+                "label": { "en": "Filters", "fr": "Filtres" }
+            }
         },
         "settingsOptions": {
             "url": {
                 "label": { "en": "Image", "fr": "Image" },
                 "type": "Image"
+            },
+            "alt": {
+                "label": { "en": "Alt", "fr": "Alt" },
+                "type": "Text",
+                "options": {
+                    "placeholder": "Image description"
+                }
             }
         },
         "sizable": true
