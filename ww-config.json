@@ -7,6 +7,39 @@
             "en": "Image"
         },
         "styleOptions": {
+            "zoom": {
+                "type": "Number",
+                "label": { "en": "Zoom", "fr": "Zoom" },
+                "options": {
+                    "min": 0.01,
+                    "max": 5,
+                    "step": 0.01
+                }
+            },
+            "x": {
+                "type": "Number",
+                "label": { "en": "Position X", "fr": "Position X" },
+                "options": {
+                    "min": -100,
+                    "max": 100
+                }
+            },
+            "y": {
+                "type": "Number",
+                "label": { "en": "Position Y", "fr": "Position Y" },
+                "options": {
+                    "min": -100,
+                    "max": 100
+                }
+            },
+            "reset": {
+                "type": "Button",
+                "options": {
+                    "text": { "en": "Reset zoom & pos.", "fr": "Réinit. zoom & pos." },
+                    "color": "blue",
+                    "action": "resetZoomAndPosition"
+                }
+            },
             "overlay": {
                 "type": "Color",
                 "path": "style.overlay",
