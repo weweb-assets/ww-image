@@ -11,7 +11,11 @@
                 {
                     "name": "Source",
                     "icon": "assets",
-                    "quick": [{ "type": "custom-settings", "name": "url" }]
+                    "quick": [
+                        { "type": "custom-settings", "name": "url" },
+                        { "type": "custom-style", "name": "zoom" },
+                        { "type": "custom-style", "name": "reset" }
+                    ]
                 },
                 {
                     "name": "Link",

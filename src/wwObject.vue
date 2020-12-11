@@ -1,7 +1,7 @@
 <template>
     <div class="ww-image" :class="{ bg: wwElementState.isBackground }">
         <!-- wwManager:start -->
-        <div class="ww-image__wrapper">
+        <div class="ww-image__wrapper" :style="formatStyle" ww-responsive="ww-img-wrap">
             <!-- Background -->
             <div v-if="wwElementState.isBackground" class="ww-image__img bg" :style="imageStyle"></div>
 
@@ -13,6 +13,7 @@
                 :src="content.url"
                 :alt="content.alt"
                 :style="imageStyle"
+                ww-responsive="ww-img"
             />
         </div>
         <!-- wwManager:end -->
@@ -427,6 +428,17 @@ export default {
         position: relative;
         overflow: hidden;
         flex: 1;
+
+        &:after {
+            position: absolute;
+            content: '';
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--ww-image-overlay-background);
+            pointer-events: none;
+        }
     }
 
     &__img {
