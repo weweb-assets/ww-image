@@ -6,6 +6,20 @@
             "fr": "Image",
             "en": "Image"
         },
+        "menuOptions": {
+            "items": [
+                {
+                    "name": "Source",
+                    "icon": "assets",
+                    "quick": [{ "type": "custom-settings", "name": "url" }]
+                },
+                {
+                    "name": "Link",
+                    "icon": "link",
+                    "quick": [{ "type": "Link" }]
+                }
+            ]
+        },
         "styleOptions": {
             "zoom": {
                 "type": "Number",
