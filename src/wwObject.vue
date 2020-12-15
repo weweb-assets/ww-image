@@ -96,7 +96,7 @@ export default {
         url: wwLib.responsive('https://cdn.weweb.app/public/images/no_image_selected.png'),
         x: wwLib.responsive(0),
         y: wwLib.responsive(0),
-        zoom: wwLib.responsive(100),
+        zoom: wwLib.responsive(1),
         style: {},
         focusPoint: wwLib.responsive([50, 50]),
     },
