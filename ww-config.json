@@ -1,6 +1,9 @@
 {
     "componentPath": "./src/wwObject.vue",
     "type": "wwObject",
+    "options": {
+        "sizable": true
+    },
     "editor": {
         "label": {
             "fr": "Image",
@@ -48,7 +51,6 @@
                     "placeholder": "Image description"
                 }
             }
-        },
-        "sizable": true
+        }
     }
 }
