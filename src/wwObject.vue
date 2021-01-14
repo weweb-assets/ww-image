@@ -1,16 +1,11 @@
 <template>
-    <div class="ww-image" :class="{ bg: wwElementState.isBackground }">
+    <div class="ww-image">
         <!-- wwManager:start -->
         <div class="ww-image__wrapper" :style="formatStyle" ww-responsive="ww-img-wrap">
-            <!-- Background -->
-            <div v-if="wwElementState.isBackground" class="ww-image__img bg" :style="imageStyle"></div>
-
-            <!-- Normal Image -->
             <img
-                v-else
                 draggable="false"
                 class="ww-image__img"
-                :src="content.url"
+                :src="source"
                 :alt="content.alt"
                 :style="imageStyle"
                 ww-responsive="ww-img"
@@ -20,61 +15,38 @@
 
         <!-- wwFront:start -->
         <div class="format" :style="formatStyle">
-            <!-- Background -->
-            <template v-if="wwElementState.isBackground">
-                <!-- No Twicpics -->
-                <div v-if="content.disableTwicPics" class="image bg" :style="imageStyle"></div>
+            <!-- No Twicpics -->
+            <img
+                v-if="content.disableTwicPics"
+                class="ww-image__img"
+                :src="source"
+                :alt="content.alt"
+                :style="imageStyle"
+                loading="auto"
+            />
 
-                <!-- Twicpics -->
-                <div
-                    v-else-if="!backgroundVStyle"
-                    class="image bg twic"
-                    :data-background="'url(' + content.url + ')'"
-                    data-background-step="400"
-                    :data-background-focus="focusPoint"
-                    data-background-transform="auto/quality=85"
-                    :style="imageStyle"
-                ></div>
+            <!-- Twicpics -->
+            <img
+                v-else-if="!imgSrcSet"
+                class="ww-image__img twic"
+                :src="placeholder"
+                :data-twic-src="twicPicsDataSrc"
+                data-src-transform="quality=85/auto"
+                data-src-step="10"
+                :alt="content.alt"
+                :style="imageStyle"
+            />
 
-                <!-- SRCSET -->
-                <div v-else class="image bg" :style="imageStyle" v-style="backgroundVStyle"></div>
-            </template>
-
-            <!-- Normal Image -->
-            <template v-else>
-                <!-- No Twicpics -->
-                <img
-                    v-if="content.disableTwicPics"
-                    class="image"
-                    :src="content.url"
-                    :alt="content.alt"
-                    :style="imageStyle"
-                    loading="auto"
-                />
-
-                <!-- Twicpics -->
-                <img
-                    v-else-if="!imgSrcSet"
-                    class="image twic"
-                    :src="placeholder"
-                    :data-src="content.url"
-                    data-src-transform="quality=85/auto"
-                    data-src-step="10"
-                    :alt="content.alt"
-                    :style="imageStyle"
-                />
-
-                <!-- SRCSET -->
-                <img
-                    v-else
-                    class="image"
-                    :style="imageStyle"
-                    :srcset="imgSrcSet"
-                    :src="twicPicsSrc"
-                    :alt="content.alt"
-                    loading="lazy"
-                />
-            </template>
+            <!-- SRCSET -->
+            <img
+                v-else
+                class="ww-image__img"
+                :style="imageStyle"
+                :srcset="imgSrcSet"
+                :src="twicPicsFallback"
+                :alt="content.alt"
+                loading="lazy"
+            />
         </div>
         <!-- wwFront:end -->
     </div>
@@ -87,7 +59,6 @@ const screenBreakpoints = {
     md: 1200,
     lg: 1920,
 };
-const minZoom = 0.2;
 
 export default {
     name: '__COMPONENT_NAME__',
@@ -105,9 +76,9 @@ export default {
         content: Object,
         wwElementState: Object,
         wwFrontState: Object,
-        /* wwManager: start */
+        /* wwManager:start */
         wwEditorState: Object,
-        /* wwManager: end */
+        /* wwManager:end */
     },
     data() {
         return {
@@ -130,9 +101,17 @@ export default {
         };
     },
     computed: {
+        source() {
+            return `${wwLib.wwUtils.getCdnPrefix()}${this.content.url}`;
+        },
+        twicPicsDataSrc() {
+            return `image:${wwLib.wwUtils.getTwicPicsFolder()}${this.content.url}`;
+        },
         twicPicsSrc() {
-            const hasParams = this.content.url.indexOf('?') !== -1;
-            return `https://weweb.twic.pics/${content.url}${hasParams ? '&' : '?'}twic=v1/quality=85/resize=1024`;
+            return wwLib.wwUtils.transformToTwicPics(this.content.url);
+        },
+        twicPicsFallback() {
+            return `${this.twicPicsSrc}/quality=85/resize=1024`;
         },
         imageStyle() {
             // --zoom: 1;
@@ -184,39 +163,13 @@ export default {
             return Object.keys(screenBreakpoints)
                 .filter(breakpoint => this.imageSizes[breakpoint])
                 .map(breakpoint => {
-                    let url = `https://weweb.twic.pics/${this.content.url}`;
-                    const hasParams = this.content.url.indexOf('?') !== -1;
                     const resize = this.imageSizes[breakpoint][0];
-                    return `${url}${hasParams ? '&' : '?'}twic=v1/quality=85/resize=${resize} ${
-                        screenBreakpoints[breakpoint]
-                    }w`;
+                    return `${this.twicPicsSrc}/quality=85/resize=${resize} ${screenBreakpoints[breakpoint]}w`;
                 })
                 .join(', ');
             /* wwFront:end */
             // eslint-disable-next-line no-unreachable
             return null;
-        },
-        backgroundVStyle() {
-            if (this.content.url.indexOf('.gif') !== -1) {
-                return null;
-            }
-            if (!this.wwElementState.isBackground) {
-                return null;
-            }
-            const sources = {};
-            return Object.keys(screenBreakpoints)
-                .filter(
-                    breakpoint =>
-                        this.imageSizes[breakpoint] && this.imageSizes[breakpoint][0] && this.imageSizes[breakpoint][1]
-                )
-                .each(breakpoint => {
-                    let url = `https://weweb.twic.pics/${this.content.url}`;
-                    const hasParams = this.content.url.indexOf('?') !== -1;
-                    const resize = this.imageSizes[breakpoint][0];
-                    const cover = `${this.imageSizes[screen][0]}x${this.imageSizes[screen][1]}`;
-                    const params = `twic=v1/quality=85/focus=${this.focusPoint}/cover=${cover}/resize=${resize}`;
-                    sources[breakpoint] = `${url}${hasParams ? '&' : '?'}${params} ${screenBreakpoints[breakpoint]}w`;
-                });
         },
     },
     watch: {
