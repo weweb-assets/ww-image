@@ -1,7 +1,7 @@
 <template>
     <div class="ww-image">
-        <!-- wwManager:start -->
         <div class="ww-image__wrapper" :style="formatStyle" ww-responsive="ww-img-wrap">
+            <!-- wwManager:start -->
             <img
                 draggable="false"
                 class="ww-image__img"
@@ -10,11 +10,9 @@
                 :style="imageStyle"
                 ww-responsive="ww-img"
             />
-        </div>
-        <!-- wwManager:end -->
+            <!-- wwManager:end -->
 
-        <!-- wwFront:start -->
-        <div class="format" :style="formatStyle">
+            <!-- wwFront:start -->
             <!-- No Twicpics -->
             <img
                 v-if="content.disableTwicPics"
@@ -50,8 +48,8 @@
                 loading="lazy"
                 ww-responsive="ww-img"
             />
+            <!-- wwFront:end -->
         </div>
-        <!-- wwFront:end -->
     </div>
 </template>
 
@@ -156,6 +154,8 @@ export default {
     watch: {
         /* wwFront:start */
         screenSize(oldValue, newValue) {
+            console.log(oldValue, newValue);
+
             if (window.__WW_IS_PRERENDER__ && this.$el && this.$el.querySelector('.ww-image__img')) {
                 this.imgSrcSet = this.imgSrcSet || '';
 
@@ -178,7 +178,7 @@ export default {
                     imgSrcSetElm.innerText = `window.wwg_imgsrcset_${uid} = "${this.imgSrcSet}";`;
                 }
             } else if (oldValue != newValue) {
-                this.imgSrcSet = null;
+                this.imgSrcSet = '       ';
             }
         },
         /* wwFront:end */
