@@ -89,6 +89,7 @@ export default {
                 sm: 0,
                 xs: 0,
             },
+            imgSrcSet: null,
 
             /* wwManager:start */
             lastMovePosition: { x: 0, y: 0 },
@@ -101,6 +102,9 @@ export default {
         };
     },
     computed: {
+        screenSize() {
+            return this.$store.getters['front/getScreenSize'];
+        },
         source() {
             return `${wwLib.wwUtils.getCdnPrefix()}${this.content.url}`;
         },
@@ -145,64 +149,31 @@ export default {
         focusPoint() {
             return `${this.content.focusPoint[0]}px${this.content.focusPoint[1]}p`;
         },
-        imgSrcSet() {
-            /* wwFront:start */
-            if (this.content.url.indexOf('.gif') !== -1) {
-                return null;
-            }
-            if (this.wwElementState.isBackground) {
-                return null;
-            }
-
-            const nonNullWidths = Object.keys(this.imageSizes).filter(
-                breakpoint => this.imageSizes[breakpoint] && this.imageSizes[breakpoint][0]
-            );
-            if (nonNullWidths.length === 0) {
-                return;
-            }
-            return Object.keys(screenBreakpoints)
-                .filter(breakpoint => this.imageSizes[breakpoint])
-                .map(breakpoint => {
-                    const resize = this.imageSizes[breakpoint][0];
-                    return `${this.twicPicsSrc}/quality=85/resize=${resize} ${screenBreakpoints[breakpoint]}w`;
-                })
-                .join(', ');
-            /* wwFront:end */
-            // eslint-disable-next-line no-unreachable
-            return null;
-        },
     },
     watch: {
         /* wwFront:start */
         screenSize() {
-            if (window.__WW_IS_PRERENDER__ && this.$el) {
-                const isBackground = this.wwElementState.isBackground;
-                const elemOk =
-                    (!isBackground && this.$el.querySelector('.image')) ||
-                    (isBackground && this.$el.querySelector('.format'));
+            if (window.__WW_IS_PRERENDER__ && this.$el && this.$el.querySelector('.ww-image__img')) {
+                this.imgSrcSet = this.imgSrcSet || '';
 
-                if (!elemOk) return null;
+                const uid = this.uid.split('-')[0];
 
-                if (!isBackground) {
-                    let width = this.$el.querySelector('.image').getBoundingClientRect().width;
-                    width += width * 0.2;
-                    this.imageSizes[this.screenSize] = [Math.floor(width), 0];
-                } else {
-                    this.imageSizes[this.screenSize] = [
-                        Math.floor(this.$el.querySelector('.format').getBoundingClientRect().width),
-                        Math.floor(this.$el.querySelector('.format').getBoundingClientRect().height),
-                    ];
+                const img = this.$el.querySelector('.ww-image__img');
+                const width = Math.round(img.getBoundingClientRect().width);
+
+                if (width) {
+                    this.imgSrcSet += `${this.imgSrcSet ? ', ' : ''}${this.twicPicsSrc}/quality=85/resize=${width} ${
+                        window.innerWidth
+                    }w`;
+
+                    let imgSrcSetElm = document.getElementById(`ww-image-srcset-${uid}`);
+                    if (!imgSrcSetElm) {
+                        imgSrcSetElm = document.createElement('script');
+                        imgSrcSetElm.setAttribute('id', `ww-image-srcset-${uid}`);
+                        document.head.append(imgSrcSetElm);
+                    }
+                    imgSrcSetElm.innerText = `window.wwg_imgsrcset_${uid} = "${this.imgSrcSet}";`;
                 }
-
-                let imgSizeElm = document.getElementById('ww-image-size');
-                if (!imgSizeElm) {
-                    imgSizeElm = document.createElement('script');
-                    imgSizeElm.setAttribute('id', 'ww-image-size');
-                    document.head.append(imgSizeElm);
-                }
-                imgSizeElm.innerText += `window.wwg_imageSize_${this.screenSize}_${this.uid} = ${JSON.stringify(
-                    this.imageSizes[this.screenSize]
-                )};`;
             }
         },
         /* wwFront:end */
@@ -343,29 +314,23 @@ export default {
     },
     created() {
         /* wwFront:start */
-        const screens = ['lg', 'md', 'sm', 'xs'];
-        for (const screen of screens) {
-            if (window[`wwg_imageSize_${screen}_${this.uid}`]) {
-                this.imageSizes[screen] = window[`wwg_imageSize_${screen}_${this.uid}`];
-                this.imageSizes[screen][0] = this.imageSizes[screen][0] || 1024;
-            }
+        if (window[`wwg_imgsrcset_${this.uid.split('-')[0]}`]) {
+            this.imgSrcSet = window[`wwg_imgsrcset_${this.uid.split('-')[0]}`];
         }
         /* wwFront:end */
     },
+    /* wwManager:start */
     mounted() {
-        /* wwManager:start */
         if (!this.wwElementState.isBackground) {
             this.$el.addEventListener('mousedown', this.startMove);
         }
-        /* wwManager:end */
     },
     beforeDestroy() {
-        /* wwManager:start */
         if (!this.wwElementState.isBackground) {
             this.$el.removeEventListener('mousedown', this.startMove);
         }
-        /* wwManager:end */
     },
+    /* wwManager:end */
 };
 </script>
 
