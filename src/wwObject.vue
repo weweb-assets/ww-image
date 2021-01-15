@@ -157,32 +157,33 @@ export default {
     watch: {
         /* wwFront:start */
         screenSize(oldValue, newValue) {
-            console.log(oldValue, newValue);
-
             if (window.__WW_IS_PRERENDER__ && this.$el && this.$el.querySelector('.ww-image__img')) {
-                this.imgSrcSet = this.imgSrcSet || '';
+                setTimeout(() => {
+                    this.imgSrcSet = this.imgSrcSet || '';
 
-                const uid = this.uid.split('-')[0];
+                    const uid = this.uid.split('-')[0];
 
-                const img = this.$el.querySelector('.ww-image__img');
-                const width = Math.round(img.getBoundingClientRect().width);
+                    const img = this.$el.querySelector('.ww-image__img');
+                    const width = Math.round(img.getBoundingClientRect().width);
 
-                if (width) {
-                    this.imgSrcSet += `${this.imgSrcSet ? ', ' : ''}${this.twicPicsSrc}/quality=85/resize=${width} ${
-                        window.innerWidth
-                    }w`;
+                    if (width) {
+                        this.imgSrcSet += `${this.imgSrcSet ? ', ' : ''}${
+                            this.twicPicsSrc
+                        }/quality=85/resize=${width} ${window.innerWidth}w`;
 
-                    let imgSrcSetElm = document.getElementById(`ww-image-srcset-${uid}`);
-                    if (!imgSrcSetElm) {
-                        imgSrcSetElm = document.createElement('script');
-                        imgSrcSetElm.setAttribute('id', `ww-image-srcset-${uid}`);
-                        document.head.append(imgSrcSetElm);
+                        let imgSrcSetElm = document.getElementById(`ww-image-srcset-${uid}`);
+                        if (!imgSrcSetElm) {
+                            imgSrcSetElm = document.createElement('script');
+                            imgSrcSetElm.setAttribute('id', `ww-image-srcset-${uid}`);
+                            document.head.append(imgSrcSetElm);
+                        }
+                        imgSrcSetElm.innerText = `window.wwg_imgsrcset_${uid} = "${this.imgSrcSet}";`;
                     }
-                    imgSrcSetElm.innerText = `window.wwg_imgsrcset_${uid} = "${this.imgSrcSet}";`;
-                }
-            } else if (oldValue && newValue && oldValue != newValue) {
-                this.imgSrcSet = null;
+                }, 100);
             }
+            // else if (oldValue && newValue && oldValue != newValue) {
+            //     this.imgSrcSet = null;
+            // }
         },
         /* wwFront:end */
     },
