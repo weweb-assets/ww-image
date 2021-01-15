@@ -155,7 +155,7 @@ export default {
     },
     watch: {
         /* wwFront:start */
-        screenSize() {
+        screenSize(oldValue, newValue) {
             if (window.__WW_IS_PRERENDER__ && this.$el && this.$el.querySelector('.ww-image__img')) {
                 this.imgSrcSet = this.imgSrcSet || '';
 
@@ -177,6 +177,8 @@ export default {
                     }
                     imgSrcSetElm.innerText = `window.wwg_imgsrcset_${uid} = "${this.imgSrcSet}";`;
                 }
+            } else if (oldValue != newValue) {
+                this.imgSrcSet = null;
             }
         },
         /* wwFront:end */
