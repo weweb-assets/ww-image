@@ -22,6 +22,7 @@
                 :src="source"
                 :alt="content.alt"
                 :style="imageStyle"
+                ww-responsive="ww-img"
                 loading="auto"
             />
 
@@ -35,6 +36,7 @@
                 data-src-step="10"
                 :alt="content.alt"
                 :style="imageStyle"
+                ww-responsive="ww-img"
             />
 
             <!-- SRCSET -->
@@ -46,6 +48,7 @@
                 :src="twicPicsFallback"
                 :alt="content.alt"
                 loading="lazy"
+                ww-responsive="ww-img"
             />
         </div>
         <!-- wwFront:end -->
