@@ -26,7 +26,7 @@
 
             <!-- Twicpics -->
             <img
-                v-else-if="!imgSrcSet"
+                v-else-if="!hasSrcSet"
                 class="ww-image__img twic"
                 :src="placeholder"
                 :data-twic-src="twicPicsDataSrc"
@@ -150,6 +150,9 @@ export default {
         focusPoint() {
             return `${this.content.focusPoint[0]}px${this.content.focusPoint[1]}p`;
         },
+        hasSrcSet() {
+            return window[`wwg_imgsrcset_${this.uid.split('-')[0]}`];
+        },
     },
     watch: {
         /* wwFront:start */
@@ -178,7 +181,7 @@ export default {
                     imgSrcSetElm.innerText = `window.wwg_imgsrcset_${uid} = "${this.imgSrcSet}";`;
                 }
             } else if (oldValue != newValue) {
-                this.imgSrcSet = '       ';
+                this.imgSrcSet = null;
             }
         },
         /* wwFront:end */
