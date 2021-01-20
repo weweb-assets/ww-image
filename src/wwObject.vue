@@ -1,6 +1,7 @@
 <template>
     <div class="ww-image">
         <div class="ww-image__wrapper" :style="formatStyle" ww-responsive="ww-img-wrap">
+            <div class="ww-image__ratio" :style="ratioStyle" ww-responsive="ww-img-ratio"></div>
             <!-- wwManager:start -->
             <img
                 draggable="false"
@@ -71,6 +72,7 @@ export default {
         zoom: wwLib.responsive(1),
         style: {},
         focusPoint: wwLib.responsive([50, 50]),
+        ratio: wwLib.responsive(0),
     },
     props: {
         uid: String,
@@ -147,6 +149,11 @@ export default {
                 '--ww-image-overlay-background': overlayBackground,
             };
         },
+        ratioStyle() {
+            return {
+                '--ww-image-ratio': `${this.content.ratio * 100}%`,
+            };
+        },
         focusPoint() {
             return `${this.content.focusPoint[0]}px${this.content.focusPoint[1]}p`;
         },
@@ -155,6 +162,20 @@ export default {
         },
     },
     watch: {
+        'content.url': {
+            handler(newUrl, oldUrl) {
+                if (newUrl === oldUrl || !this.$el) return;
+
+                const img = this.$el.querySelector('img');
+                if (!img) return;
+
+                img.onload = () => {
+                    if (!img.naturalWidth || !img.naturalHeight) return;
+                    const ratio = img.naturalHeight / img.naturalWidth;
+                    this.$emit('update', { ratio });
+                };
+            },
+        },
         /* wwFront:start */
         screenSize(oldValue, newValue) {
             if (window.__WW_IS_PRERENDER__ && this.$el && this.$el.querySelector('.ww-image__img')) {
@@ -333,6 +354,17 @@ export default {
         if (!this.wwElementState.isBackground) {
             this.$el.addEventListener('mousedown', this.startMove);
         }
+
+        if (!this.$el) return;
+
+        const img = this.$el.querySelector('img');
+        if (!img) return;
+
+        img.onload = () => {
+            if (!img.naturalWidth || !img.naturalHeight) return;
+            const ratio = img.naturalHeight / img.naturalWidth;
+            this.$emit('update', { ratio });
+        };
     },
     beforeDestroy() {
         if (!this.wwElementState.isBackground) {
@@ -348,9 +380,12 @@ export default {
     display: flex;
 
     &__wrapper {
+        /* wwEditor:start */
         cursor: move;
         cursor: grab;
         user-select: none;
+        /* wwEditor:start */
+
         width: 100%;
         position: relative;
         overflow: hidden;
@@ -365,6 +400,27 @@ export default {
             bottom: 0;
             background: var(--ww-image-overlay-background);
             pointer-events: none;
+        }
+    }
+
+    &__ratio {
+        visibility: none;
+        position: relative;
+        pointer-events: none;
+
+        &:before {
+            content: '';
+            width: 1px;
+            margin-left: -1px;
+            float: left;
+            height: 0;
+            padding-top: var(--ww-image-ratio);
+        }
+
+        &:after {
+            content: '';
+            display: table;
+            clear: both;
         }
     }
 
