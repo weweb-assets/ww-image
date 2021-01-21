@@ -220,10 +220,35 @@ export default {
           IMAGE ZOOM
         \================================================================================================*/
         resetZoom(event) {
-            this.preventEvent(event);
-            this.$emit('update', { positionX: 0, positionY: 0, zoom: 1 });
+            if (event) this.preventEvent(event);
+            this.$emit('update', { x: 0, y: 0, zoom: 1 });
 
             return false;
+        },
+        switchCoverContain() {
+            if (this.$el && this.$el.querySelector('img')) {
+                const wrapper = this.$el.querySelector('.ww-image__wrapper');
+                const wrapperWidth = wrapper.getBoundingClientRect().width;
+                const wrapperHeight = wrapper.getBoundingClientRect().height;
+
+                const img = this.$el.querySelector('img');
+                const imgWidth = img.getBoundingClientRect().width;
+                const imgHeight = img.getBoundingClientRect().height;
+
+                let targetHeight, targetWidth;
+
+                if (wrapperWidth === imgWidth) {
+                    targetHeight = wrapperHeight;
+                    targetWidth = imgWidth / (imgHeight / wrapperHeight);
+                } else {
+                    targetWidth = wrapperWidth;
+                    targetHeight = imgHeight / (imgWidth / wrapperWidth);
+                }
+
+                const zoom = targetWidth / wrapperWidth;
+
+                this.$emit('update', { x: 0, y: 0, zoom });
+            }
         },
 
         /*=============================================m_ÔÔ_m=============================================\
@@ -323,13 +348,6 @@ export default {
             wwLib.wwManagerUI.unlockSelection();
 
             return false;
-        },
-        resetZoomAndPosition() {
-            this.$emit('update', {
-                zoom: 1,
-                x: 0,
-                y: 0,
-            });
         },
         async edit() {
             const update = await openPopup({

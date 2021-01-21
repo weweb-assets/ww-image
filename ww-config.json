@@ -58,7 +58,15 @@
                 "options": {
                     "text": { "en": "Reset zoom & pos.", "fr": "Réinit. zoom & pos." },
                     "color": "blue",
-                    "action": "resetZoomAndPosition"
+                    "action": "resetZoom"
+                }
+            },
+            "converContain": {
+                "type": "Button",
+                "options": {
+                    "text": { "en": "Switch Cover / Contain", "fr": "Zoom auto" },
+                    "color": "blue",
+                    "action": "switchCoverContain"
                 }
             },
             "overlay": {
