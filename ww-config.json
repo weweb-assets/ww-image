@@ -16,6 +16,7 @@
                     "icon": "assets",
                     "quick": [
                         { "type": "custom-settings", "name": "url" },
+                        { "type": "custom-style", "name": "coverContain" },
                         { "type": "custom-style", "name": "zoom" },
                         { "type": "custom-style", "name": "reset" }
                     ]
@@ -61,7 +62,7 @@
                     "action": "resetZoom"
                 }
             },
-            "converContain": {
+            "coverContain": {
                 "type": "Button",
                 "options": {
                     "text": { "en": "Switch Cover / Contain", "fr": "Zoom auto" },
