@@ -55,15 +55,7 @@
 </template>
 
 <script>
-const screenBreakpoints = {
-    xs: 768,
-    sm: 992,
-    md: 1200,
-    lg: 1920,
-};
-
 export default {
-    name: '__COMPONENT_NAME__',
     wwDefaultContent: {
         alt: '',
         url: wwLib.responsive('https://cdn.weweb.app/public/images/no_image_selected.png'),
@@ -124,10 +116,6 @@ export default {
             return `${this.twicPicsSrc}/quality=85/resize=1024`;
         },
         imageStyle() {
-            // --zoom: 1;
-            // --left: 0;
-            // --top: 0;
-
             let style = {
                 filter:
                     this.content && this.content.style && this.content.style.filter ? this.content.style.filter : null,
@@ -212,9 +200,6 @@ export default {
                     }
                 }, 100);
             }
-            // else if (oldValue && newValue && oldValue != newValue) {
-            //     this.imgSrcSet = null;
-            // }
         },
         /* wwFront:end */
     },
@@ -433,7 +418,7 @@ export default {
             user-select: none;
         }
     }
-    /* wwEditor:start */
+    /* wwEditor:end */
 
     &__ratio {
         visibility: none;
