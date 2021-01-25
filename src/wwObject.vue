@@ -1,5 +1,5 @@
 <template>
-    <div class="ww-image">
+    <div class="ww-image" :class="{ selected: isSelected }">
         <div class="ww-image__wrapper" :style="formatStyle" ww-responsive="ww-img-wrap">
             <div class="ww-image__ratio" :style="ratioStyle" ww-responsive="ww-img-ratio"></div>
             <!-- wwManager:start -->
@@ -83,6 +83,9 @@ export default {
         wwEditorState: Object,
         /* wwManager:end */
     },
+    inject: {
+        getObjectStyle: { default: () => {} },
+    },
     data() {
         return {
             placeholder: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
@@ -131,6 +134,7 @@ export default {
                 '--zoom': (this.content && this.content.zoom) || 1,
                 '--left': (this.content && this.content.x) || 0,
                 '--top': (this.content && this.content.y) || 0,
+                transition: this.getObjectStyle().transition,
             };
 
             return style;
@@ -159,6 +163,12 @@ export default {
         },
         hasSrcSet() {
             return window.__WW_IS_PRERENDER__ || window[`wwg_imgsrcset_${this.uid.split('-')[0]}`];
+        },
+        isSelected() {
+            /* wwEditor:start */
+            return this.wwEditorState.isSelected;
+            /* wwEditor:end */
+            return false;
         },
     },
     watch: {
@@ -398,12 +408,6 @@ export default {
     display: flex;
 
     &__wrapper {
-        /* wwEditor:start */
-        cursor: move;
-        cursor: grab;
-        user-select: none;
-        /* wwEditor:start */
-
         width: 100%;
         position: relative;
         overflow: hidden;
@@ -420,6 +424,16 @@ export default {
             pointer-events: none;
         }
     }
+
+    /* wwEditor:start */
+    &.selected {
+        .ww-image__wrapper {
+            cursor: move;
+            cursor: grab;
+            user-select: none;
+        }
+    }
+    /* wwEditor:start */
 
     &__ratio {
         visibility: none;
@@ -454,10 +468,12 @@ export default {
 }
 </style>
 
-<style>
+<style lang="scss">
+/* wwEditor:start */
 .ww-image-dragging {
     cursor: move;
     cursor: grab;
     user-select: none;
 }
+/* wwEditor:end */
 </style>
