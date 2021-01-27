@@ -88,7 +88,8 @@
         "settingsOptions": {
             "url": {
                 "label": { "en": "Image", "fr": "Image" },
-                "type": "Image"
+                "type": "Image",
+                "bindable": true
             },
             "alt": {
                 "label": { "en": "Alt", "fr": "Alt" },
