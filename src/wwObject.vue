@@ -16,7 +16,7 @@
             <!-- wwFront:start -->
             <!-- No Twicpics -->
             <img
-                v-if="content.disableTwicPics"
+                v-if="isTwicPics"
                 class="ww-image__img"
                 :src="source"
                 :alt="content.alt"
@@ -104,7 +104,14 @@ export default {
             return this.$store.getters['front/getScreenSize'];
         },
         source() {
-            return `${wwLib.wwUtils.getCdnPrefix()}${this.content.url}`;
+            if (this.isTwicPics) {
+                return `${wwLib.wwUtils.getCdnPrefix()}${this.content.url}`;
+            } else {
+                return this.content.url;
+            }
+        },
+        isTwicPics() {
+            return !this.content.url.startsWith('http');
         },
         twicPicsDataSrc() {
             return `image:${wwLib.wwUtils.getTwicPicsFolder()}${this.content.url}`;
