@@ -16,7 +16,7 @@
             <!-- wwFront:start -->
             <!-- No Twicpics -->
             <img
-                v-if="isTwicPics"
+                v-if="isTwicPics && hasSrcSet"
                 class="ww-image__img"
                 :src="source"
                 :alt="content.alt"
@@ -27,7 +27,7 @@
 
             <!-- Twicpics -->
             <img
-                v-else-if="!hasSrcSet"
+                v-else-if="isTwicPics && !hasSrcSet"
                 class="ww-image__img twic"
                 :src="placeholder"
                 :data-twic-src="twicPicsDataSrc"
