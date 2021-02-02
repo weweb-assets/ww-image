@@ -157,7 +157,7 @@ export default {
             return `${this.content.focusPoint[0]}px${this.content.focusPoint[1]}p`;
         },
         hasSrcSet() {
-            return window.__WW_IS_PRERENDER__ || window[`wwg_imgsrcset_${this.uid.split('-')[0]}`];
+            return this.isTwicPics && (window.__WW_IS_PRERENDER__ || window[`wwg_imgsrcset_${this.uid.split('-')[0]}`]);
         },
         isSelected() {
             /* wwEditor:start */
