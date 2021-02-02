@@ -183,7 +183,7 @@ export default {
         },
         /* wwFront:start */
         screenSize(oldValue, newValue) {
-            if (window.__WW_IS_PRERENDER__ && this.$el && this.$el.querySelector('.ww-image__img')) {
+            if (this.isTwicPics && window.__WW_IS_PRERENDER__ && this.$el && this.$el.querySelector('.ww-image__img')) {
                 setTimeout(() => {
                     this.imgSrcSet = this.imgSrcSet || '';
 
