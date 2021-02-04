@@ -149,9 +149,15 @@ export default {
             };
         },
         ratioStyle() {
-            return {
-                '--ww-image-ratio': `${this.content.ratio * 100}%`,
-            };
+            if (!this.getObjectStyle().height || this.getObjectStyle().height === 'auto') {
+                return {
+                    '--ww-image-ratio': `${this.content.ratio * 100}%`,
+                };
+            } else {
+                return {
+                    '--ww-image-ratio': `0%`,
+                };
+            }
         },
         focusPoint() {
             return `${this.content.focusPoint[0]}px${this.content.focusPoint[1]}p`;
