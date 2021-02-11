@@ -14,20 +14,9 @@
             <!-- wwManager:end -->
 
             <!-- wwFront:start -->
-            <!-- No Twicpics -->
+            <!-- NO SRCSET -->
             <img
-                v-if="!isTwicPics"
-                class="ww-image__img"
-                :src="source"
-                :alt="content.alt"
-                :style="imageStyle"
-                ww-responsive="ww-img"
-                loading="auto"
-            />
-
-            <!-- Twicpics -->
-            <img
-                v-else-if="!hasSrcSet"
+                v-if="loadWithTwicPics"
                 class="ww-image__img twic"
                 :src="placeholder"
                 :data-twic-src="twicPicsDataSrc"
@@ -35,19 +24,19 @@
                 data-src-step="10"
                 :alt="content.alt"
                 :style="imageStyle"
-                ww-responsive="ww-img"
+                ww-responsive="ww-img-twic"
             />
 
             <!-- SRCSET -->
             <img
                 v-else
                 class="ww-image__img"
-                :style="imageStyle"
                 :srcset="imgSrcSet"
-                :src="twicPicsFallback"
+                :src="content.url"
                 :alt="content.alt"
                 loading="lazy"
-                ww-responsive="ww-img"
+                :style="imageStyle"
+                ww-responsive="ww-img-no-twic"
             />
             <!-- wwFront:end -->
         </div>
@@ -100,27 +89,14 @@ export default {
         };
     },
     computed: {
-        screenSize() {
-            return this.$store.getters['front/getScreenSize'];
-        },
-        source() {
-            if (this.isTwicPics) {
-                return `${wwLib.wwUtils.getCdnPrefix()}${this.content.url}`;
-            } else {
-                return this.content.url;
-            }
-        },
-        isTwicPics() {
-            return !this.content.url.startsWith('http');
+        loadWithTwicPics() {
+            return !this.imgSrcSet && !this.content.url.startsWith('http');
         },
         twicPicsDataSrc() {
             return `image:${wwLib.wwUtils.getTwicPicsFolder()}${this.content.url}`;
         },
-        twicPicsSrc() {
-            return wwLib.wwUtils.transformToTwicPics(this.content.url);
-        },
-        twicPicsFallback() {
-            return `${this.twicPicsSrc}/quality=85/resize=1024`;
+        screenSize() {
+            return this.$store.getters['front/getScreenSize'];
         },
         imageStyle() {
             let style = {
@@ -162,17 +138,25 @@ export default {
         focusPoint() {
             return `${this.content.focusPoint[0]}px${this.content.focusPoint[1]}p`;
         },
-        hasSrcSet() {
-            return this.isTwicPics && (window.__WW_IS_PRERENDER__ || window[`wwg_imgsrcset_${this.uid.split('-')[0]}`]);
-        },
         isSelected() {
             /* wwEditor:start */
             return this.wwEditorState.isSelected;
             /* wwEditor:end */
             return false;
         },
+
+        /* wwEditor:start */
+        source() {
+            if (!this.content.url.startsWith('http')) {
+                return `${wwLib.wwUtils.getCdnPrefix()}${this.content.url}`;
+            } else {
+                return this.content.url;
+            }
+        },
+        /* wwEditor:end */
     },
     watch: {
+        /* wwEditor:start */
         'content.url': {
             handler(newUrl, oldUrl) {
                 if (newUrl === oldUrl || !this.$el) return;
@@ -187,9 +171,10 @@ export default {
                 };
             },
         },
+        /* wwEditor:end */
         /* wwFront:start */
         screenSize(oldValue, newValue) {
-            if (this.isTwicPics && window.__WW_IS_PRERENDER__ && this.$el && this.$el.querySelector('.ww-image__img')) {
+            if (window.__WW_IS_PRERENDER__ && this.$el && this.$el.querySelector('.ww-image__img')) {
                 setTimeout(() => {
                     this.imgSrcSet = this.imgSrcSet || '';
 
@@ -199,9 +184,10 @@ export default {
                     const width = Math.round(img.getBoundingClientRect().width);
 
                     if (width) {
-                        this.imgSrcSet += `${this.imgSrcSet ? ', ' : ''}${
-                            this.twicPicsSrc
-                        }/quality=85/resize=${width} ${window.innerWidth}w`;
+                        const currentSrc = this.content.url.startsWith('http')
+                            ? this.content.url
+                            : `${wwLib.wwUtils.transformToTwicPics(this.content.url)}/quality=85/resize=${width}`;
+                        this.imgSrcSet += `${currentSrc} ${window.innerWidth}w, `;
 
                         let imgSrcSetElm = document.getElementById(`ww-image-srcset-${uid}`);
                         if (!imgSrcSetElm) {
