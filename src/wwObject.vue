@@ -7,7 +7,7 @@
                 draggable="false"
                 class="ww-image__img"
                 :src="source"
-                :alt="content.alt"
+                :alt="wwLang.getText(content.alt)"
                 :style="imageStyle"
                 ww-responsive="ww-img"
             />
@@ -22,7 +22,7 @@
                 :data-twic-src="twicPicsDataSrc"
                 data-src-transform="quality=85/auto"
                 data-src-step="10"
-                :alt="content.alt"
+                :alt="wwLang.getText(content.alt)"
                 :style="imageStyle"
                 ww-responsive="ww-img-twic"
             />
@@ -33,7 +33,7 @@
                 class="ww-image__img"
                 :srcset="imgSrcSet"
                 :src="content.url"
-                :alt="content.alt"
+                :alt="wwLang.getText(content.alt)"
                 loading="lazy"
                 :style="imageStyle"
                 ww-responsive="ww-img-no-twic"
@@ -46,7 +46,7 @@
 <script>
 export default {
     wwDefaultContent: {
-        alt: '',
+        alt: { en: '' },
         url: wwLib.responsive('https://cdn.weweb.app/public/images/no_image_selected.png'),
         x: wwLib.responsive(0),
         y: wwLib.responsive(0),
@@ -77,6 +77,7 @@ export default {
                 xs: 0,
             },
             imgSrcSet: null,
+            wwLang: wwLib.wwLang,
 
             /* wwManager:start */
             lastMovePosition: { x: 0, y: 0 },
@@ -131,7 +132,7 @@ export default {
                 };
             } else {
                 return {
-                    '--ww-image-ratio': `0%`,
+                    '--ww-image-ratio': '0%',
                 };
             }
         },
