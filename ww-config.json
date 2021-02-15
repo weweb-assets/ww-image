@@ -94,6 +94,7 @@
             "alt": {
                 "label": { "en": "Alt", "fr": "Alt" },
                 "type": "Text",
+                "multiLang": true,
                 "options": {
                     "placeholder": "Image description"
                 }
