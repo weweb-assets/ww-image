@@ -36,7 +36,7 @@
                 :alt="wwLang.getText(content.alt)"
                 loading="lazy"
                 :style="imageStyle"
-                ww-responsive="ww-img-no-twic"
+                ww-responsive="ww-img-twic"
             />
             <!-- wwFront:end -->
         </div>
