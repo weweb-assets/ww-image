@@ -179,7 +179,8 @@ export default {
                 setTimeout(() => {
                     this.imgSrcSet = this.imgSrcSet || '';
 
-                    const uid = this.uid.split('-')[0];
+                    const splited = this.uid.split('-');
+                    const uid = splited[splited.length - 1];
 
                     const img = this.$el.querySelector('.ww-image__img');
                     const width = Math.round(img.getBoundingClientRect().width);
@@ -357,8 +358,10 @@ export default {
     },
     created() {
         /* wwFront:start */
-        if (window[`wwg_imgsrcset_${this.uid.split('-')[0]}`]) {
-            this.imgSrcSet = window[`wwg_imgsrcset_${this.uid.split('-')[0]}`];
+        const splited = this.uid.split('-');
+        const troncatedUid = splited[splited.length - 1];
+        if (window[`wwg_imgsrcset_${troncatedUid}`]) {
+            this.imgSrcSet = window[`wwg_imgsrcset_${troncatedUid}`];
         }
         /* wwFront:end */
     },
