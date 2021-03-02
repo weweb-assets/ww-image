@@ -1,5 +1,10 @@
 <template>
-    <div class="ww-image" :class="{ selected: isSelected }">
+    <div class="ww-image" :class="{ '-can-drag-image': isDoubleSelected && !isMoving }" v-on="dragListener">
+        <!-- wwEditor:start -->
+        <div class="ww-image__drag-overlay">
+            <wwEditorIcon class="ww-image__drag-overlay-icon" name="move" />
+        </div>
+        <!-- wwEditor:end -->
         <div class="ww-image__wrapper" :style="formatStyle" ww-responsive="ww-img-wrap">
             <div class="ww-image__ratio" :style="ratioStyle" ww-responsive="ww-img-ratio"></div>
             <!-- wwManager:start -->
@@ -78,6 +83,7 @@ export default {
             },
             imgSrcSet: null,
             wwLang: wwLib.wwLang,
+            dragListener: {},
 
             /* wwManager:start */
             lastMovePosition: { x: 0, y: 0 },
@@ -139,9 +145,9 @@ export default {
         focusPoint() {
             return `${this.content.focusPoint[0]}px${this.content.focusPoint[1]}p`;
         },
-        isSelected() {
+        isDoubleSelected() {
             /* wwEditor:start */
-            return this.wwEditorState.isSelected;
+            return this.wwEditorState.isDoubleSelected;
             /* wwEditor:end */
             return false;
         },
@@ -171,6 +177,15 @@ export default {
                     this.$emit('update', { ratio });
                 };
             },
+        },
+        isDoubleSelected() {
+            if (this.isDoubleSelected) {
+                this.dragListener = {
+                    mousedown: this.startMove,
+                };
+            } else {
+                this.dragListener = {};
+            }
         },
         /* wwEditor:end */
         /* wwFront:start */
@@ -259,7 +274,7 @@ export default {
             return position;
         },
         startMove(event) {
-            if (!this.wwEditorState.isSelected) return;
+            if (!this.isDoubleSelected) return;
             if (
                 this.wwEditorState.editMode !== wwLib.wwEditorHelper.EDIT_MODES.EDITION ||
                 this.wwElementState.isBackground
@@ -345,15 +360,6 @@ export default {
 
             return false;
         },
-        async edit() {
-            const update = await openPopup({
-                isBackground: this.$attrs['ww-element-state'].isBackground,
-                content: this.$attrs.content,
-            });
-            if (update) {
-                this.$emit('update', update);
-            }
-        },
         /* wwManager:end */
     },
     created() {
@@ -367,10 +373,6 @@ export default {
     },
     /* wwManager:start */
     mounted() {
-        if (!this.wwElementState.isBackground) {
-            this.$el.addEventListener('mousedown', this.startMove);
-        }
-
         if (!this.$el) return;
 
         const img = this.$el.querySelector('img');
@@ -382,11 +384,6 @@ export default {
             this.$emit('update', { ratio });
         };
     },
-    beforeDestroy() {
-        if (!this.wwElementState.isBackground) {
-            this.$el.removeEventListener('mousedown', this.startMove);
-        }
-    },
     /* wwManager:end */
 };
 </script>
@@ -394,6 +391,7 @@ export default {
 <style scoped lang="scss">
 .ww-image {
     display: flex;
+    position: relative;
 
     &__wrapper {
         width: 100%;
@@ -412,16 +410,6 @@ export default {
             pointer-events: none;
         }
     }
-
-    /* wwEditor:start */
-    &.selected {
-        .ww-image__wrapper {
-            cursor: move;
-            cursor: grab;
-            user-select: none;
-        }
-    }
-    /* wwEditor:end */
 
     &__ratio {
         visibility: none;
@@ -453,6 +441,42 @@ export default {
         width: calc(100% * var(--zoom));
         transform: translate(-50%, -50%);
     }
+
+    /* wwEditor:start */
+
+    &__drag-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--ww-color-dark-300);
+        opacity: 0;
+        z-index: 1;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        &-icon {
+            width: 100px;
+            height: 100px;
+            max-width: 90%;
+            max-height: 90%;
+        }
+    }
+    &.-can-drag-image {
+        .ww-image__drag-overlay {
+            opacity: 0.3;
+        }
+        .ww-image__wrapper {
+            cursor: move;
+            cursor: grab;
+            user-select: none;
+        }
+    }
+    /* wwEditor:end */
 }
 </style>
 
