@@ -203,7 +203,9 @@ export default {
                     if (width) {
                         const currentSrc = this.content.url.startsWith('http')
                             ? this.content.url
-                            : `${wwLib.wwUtils.transformToTwicPics(this.content.url)}/quality=85/resize=${width}`;
+                            : `${wwLib.wwUtils.transformToTwicPics(this.content.url)}/quality=85/resize=${Math.round(
+                                  width + width * 0.3
+                              )}`;
                         this.imgSrcSet += `${currentSrc} ${window.innerWidth}w, `;
 
                         let imgSrcSetElm = document.getElementById(`ww-image-srcset-${uid}`);
