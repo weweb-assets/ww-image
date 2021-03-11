@@ -441,7 +441,7 @@ export default {
         top: calc(50% + var(--posY));
         left: calc(50% + var(--posX));
         width: calc(100% * var(--zoom));
-        transform: translate(-50%, -50%);
+        transform: translate3d(-50%, -50%, 0);
     }
 
     /* wwEditor:start */
