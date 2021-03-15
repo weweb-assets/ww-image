@@ -10,23 +10,9 @@
             "en": "Image"
         },
         "menuOptions": {
-            "items": [
-                {
-                    "name": "Source",
-                    "icon": "assets",
-                    "quick": [
-                        { "type": "custom-settings", "name": "url" },
-                        { "type": "custom-style", "name": "coverContain" },
-                        { "type": "custom-style", "name": "zoom" },
-                        { "type": "custom-style", "name": "reset" }
-                    ]
-                },
-                {
-                    "name": "Link",
-                    "icon": "link",
-                    "quick": [{ "type": "Link" }]
-                }
-            ]
+            "quick": {
+                "sections": ["url", "ww-sizing", "alt"]
+            }
         },
         "styleOptions": {
             "zoom": {
