@@ -122,9 +122,9 @@ export default {
             if (this.content.style && this.content.style.overlay) {
                 const overlay = this.content.style.overlay;
                 if (overlay.type === 'color') {
-                    overlayBackground = overlay.value;
+                    overlayBackground = overlay;
                 } else if (overlay.type === 'gradient' && overlay.value) {
-                    overlayBackground = overlay.value.value;
+                    overlayBackground = overlay;
                 }
             }
             return {
