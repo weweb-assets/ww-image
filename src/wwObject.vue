@@ -118,15 +118,7 @@ export default {
             return style;
         },
         formatStyle() {
-            let overlayBackground = 'none';
-            if (this.content.style && this.content.style.overlay) {
-                const overlay = this.content.style.overlay;
-                if (overlay.type === 'color') {
-                    overlayBackground = overlay.value;
-                } else if (overlay.type === 'gradient' && overlay.value) {
-                    overlayBackground = overlay.value.value;
-                }
-            }
+            const overlayBackground = (this.content.style && this.content.style.overlay) || 'none';
             return {
                 '--ww-image-overlay-background': overlayBackground,
             };
