@@ -85,6 +85,7 @@
                 "label": { "en": "Alt", "fr": "Alt" },
                 "type": "Text",
                 "multiLang": true,
+                "bindable": true,
                 "options": {
                     "placeholder": "Image description"
                 }
