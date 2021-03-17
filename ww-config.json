@@ -11,7 +11,11 @@
         },
         "menuOptions": {
             "quick": {
-                "sections": ["url", "ww-sizing", "alt"]
+                "sections": ["url", "ww-sizing", "alt"],
+                "bind": [
+                    { "prop": "url", "label": { "en": "Bind image source" } },
+                    { "prop": "alt", "label": { "en": "Bind image alt" } }
+                ]
             }
         },
         "styleOptions": {
