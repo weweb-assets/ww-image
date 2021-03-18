@@ -11,7 +11,7 @@
         },
         "menuOptions": {
             "quick": {
-                "sections": ["url", "ww-sizing", "alt"],
+                "sections": ["resize", "url", "alt"],
                 "bind": [
                     { "prop": "url", "label": { "en": "Bind image source" } },
                     { "prop": "alt", "label": { "en": "Bind image alt" } }
@@ -88,6 +88,19 @@
                 "bindable": true,
                 "options": {
                     "placeholder": "Image description"
+                }
+            }
+        },
+        "otherOptions": {
+            "resize": {
+                "type": "Info",
+                "options": {
+                    "text": {
+                        "en": "Double click on the image to resize",
+                        "fr": "Double clic sur l'image pour la redimensionner"
+                    },
+                    "align": "center",
+                    "size": "medium"
                 }
             }
         }
