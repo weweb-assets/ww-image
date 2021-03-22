@@ -19,6 +19,11 @@
             }
         },
         "styleOptions": {
+            "url": {
+                "label": { "en": "Image", "fr": "Image" },
+                "type": "Image",
+                "bindable": true
+            },
             "zoom": {
                 "type": "Number",
                 "label": { "en": "Zoom", "fr": "Zoom" },
@@ -76,11 +81,6 @@
             }
         },
         "settingsOptions": {
-            "url": {
-                "label": { "en": "Image", "fr": "Image" },
-                "type": "Image",
-                "bindable": true
-            },
             "alt": {
                 "label": { "en": "Alt", "fr": "Alt" },
                 "type": "Text",
