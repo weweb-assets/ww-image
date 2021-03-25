@@ -386,6 +386,7 @@ export default {
 .ww-image {
     display: flex;
     position: relative;
+    overflow: hidden;
 
     &__wrapper {
         width: 100%;
