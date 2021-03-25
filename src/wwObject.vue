@@ -407,7 +407,7 @@ export default {
     }
 
     &__ratio {
-        visibility: none;
+        visibility: hidden;
         position: relative;
         pointer-events: none;
 
