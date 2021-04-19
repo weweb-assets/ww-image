@@ -193,11 +193,22 @@ export default {
                     const width = Math.round(img.getBoundingClientRect().width);
 
                     if (width) {
-                        const currentSrc = this.content.url.startsWith('http')
-                            ? this.content.url
-                            : `${wwLib.wwUtils.transformToTwicPics(this.content.url)}/quality=90/resize=${Math.round(
-                                  width + width * 0.3
-                              )}`;
+                        const airtablePrefix = 'https://dl.airtable.com/';
+                        const privateFrenchFoundersPrefix = 'https://private.frenchfounders.com/';
+
+                        let prefix = null;
+                        if (!this.content.url.startsWith('http')) prefix = 'weweb';
+                        else if (this.content.url.startsWith(airtablePrefix)) prefix = 'airtable/';
+                        else if (this.content.url.startsWith(privateFrenchFoundersPrefix))
+                            prefix = 'private-frenchfounders/';
+
+                        const currentSrc = prefix
+                            ? `${wwLib.wwUtils.transformToTwicPics(
+                                  this.content.url,
+                                  prefix
+                              )}/quality=90/resize=${Math.round(width + width * 0.3)}`
+                            : this.content.url;
+
                         this.imgSrcSet += `${currentSrc} ${window.innerWidth}w, `;
 
                         let imgSrcSetElm = document.getElementById(`ww-image-srcset-${uid}`);
