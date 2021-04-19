@@ -198,9 +198,13 @@ export default {
 
                         let prefix = null;
                         if (!this.content.url.startsWith('http')) prefix = 'weweb';
-                        else if (this.content.url.startsWith(airtablePrefix)) prefix = 'airtable/';
-                        else if (this.content.url.startsWith(privateFrenchFoundersPrefix))
+                        else if (this.content.url.startsWith(airtablePrefix)) {
+                            prefix = 'airtable/';
+                            this.content.url = this.content.url.replace(airtablePrefix, '');
+                        } else if (this.content.url.startsWith(privateFrenchFoundersPrefix)) {
                             prefix = 'private-frenchfounders/';
+                            this.content.url = this.content.url.replace(privateFrenchFoundersPrefix, '');
+                        }
 
                         const currentSrc = prefix
                             ? `${wwLib.wwUtils.transformToTwicPics(
