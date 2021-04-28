@@ -33,16 +33,10 @@
             />
 
             <!-- SRCSET -->
-            <img
-                v-else
-                class="ww-image__img"
-                :srcset="imgSrcSet"
-                :src="content.url"
-                :alt="wwLang.getText(content.alt)"
-                loading="lazy"
-                :style="imageStyle"
-                ww-responsive="ww-img-twic"
-            />
+            <picture v-else class="ww-image__img" loading="lazy" :style="imageStyle" ww-responsive="ww-img">
+                <source v-for="(srcset, index) in imgSrcSet" :key="index" :srcset="srcset.src" :media="srcset.media" />
+                <img :src="content.url" :alt="wwLang.getText(content.alt)" loading="lazy" />
+            </picture>
             <!-- wwFront:end -->
         </div>
     </div>
@@ -81,7 +75,7 @@ export default {
                 sm: 0,
                 xs: 0,
             },
-            imgSrcSet: null,
+            imgSrcSet: [],
             wwLang: wwLib.wwLang,
             dragListener: {},
 
@@ -96,8 +90,11 @@ export default {
         };
     },
     computed: {
+        isPrerender() {
+            return window.__WW_IS_PRERENDER__;
+        },
         loadWithTwicPics() {
-            return !this.imgSrcSet && !this.content.url.startsWith('http');
+            return !this.isPrerender && !this.imgSrcSet && !this.content.url.startsWith('http');
         },
         twicPicsDataSrc() {
             return `image:${wwLib.wwUtils.getTwicPicsFolder()}${this.content.url}`;
@@ -181,10 +178,18 @@ export default {
         },
         /* wwEditor:end */
         /* wwFront:start */
-        screenSize(oldValue, newValue) {
-            if (window.__WW_IS_PRERENDER__ && this.$el && this.$el.querySelector('.ww-image__img')) {
-                setTimeout(() => {
-                    this.imgSrcSet = this.imgSrcSet || '';
+        screenSize(newValue, oldValue) {
+            if (this.isPrerender && oldValue != newValue) {
+                this.setSrcSet();
+            }
+        },
+        /* wwFront:end */
+    },
+    methods: {
+        setSrcSet() {
+            setTimeout(() => {
+                if (this.isPrerender && this.$el && this.$el.querySelector('.ww-image__img')) {
+                    this.imgSrcSet = this.imgSrcSet || [];
 
                     const splited = this.uid.split('-');
                     const uid = splited[splited.length - 1];
@@ -210,10 +215,15 @@ export default {
                             ? `${wwLib.wwUtils.transformToTwicPics(
                                   this.content.url,
                                   prefix
-                              )}/quality=90/resize=${Math.round(width + width * 0.3)}`
+                              )}/quality=90/resize=${Math.round(width)}`
                             : this.content.url;
 
-                        this.imgSrcSet += `${currentSrc} ${window.innerWidth}w, `;
+                        const query = this.screenSizes[this.screenSize].query;
+
+                        this.imgSrcSet.unshift({
+                            src: currentSrc,
+                            media: query ? `(${query})` : null,
+                        });
 
                         let imgSrcSetElm = document.getElementById(`ww-image-srcset-${uid}`);
                         if (!imgSrcSetElm) {
@@ -221,21 +231,18 @@ export default {
                             imgSrcSetElm.setAttribute('id', `ww-image-srcset-${uid}`);
                             document.head.append(imgSrcSetElm);
                         }
-                        imgSrcSetElm.innerText = `window.wwg_imgsrcset_${uid} = "${this.imgSrcSet}";`;
+                        imgSrcSetElm.innerText = `window.wwg_imgsrcset_${uid} = ${JSON.stringify(this.imgSrcSet)};`;
                     }
-                }, 100);
-            }
+                }
+            }, 100);
         },
-        /* wwFront:end */
-    },
-    methods: {
+        /* wwManager:start */
         preventEvent(event) {
             event.preventDefault();
             event.stopPropagation();
 
             return false;
         },
-        /* wwManager:start */
         /*=============================================m_ÔÔ_m=============================================\
           IMAGE ZOOM
         \================================================================================================*/
@@ -380,8 +387,12 @@ export default {
         }
         /* wwFront:end */
     },
-    /* wwManager:start */
     mounted() {
+        if (this.isPrerender) {
+            this.setSrcSet();
+        }
+
+        /* wwManager:start */
         if (!this.$el) return;
 
         const img = this.$el.querySelector('img');
@@ -392,8 +403,8 @@ export default {
             const ratio = img.naturalHeight / img.naturalWidth;
             this.$emit('update', { ratio });
         };
+        /* wwManager:end */
     },
-    /* wwManager:end */
 };
 </script>
 
