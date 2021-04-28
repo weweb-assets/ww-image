@@ -69,12 +69,6 @@ export default {
     data() {
         return {
             placeholder: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-            imageSizes: {
-                lg: 0,
-                md: 0,
-                sm: 0,
-                xs: 0,
-            },
             imgSrcSet: [],
             wwLang: wwLib.wwLang,
             dragListener: {},
