@@ -35,7 +35,7 @@
             <!-- SRCSET -->
             <picture v-else class="ww-image__img" loading="lazy" :style="imageStyle" ww-responsive="ww-img">
                 <source v-for="(srcset, index) in imgSrcSet" :key="index" :srcset="srcset.src" :media="srcset.media" />
-                <img :src="content.url" :alt="wwLang.getText(content.alt)" loading="lazy" />
+                <img :src="source" :alt="wwLang.getText(content.alt)" loading="lazy" />
             </picture>
             <!-- wwFront:end -->
         </div>
@@ -140,8 +140,6 @@ export default {
             /* wwEditor:end */
             return false;
         },
-
-        /* wwEditor:start */
         source() {
             if (!this.content.url.startsWith('http')) {
                 return `${wwLib.wwUtils.getCdnPrefix()}${this.content.url}`;
@@ -149,7 +147,6 @@ export default {
                 return this.content.url;
             }
         },
-        /* wwEditor:end */
     },
     watch: {
         /* wwEditor:start */
@@ -216,7 +213,7 @@ export default {
                                   this.content.url,
                                   prefix
                               )}/quality=90/resize=${Math.round(width)}`
-                            : this.content.url;
+                            : this.source;
 
                         const query = this.screenSizes[this.screenSize].query;
 
