@@ -36,7 +36,7 @@
             <picture v-else class="ww-image__img-picture" loading="lazy" ww-responsive="ww-img">
                 <source v-for="(srcset, index) in imgSrcSet" :key="index" :srcset="srcset.src" :media="srcset.media" />
                 <img
-                    class="ww-image__img picture-img"
+                    class="ww-image__img"
                     :style="imageStyle"
                     :src="source"
                     :alt="wwLang.getText(content.alt)"
@@ -461,17 +461,14 @@ export default {
         left: calc(50% + var(--posX));
         width: calc(100% * var(--zoom));
         transform: translate(-50%, -50%);
+        image-rendering: -webkit-optimize-contrast;
 
         &-picture {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-
-        &.picture-img {
-            width: 100%;
-            height: 100%;
-            image-rendering: -webkit-optimize-contrast;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
         }
     }
 
