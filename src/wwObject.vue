@@ -33,9 +33,15 @@
             />
 
             <!-- SRCSET -->
-            <picture v-else class="ww-image__img" loading="lazy" :style="imageStyle" ww-responsive="ww-img">
+            <picture v-else class="ww-image__img-picture" loading="lazy" ww-responsive="ww-img">
                 <source v-for="(srcset, index) in imgSrcSet" :key="index" :srcset="srcset.src" :media="srcset.media" />
-                <img class="ww-image__img-img" :src="source" :alt="wwLang.getText(content.alt)" loading="lazy" />
+                <img
+                    class="ww-image__img picture-img"
+                    :style="imageStyle"
+                    :src="source"
+                    :alt="wwLang.getText(content.alt)"
+                    loading="lazy"
+                />
             </picture>
             <!-- wwFront:end -->
         </div>
@@ -456,7 +462,13 @@ export default {
         width: calc(100% * var(--zoom));
         transform: translate(-50%, -50%);
 
-        img {
+        &-picture {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        &.picture-img {
             width: 100%;
             height: 100%;
             image-rendering: -webkit-optimize-contrast;
