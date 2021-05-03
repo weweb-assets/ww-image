@@ -202,7 +202,7 @@ export default {
                         const privateFrenchFoundersPrefix = 'https://private.frenchfounders.com/';
 
                         let prefix = null;
-                        let url;
+                        let url = this.content.url;
                         if (!this.content.url.startsWith('http')) prefix = 'weweb';
                         else if (this.content.url.startsWith(airtablePrefix)) {
                             prefix = 'airtable/';
