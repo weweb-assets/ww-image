@@ -202,20 +202,18 @@ export default {
                         const privateFrenchFoundersPrefix = 'https://private.frenchfounders.com/';
 
                         let prefix = null;
+                        let url;
                         if (!this.content.url.startsWith('http')) prefix = 'weweb';
                         else if (this.content.url.startsWith(airtablePrefix)) {
                             prefix = 'airtable/';
-                            this.content.url = this.content.url.replace(airtablePrefix, '');
+                            url = this.content.url.replace(airtablePrefix, '');
                         } else if (this.content.url.startsWith(privateFrenchFoundersPrefix)) {
                             prefix = 'private-frenchfounders/';
-                            this.content.url = this.content.url.replace(privateFrenchFoundersPrefix, '');
+                            url = this.content.url.replace(privateFrenchFoundersPrefix, '');
                         }
 
                         const currentSrc = prefix
-                            ? `${wwLib.wwUtils.transformToTwicPics(
-                                  this.content.url,
-                                  prefix
-                              )}/quality=90/resize=${Math.round(width)}`
+                            ? `${wwLib.wwUtils.transformToTwicPics(url, prefix)}/quality=90/resize=${Math.round(width)}`
                             : this.source;
 
                         const query = this.screenSizes[this.screenSize].query;
