@@ -212,6 +212,7 @@ export default {
                             url = this.content.url.replace(privateFrenchFoundersPrefix, '');
                         }
 
+                        //pixel-ratio: 1
                         const currentSrc = prefix
                             ? `${wwLib.wwUtils.transformToTwicPics(url, prefix)}/quality=90/resize=${Math.round(width)}`
                             : this.source;
@@ -221,6 +222,20 @@ export default {
                         this.imgSrcSet.unshift({
                             src: currentSrc,
                             media: query ? `(${query})` : null,
+                        });
+
+                        //pixel-ratio: 2+
+                        const currentSrcRatio = prefix
+                            ? `${wwLib.wwUtils.transformToTwicPics(url, prefix)}/quality=90/resize=${Math.round(
+                                  width * 2
+                              )}`
+                            : this.source;
+
+                        this.imgSrcSet.unshift({
+                            src: currentSrcRatio,
+                            media: query
+                                ? `(${query}) and (-webkit-min-device-pixel-ratio: 2)`
+                                : '(-webkit-min-device-pixel-ratio: 2)',
                         });
 
                         let imgSrcSetElm = document.getElementById(`ww-image-srcset-${uid}`);
