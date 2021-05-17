@@ -195,7 +195,7 @@ export default {
                     const uid = splited[splited.length - 1];
 
                     const img = this.$el.querySelector('.ww-image__img');
-                    const width = Math.round(img.getBoundingClientRect().width);
+                    let width = Math.round(img.getBoundingClientRect().width);
 
                     const transform = wwLib.getResponsiveStyleProp({
                         uid: this.uid,
