@@ -197,6 +197,19 @@ export default {
                     const img = this.$el.querySelector('.ww-image__img');
                     const width = Math.round(img.getBoundingClientRect().width);
 
+                    const transform = wwLib.getResponsiveStyleProp({
+                        uid: this.uid,
+                        states: [':anim'],
+                        prop: 'transform',
+                    });
+                    if (transform && transform.scale) {
+                        const scaleX = parseFloat(transform.scale.x);
+                        if (scaleX !== 0) width = width / scaleX;
+                        else {
+                            width = 1200;
+                        }
+                    }
+
                     if (width) {
                         const airtablePrefix = 'https://dl.airtable.com/';
                         const privateFrenchFoundersPrefix = 'https://private.frenchfounders.com/';
