@@ -153,20 +153,20 @@ export default {
     },
     watch: {
         /* wwEditor:start */
-        'content.url': {
-            handler(newUrl, oldUrl) {
-                if (newUrl === oldUrl || !this.$el) return;
+        // 'content.url': {
+        //     handler(newUrl, oldUrl) {
+        //         if (newUrl === oldUrl || !this.$el) return;
 
-                const img = this.$el.querySelector('img');
-                if (!img) return;
+        //         const img = this.$el.querySelector('img');
+        //         if (!img) return;
 
-                img.onload = () => {
-                    if (!img.naturalWidth || !img.naturalHeight) return;
-                    const ratio = img.naturalHeight / img.naturalWidth;
-                    this.$emit('update', { ratio });
-                };
-            },
-        },
+        //         img.onload = () => {
+        //             if (!img.naturalWidth || !img.naturalHeight) return;
+        //             const ratio = img.naturalHeight / img.naturalWidth;
+        //             this.$emit('update', { ratio });
+        //         };
+        //     },
+        // },
         isDoubleSelected() {
             if (this.isDoubleSelected) {
                 this.dragListener = {
@@ -272,6 +272,16 @@ export default {
         /*=============================================m_ÔÔ_m=============================================\
           IMAGE ZOOM
         \================================================================================================*/
+        setRatio() {
+            if (!this.$el) return;
+
+            const img = this.$el.querySelector('img');
+            if (!img) return;
+
+            if (!img.naturalWidth || !img.naturalHeight) return;
+            const ratio = img.naturalHeight / img.naturalWidth;
+            this.$emit('update', { ratio });
+        },
         resetZoom(event) {
             if (event) this.preventEvent(event);
             this.$emit('update', { x: 0, y: 0, zoom: 1 });
@@ -419,16 +429,16 @@ export default {
         }
 
         /* wwManager:start */
-        if (!this.$el) return;
+        // if (!this.$el) return;
 
-        const img = this.$el.querySelector('img');
-        if (!img) return;
+        // const img = this.$el.querySelector('img');
+        // if (!img) return;
 
-        img.onload = () => {
-            if (!img.naturalWidth || !img.naturalHeight) return;
-            const ratio = img.naturalHeight / img.naturalWidth;
-            this.$emit('update', { ratio });
-        };
+        // img.onload = () => {
+        //     if (!img.naturalWidth || !img.naturalHeight) return;
+        //     const ratio = img.naturalHeight / img.naturalWidth;
+        //     this.$emit('update', { ratio });
+        // };
         /* wwManager:end */
     },
 };
