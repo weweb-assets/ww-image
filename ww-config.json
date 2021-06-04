@@ -11,7 +11,7 @@
         },
         "menuOptions": {
             "quick": {
-                "sections": ["resize", "url", "alt"],
+                "sections": ["resize", "url", "setRatio", "alt"],
                 "bind": [
                     { "prop": "url", "label": { "en": "Bind image source" } },
                     { "prop": "alt", "label": { "en": "Bind image alt" } }
