@@ -93,11 +93,14 @@ export default {
         isPrerender() {
             return window.__WW_IS_PRERENDER__;
         },
+        url() {
+            return this.wwElementState.props.url || this.content.url;
+        },
         loadWithTwicPics() {
-            return !this.isPrerender && !this.imgSrcSet && !this.content.url.startsWith('http');
+            return !this.isPrerender && !this.imgSrcSet && !this.url.startsWith('http');
         },
         twicPicsDataSrc() {
-            return `image:${wwLib.wwUtils.getTwicPicsFolder()}${this.content.url}`;
+            return `image:${wwLib.wwUtils.getTwicPicsFolder()}${this.url}`;
         },
         screenSize() {
             return this.$store.getters['front/getScreenSize'];
@@ -144,10 +147,10 @@ export default {
             return false;
         },
         source() {
-            if (!this.content.url.startsWith('http')) {
-                return `${wwLib.wwUtils.getCdnPrefix()}${this.content.url}`;
+            if (!this.url.startsWith('http')) {
+                return `${wwLib.wwUtils.getCdnPrefix()}${this.url}`;
             } else {
-                return this.content.url;
+                return this.url;
             }
         },
     },
@@ -215,14 +218,14 @@ export default {
                         const privateFrenchFoundersPrefix = 'https://private.frenchfounders.com/';
 
                         let prefix = null;
-                        let url = this.content.url;
-                        if (!this.content.url.startsWith('http')) prefix = 'weweb';
-                        else if (this.content.url.startsWith(airtablePrefix)) {
+                        let url = this.url;
+                        if (!this.url.startsWith('http')) prefix = 'weweb';
+                        else if (this.url.startsWith(airtablePrefix)) {
                             prefix = 'airtable/';
-                            url = this.content.url.replace(airtablePrefix, '');
-                        } else if (this.content.url.startsWith(privateFrenchFoundersPrefix)) {
+                            url = this.url.replace(airtablePrefix, '');
+                        } else if (this.url.startsWith(privateFrenchFoundersPrefix)) {
                             prefix = 'private-frenchfounders/';
-                            url = this.content.url.replace(privateFrenchFoundersPrefix, '');
+                            url = this.url.replace(privateFrenchFoundersPrefix, '');
                         }
 
                         //pixel-ratio: 1
