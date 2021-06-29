@@ -11,18 +11,14 @@
         "serve": "weweb serve",
         "create-config": "weweb config"
     },
-    "dependencies": {
-        "@znck/prop-types": "^0.6.3",
-        "lazy-hydration": "^1.0.4",
-        "vue": "^2.6.12"
-    },
+    "dependencies": {},
     "devDependencies": {
         "@vue/eslint-config-prettier": "^6.0.0",
+        "@weweb/cli": "git+https://github.com/weweb-team/weweb-cli.git#vue3",
         "babel-eslint": "^10.1.0",
-        "eslint": "^7.10.0",
+        "eslint": "^7.7.0",
         "eslint-plugin-prettier": "^3.1.4",
-        "eslint-plugin-vue": "^6.2.2",
-        "prettier": "^2.1.2",
-        "@weweb/cli": "latest"
+        "eslint-plugin-vue": "7.0.0-beta.4",
+        "prettier": "^2.1.2"
     }
 }

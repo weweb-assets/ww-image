@@ -117,7 +117,6 @@ export default {
                 '--top': (this.content && this.content.y) || 0,
                 transition: this.getObjectStyle().transition,
             };
-
             return style;
         },
         formatStyle() {
@@ -512,7 +511,6 @@ export default {
     }
 
     /* wwEditor:start */
-
     &__drag-overlay {
         position: absolute;
         top: 0;
