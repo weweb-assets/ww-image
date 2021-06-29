@@ -7,7 +7,7 @@
         <!-- wwEditor:end -->
         <div class="ww-image__wrapper" :style="formatStyle" ww-responsive="ww-img-wrap">
             <div class="ww-image__ratio" :style="ratioStyle" ww-responsive="ww-img-ratio"></div>
-            <!-- wwManager:start -->
+            <!-- wwEditor:start -->
             <img
                 draggable="false"
                 class="ww-image__img"
@@ -16,7 +16,7 @@
                 :style="imageStyle"
                 ww-responsive="ww-img"
             />
-            <!-- wwManager:end -->
+            <!-- wwEditor:end -->
 
             <!-- wwFront:start -->
             <!-- NO SRCSET -->
