@@ -60,18 +60,19 @@ export default {
         focusPoint: wwLib.responsive([50, 50]),
         ratio: wwLib.responsive(0),
     },
-    props: {
-        uid: String,
-        content: Object,
-        wwElementState: Object,
-        wwFrontState: Object,
-        /* wwManager:start */
-        wwEditorState: Object,
-        /* wwManager:end */
-    },
     inject: {
         getObjectStyle: { default: () => {} },
     },
+    props: {
+        uid: { type: String, required: true },
+        content: { type: Object, required: true },
+        wwElementState: { type: Object, required: true },
+        wwFrontState: { type: Object, required: true },
+        /* wwManager:start */
+        wwEditorState: { type: Object, required: true },
+        /* wwManager:end */
+    },
+    emits: ['update:content'],
     data() {
         return {
             placeholder: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
@@ -143,6 +144,7 @@ export default {
             /* wwEditor:start */
             return this.wwEditorState.isDoubleSelected;
             /* wwEditor:end */
+            // eslint-disable-next-line no-unreachable
             return false;
         },
         source() {
@@ -165,7 +167,7 @@ export default {
         //         img.onload = () => {
         //             if (!img.naturalWidth || !img.naturalHeight) return;
         //             const ratio = img.naturalHeight / img.naturalWidth;
-        //             this.$emit('update', { ratio });
+        //             this.$emit('update:content', { ratio });
         //         };
         //     },
         // },
@@ -186,6 +188,33 @@ export default {
             }
         },
         /* wwFront:end */
+    },
+    created() {
+        /* wwFront:start */
+        const splited = this.uid.split('-');
+        const troncatedUid = splited[splited.length - 1];
+        if (window[`wwg_imgsrcset_${troncatedUid}`]) {
+            this.imgSrcSet = window[`wwg_imgsrcset_${troncatedUid}`];
+        }
+        /* wwFront:end */
+    },
+    mounted() {
+        if (this.isPrerender) {
+            this.setSrcSet();
+        }
+
+        /* wwManager:start */
+        // if (!this.$el) return;
+
+        // const img = this.$el.querySelector('img');
+        // if (!img) return;
+
+        // img.onload = () => {
+        //     if (!img.naturalWidth || !img.naturalHeight) return;
+        //     const ratio = img.naturalHeight / img.naturalWidth;
+        //     this.$emit('update:content', { ratio });
+        // };
+        /* wwManager:end */
     },
     methods: {
         setSrcSet() {
@@ -282,11 +311,11 @@ export default {
 
             if (!img.naturalWidth || !img.naturalHeight) return;
             const ratio = img.naturalHeight / img.naturalWidth;
-            this.$emit('update', { ratio });
+            this.$emit('update:content', { ratio });
         },
         resetZoom(event) {
             if (event) this.preventEvent(event);
-            this.$emit('update', { x: 0, y: 0, zoom: 1 });
+            this.$emit('update:content', { x: 0, y: 0, zoom: 1 });
 
             return false;
         },
@@ -312,7 +341,7 @@ export default {
 
                 const zoom = targetWidth / wrapperWidth;
 
-                this.$emit('update', { x: 0, y: 0, zoom });
+                this.$emit('update:content', { x: 0, y: 0, zoom });
             }
         },
 
@@ -397,7 +426,7 @@ export default {
             };
 
             this.preventEvent(event);
-            this.$emit('update', update);
+            this.$emit('update:content', update);
         },
         stopMove() {
             this.isMoving = false;
@@ -414,33 +443,6 @@ export default {
 
             return false;
         },
-        /* wwManager:end */
-    },
-    created() {
-        /* wwFront:start */
-        const splited = this.uid.split('-');
-        const troncatedUid = splited[splited.length - 1];
-        if (window[`wwg_imgsrcset_${troncatedUid}`]) {
-            this.imgSrcSet = window[`wwg_imgsrcset_${troncatedUid}`];
-        }
-        /* wwFront:end */
-    },
-    mounted() {
-        if (this.isPrerender) {
-            this.setSrcSet();
-        }
-
-        /* wwManager:start */
-        // if (!this.$el) return;
-
-        // const img = this.$el.querySelector('img');
-        // if (!img) return;
-
-        // img.onload = () => {
-        //     if (!img.naturalWidth || !img.naturalHeight) return;
-        //     const ratio = img.naturalHeight / img.naturalWidth;
-        //     this.$emit('update', { ratio });
-        // };
         /* wwManager:end */
     },
 };
