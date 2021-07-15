@@ -64,7 +64,6 @@ export default {
         getObjectStyle: { default: () => {} },
     },
     props: {
-        uid: { type: String, required: true },
         content: { type: Object, required: true },
         wwElementState: { type: Object, required: true },
         wwFrontState: { type: Object, required: true },
@@ -191,7 +190,7 @@ export default {
     },
     created() {
         /* wwFront:start */
-        const splited = this.uid.split('-');
+        const splited = this.wwElementState.uid.split('-');
         const troncatedUid = splited[splited.length - 1];
         if (window[`wwg_imgsrcset_${troncatedUid}`]) {
             this.imgSrcSet = window[`wwg_imgsrcset_${troncatedUid}`];
@@ -222,14 +221,14 @@ export default {
                 if (this.isPrerender && this.$el && this.$el.querySelector('.ww-image__img')) {
                     this.imgSrcSet = this.imgSrcSet || [];
 
-                    const splited = this.uid.split('-');
+                    const splited = this.wwElementState.uid.split('-');
                     const uid = splited[splited.length - 1];
 
                     const img = this.$el.querySelector('.ww-image__img');
                     let width = Math.round(img.getBoundingClientRect().width);
 
                     const transform = wwLib.getResponsiveStyleProp({
-                        uid: this.uid,
+                        uid: this.wwElementState.uid,
                         states: [':anim'],
                         prop: 'transform',
                     });
