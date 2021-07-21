@@ -200,8 +200,6 @@ export default {
     mounted() {
         if (this.isPrerender) {
             this.setSrcSet();
-
-            this.$el.setAttribute('bonjour', 'oui salut');
         }
 
         /* wwManager:start */
