@@ -200,6 +200,8 @@ export default {
     mounted() {
         if (this.isPrerender) {
             this.setSrcSet();
+
+            this.$el.setAttribute('bonjour', 'oui salut');
         }
 
         /* wwManager:start */
@@ -217,6 +219,8 @@ export default {
     },
     methods: {
         setSrcSet() {
+            //document.querySelector('[data-ww-uid="291415a8-1cd3-428c-9c29-34c6773ddb58"] > .ww-image') ?
+
             setTimeout(() => {
                 if (this.isPrerender && this.$el && this.$el.querySelector('.ww-image__img')) {
                     this.imgSrcSet = this.imgSrcSet || [];
