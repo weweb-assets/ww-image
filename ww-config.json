@@ -2,7 +2,8 @@
     "componentPath": "./src/wwObject.vue",
     "type": "wwObject",
     "options": {
-        "sizable": true
+        "sizable": true,
+        "lazyHydrate": true
     },
     "editor": {
         "label": {
