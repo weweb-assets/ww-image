@@ -67,6 +67,7 @@ export default {
         content: { type: Object, required: true },
         wwElementState: { type: Object, required: true },
         wwFrontState: { type: Object, required: true },
+        bonjour: String,
         /* wwManager:start */
         wwEditorState: { type: Object, required: true },
         /* wwManager:end */
@@ -195,11 +196,20 @@ export default {
         if (window[`wwg_imgsrcset_${troncatedUid}`]) {
             this.imgSrcSet = window[`wwg_imgsrcset_${troncatedUid}`];
         }
+
+        console.log(this.$el);
+        console.log(this.bonjour);
+        try {
+            console.log(this.$el.attributes);
+        } catch (error) {}
+
         /* wwFront:end */
     },
     mounted() {
         if (this.isPrerender) {
             this.setSrcSet();
+
+            this.$el.setAttribute('bonjour', 'oui salut');
         }
 
         /* wwManager:start */
