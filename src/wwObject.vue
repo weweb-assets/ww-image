@@ -197,12 +197,6 @@ export default {
             this.imgSrcSet = window[`wwg_imgsrcset_${troncatedUid}`];
         }
 
-        console.log(this.$el);
-        console.log(this.bonjour);
-        try {
-            console.log(this.$el.attributes);
-        } catch (error) {}
-
         /* wwFront:end */
     },
     mounted() {
