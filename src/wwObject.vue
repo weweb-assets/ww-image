@@ -41,6 +41,7 @@
                     :src="source"
                     :alt="wwLang.getText(content.alt)"
                     loading="lazy"
+                    ww-responsive="ww-img-picture"
                 />
             </picture>
             <!-- wwFront:end -->
