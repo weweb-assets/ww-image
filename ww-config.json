@@ -3,7 +3,8 @@
     "type": "wwObject",
     "options": {
         "sizable": true,
-        "lazyHydrate": true
+        "lazyHydrate": true,
+        "hyperlink": true
     },
     "editor": {
         "label": {
