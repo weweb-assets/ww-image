@@ -51,16 +51,6 @@
 
 <script>
 export default {
-    wwDefaultContent: {
-        alt: { en: '' },
-        url: wwLib.responsive('https://cdn.weweb.app/public/images/no_image_selected.png'),
-        x: wwLib.allowState(wwLib.responsive(0)),
-        y: wwLib.allowState(wwLib.responsive(0)),
-        zoom: wwLib.allowState(wwLib.responsive(1)),
-        style: wwLib.allowState({}),
-        focusPoint: wwLib.responsive([50, 50]),
-        ratio: wwLib.responsive(0),
-    },
     inject: {
         getObjectStyle: { default: () => {} },
     },
@@ -137,9 +127,6 @@ export default {
                     '--ww-image-ratio': '0%',
                 };
             }
-        },
-        focusPoint() {
-            return `${this.content.focusPoint[0]}px${this.content.focusPoint[1]}p`;
         },
         isDoubleSelected() {
             /* wwEditor:start */
