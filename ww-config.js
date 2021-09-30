@@ -102,7 +102,7 @@ export default {
                         },
                     },
                     filter: {
-                        type: 'CssFilter',
+                        type: 'CssFilters',
                         label: { en: 'Filters', fr: 'Filtres' },
                     },
                 },
