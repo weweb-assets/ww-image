@@ -164,31 +164,22 @@ export default {
         },
         /* wwFront:end */
     },
-    created() {
-        /* wwFront:start */
-        const splited = this.wwElementState.uid.split('-');
-        const troncatedUid = splited[splited.length - 1];
-        if (window[`wwg_imgsrcset_${troncatedUid}`]) {
-            this.imgSrcSet = window[`wwg_imgsrcset_${troncatedUid}`];
-        }
-
-        /* wwFront:end */
-    },
     mounted() {
         if (this.isPrerender) {
             this.setSrcSet();
         }
+
+        /* wwFront:start */
+        if (!this.isPrerender && this.$el.attributes['data-img-src']) {
+            this.imgSrcSet = JSON.parse(this.$el.attributes['data-img-src'].value);
+        }
+        /* wwFront:end */
     },
     methods: {
         setSrcSet() {
-            //document.querySelector('[data-ww-uid="291415a8-1cd3-428c-9c29-34c6773ddb58"] > .ww-image') ?
-
             setTimeout(() => {
                 if (this.isPrerender && this.$el && this.$el.querySelector('.ww-image__img')) {
                     this.imgSrcSet = this.imgSrcSet || [];
-
-                    const splited = this.wwElementState.uid.split('-');
-                    const uid = splited[splited.length - 1];
 
                     const img = this.$el.querySelector('.ww-image__img');
                     let width = Math.round(img.getBoundingClientRect().width);
@@ -247,13 +238,7 @@ export default {
                                 : '(-webkit-min-device-pixel-ratio: 2)',
                         });
 
-                        let imgSrcSetElm = document.getElementById(`ww-image-srcset-${uid}`);
-                        if (!imgSrcSetElm) {
-                            imgSrcSetElm = document.createElement('script');
-                            imgSrcSetElm.setAttribute('id', `ww-image-srcset-${uid}`);
-                            document.head.append(imgSrcSetElm);
-                        }
-                        imgSrcSetElm.innerText = `window.wwg_imgsrcset_${uid} = ${JSON.stringify(this.imgSrcSet)};`;
+                        this.$el.setAttribute('data-img-src', JSON.stringify(this.imgSrcSet));
                     }
                 }
             }, 100);
