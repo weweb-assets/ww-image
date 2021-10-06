@@ -28,6 +28,10 @@ export default {
             responsive: true,
             defaultValue: 'https://cdn.weweb.app/public/images/no_image_selected.png',
         },
+        ratio: {
+            hidden: true,
+            defaultValue: 56,
+        },
         setRatio: {
             type: 'Button',
             editorOnly: true,
