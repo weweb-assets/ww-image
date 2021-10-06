@@ -12,7 +12,7 @@ export default {
         icon: 'assets',
         menuOptions: {
             quick: {
-                sections: ['resize', 'url', 'setRatio', 'alt'],
+                sections: ['resize', 'url', 'alt'],
                 bind: [
                     { prop: 'url', label: { en: 'Bind image source' } },
                     { prop: 'alt', label: { en: 'Bind image alt' } },
@@ -31,15 +31,6 @@ export default {
         ratio: {
             hidden: true,
             defaultValue: 56,
-        },
-        setRatio: {
-            type: 'Button',
-            editorOnly: true,
-            options: {
-                text: { en: 'Set same ratio as image', fr: "Même ratio que l'image" },
-                color: 'blue',
-                action: 'setRatio',
-            },
         },
         zoom: {
             type: 'Number',

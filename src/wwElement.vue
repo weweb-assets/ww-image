@@ -86,8 +86,7 @@ export default {
             return window.__WW_IS_PRERENDER__;
         },
         url() {
-            const url = this.wwElementState.props.url || this.content.url;
-            return typeof url === 'string' ? url : '';
+            return this.wwElementState.props.url || this.content.url;
         },
         loadWithTwicPics() {
             return !this.isPrerender && !this.imgSrcSet && !this.url.startsWith('http');
@@ -146,20 +145,13 @@ export default {
     },
     watch: {
         /* wwEditor:start */
-        // 'content.url': {
-        //     handler(newUrl, oldUrl) {
-        //         if (newUrl === oldUrl || !this.$el) return;
+        'content.url': {
+            handler(newUrl, oldUrl) {
+                if (newUrl === oldUrl) return;
 
-        //         const img = this.$el.querySelector('img');
-        //         if (!img) return;
-
-        //         img.onload = () => {
-        //             if (!img.naturalWidth || !img.naturalHeight) return;
-        //             const ratio = img.naturalHeight / img.naturalWidth;
-        //             this.$emit('update:content', { ratio });
-        //         };
-        //     },
-        // },
+                this.setRatio();
+            },
+        },
         isDoubleSelected() {
             if (this.isDoubleSelected) {
                 this.dragListener = {
@@ -196,16 +188,7 @@ export default {
         }
 
         /* wwManager:start */
-        // if (!this.$el) return;
-
-        // const img = this.$el.querySelector('img');
-        // if (!img) return;
-
-        // img.onload = () => {
-        //     if (!img.naturalWidth || !img.naturalHeight) return;
-        //     const ratio = img.naturalHeight / img.naturalWidth;
-        //     this.$emit('update:content', { ratio });
-        // };
+        this.setRatio();
         /* wwManager:end */
     },
     methods: {
@@ -299,6 +282,7 @@ export default {
         \================================================================================================*/
         setRatio() {
             if (!this.$el) return;
+            if (this.wwEditorState.isACopy) return;
 
             const img = this.$el.querySelector('img');
             if (!img) return;
