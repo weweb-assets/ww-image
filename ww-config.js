@@ -30,7 +30,9 @@ export default {
         },
         ratio: {
             hidden: true,
-            defaultValue: 56,
+            defaultValue: 0.56,
+            responsive: true,
+            states: true,
         },
         zoom: {
             type: 'Number',

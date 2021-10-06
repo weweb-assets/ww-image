@@ -15,6 +15,7 @@
                 :alt="wwLang.getText(content.alt)"
                 :style="imageStyle"
                 ww-responsive="ww-img"
+                @load="setRatio"
             />
             <!-- wwEditor:end -->
 
@@ -145,13 +146,6 @@ export default {
     },
     watch: {
         /* wwEditor:start */
-        'content.url': {
-            handler(newUrl, oldUrl) {
-                if (newUrl === oldUrl) return;
-
-                this.setRatio();
-            },
-        },
         isDoubleSelected() {
             if (this.isDoubleSelected) {
                 this.dragListener = {
@@ -183,13 +177,12 @@ export default {
     mounted() {
         if (this.isPrerender) {
             this.setSrcSet();
-
-            this.$el.setAttribute('bonjour', 'oui salut');
         }
+        console.log(this.$el.attributes);
 
-        /* wwManager:start */
-        this.setRatio();
-        /* wwManager:end */
+        setTimeout(() => {
+            this.$el.setAttribute('tralala', Math.random());
+        });
     },
     methods: {
         setSrcSet() {
@@ -282,12 +275,15 @@ export default {
         \================================================================================================*/
         setRatio() {
             if (!this.$el) return;
+
             if (this.wwEditorState.isACopy) return;
 
             const img = this.$el.querySelector('img');
+
             if (!img) return;
 
             if (!img.naturalWidth || !img.naturalHeight) return;
+
             const ratio = img.naturalHeight / img.naturalWidth;
             this.$emit('update:content', { ratio });
         },
