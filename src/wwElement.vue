@@ -178,11 +178,6 @@ export default {
         if (this.isPrerender) {
             this.setSrcSet();
         }
-        console.log(this.$el.attributes.tralala.value);
-
-        setTimeout(() => {
-            this.$el.setAttribute('tralala', Math.random());
-        });
     },
     methods: {
         setSrcSet() {
