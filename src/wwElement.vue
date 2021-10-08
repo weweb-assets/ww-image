@@ -172,6 +172,7 @@ export default {
         /* wwFront:start */
         if (!this.isPrerender && this.$el.attributes['data-img-src']) {
             this.imgSrcSet = JSON.parse(this.$el.attributes['data-img-src'].value);
+            this.$el.removeAttribute('data-img-src');
         }
         /* wwFront:end */
     },
