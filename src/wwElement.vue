@@ -15,6 +15,7 @@
                 :alt="wwLang.getText(content.alt)"
                 :style="imageStyle"
                 ww-responsive="ww-img"
+                @load="setRatio"
             />
             <!-- wwEditor:end -->
 
@@ -51,16 +52,6 @@
 
 <script>
 export default {
-    wwDefaultContent: {
-        alt: { en: '' },
-        url: wwLib.responsive('https://cdn.weweb.app/public/images/no_image_selected.png'),
-        x: wwLib.allowState(wwLib.responsive(0)),
-        y: wwLib.allowState(wwLib.responsive(0)),
-        zoom: wwLib.allowState(wwLib.responsive(1)),
-        style: wwLib.allowState({}),
-        focusPoint: wwLib.responsive([50, 50]),
-        ratio: wwLib.responsive(0),
-    },
     inject: {
         getObjectStyle: { default: () => {} },
     },
@@ -138,9 +129,6 @@ export default {
                 };
             }
         },
-        focusPoint() {
-            return `${this.content.focusPoint[0]}px${this.content.focusPoint[1]}p`;
-        },
         isDoubleSelected() {
             /* wwEditor:start */
             return this.wwEditorState.isDoubleSelected;
@@ -158,20 +146,6 @@ export default {
     },
     watch: {
         /* wwEditor:start */
-        // 'content.url': {
-        //     handler(newUrl, oldUrl) {
-        //         if (newUrl === oldUrl || !this.$el) return;
-
-        //         const img = this.$el.querySelector('img');
-        //         if (!img) return;
-
-        //         img.onload = () => {
-        //             if (!img.naturalWidth || !img.naturalHeight) return;
-        //             const ratio = img.naturalHeight / img.naturalWidth;
-        //             this.$emit('update:content', { ratio });
-        //         };
-        //     },
-        // },
         isDoubleSelected() {
             if (this.isDoubleSelected) {
                 this.dragListener = {
@@ -190,46 +164,23 @@ export default {
         },
         /* wwFront:end */
     },
-    created() {
-        /* wwFront:start */
-        const splited = this.wwElementState.uid.split('-');
-        const troncatedUid = splited[splited.length - 1];
-        if (window[`wwg_imgsrcset_${troncatedUid}`]) {
-            this.imgSrcSet = window[`wwg_imgsrcset_${troncatedUid}`];
-        }
-
-        /* wwFront:end */
-    },
     mounted() {
         if (this.isPrerender) {
             this.setSrcSet();
-
-            this.$el.setAttribute('bonjour', 'oui salut');
         }
 
-        /* wwManager:start */
-        // if (!this.$el) return;
-
-        // const img = this.$el.querySelector('img');
-        // if (!img) return;
-
-        // img.onload = () => {
-        //     if (!img.naturalWidth || !img.naturalHeight) return;
-        //     const ratio = img.naturalHeight / img.naturalWidth;
-        //     this.$emit('update:content', { ratio });
-        // };
-        /* wwManager:end */
+        /* wwFront:start */
+        if (!this.isPrerender && this.$el.attributes['data-img-src']) {
+            this.imgSrcSet = JSON.parse(this.$el.attributes['data-img-src'].value);
+            this.$el.removeAttribute('data-img-src');
+        }
+        /* wwFront:end */
     },
     methods: {
         setSrcSet() {
-            //document.querySelector('[data-ww-uid="291415a8-1cd3-428c-9c29-34c6773ddb58"] > .ww-image') ?
-
             setTimeout(() => {
                 if (this.isPrerender && this.$el && this.$el.querySelector('.ww-image__img')) {
                     this.imgSrcSet = this.imgSrcSet || [];
-
-                    const splited = this.wwElementState.uid.split('-');
-                    const uid = splited[splited.length - 1];
 
                     const img = this.$el.querySelector('.ww-image__img');
                     let width = Math.round(img.getBoundingClientRect().width);
@@ -288,13 +239,7 @@ export default {
                                 : '(-webkit-min-device-pixel-ratio: 2)',
                         });
 
-                        let imgSrcSetElm = document.getElementById(`ww-image-srcset-${uid}`);
-                        if (!imgSrcSetElm) {
-                            imgSrcSetElm = document.createElement('script');
-                            imgSrcSetElm.setAttribute('id', `ww-image-srcset-${uid}`);
-                            document.head.append(imgSrcSetElm);
-                        }
-                        imgSrcSetElm.innerText = `window.wwg_imgsrcset_${uid} = ${JSON.stringify(this.imgSrcSet)};`;
+                        this.$el.setAttribute('data-img-src', JSON.stringify(this.imgSrcSet));
                     }
                 }
             }, 100);
@@ -312,10 +257,14 @@ export default {
         setRatio() {
             if (!this.$el) return;
 
+            if (this.wwEditorState.isACopy) return;
+
             const img = this.$el.querySelector('img');
+
             if (!img) return;
 
             if (!img.naturalWidth || !img.naturalHeight) return;
+
             const ratio = img.naturalHeight / img.naturalWidth;
             this.$emit('update:content', { ratio });
         },
