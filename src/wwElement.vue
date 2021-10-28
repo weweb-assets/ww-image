@@ -87,7 +87,7 @@ export default {
             return window.__WW_IS_PRERENDER__;
         },
         url() {
-            return this.wwElementState.props.url || this.content.url;
+            return this.wwElementState.props.url || this.content.url || '';
         },
         loadWithTwicPics() {
             return !this.isPrerender && !this.imgSrcSet && !this.url.startsWith('http');
