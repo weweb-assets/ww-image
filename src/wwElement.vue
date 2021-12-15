@@ -39,7 +39,7 @@
                 <img
                     class="ww-image__img"
                     :style="imageStyle"
-                    :src="source"
+                    :src="baseSrc"
                     :alt="wwLang.getText(content.alt)"
                     loading="lazy"
                     ww-responsive="ww-img-picture"
@@ -59,7 +59,6 @@ export default {
         content: { type: Object, required: true },
         wwElementState: { type: Object, required: true },
         wwFrontState: { type: Object, required: true },
-        bonjour: String,
         /* wwManager:start */
         wwEditorState: { type: Object, required: true },
         /* wwManager:end */
@@ -69,6 +68,7 @@ export default {
         return {
             placeholder: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
             imgSrcSet: [],
+            imgProps: [],
             wwLang: wwLib.wwLang,
             dragListener: {},
 
@@ -144,6 +144,37 @@ export default {
                 return this.url;
             }
         },
+        urlAndPrefix() {
+            const airtablePrefix = 'https://dl.airtable.com/';
+            const privateFrenchFoundersPrefix = 'https://private.frenchfounders.com/';
+
+            let prefix = null;
+            let url = this.url;
+            if (!this.url.startsWith('http')) {
+                prefix = 'weweb';
+                return { url, prefix };
+            } else if (this.url.startsWith(airtablePrefix)) {
+                prefix = 'airtable/';
+                url = this.url.replace(airtablePrefix, '');
+                return { url, prefix };
+            } else if (this.url.startsWith(privateFrenchFoundersPrefix)) {
+                prefix = 'private-frenchfounders/';
+                url = this.url.replace(privateFrenchFoundersPrefix, '');
+                return { url, prefix };
+            }
+
+            return null;
+        },
+        baseSrc() {
+            if (this.urlAndPrefix) {
+                return `${wwLib.wwUtils.transformToTwicPics(
+                    this.urlAndPrefix.url,
+                    this.urlAndPrefix.prefix
+                )}/quality=90`;
+            } else {
+                return this.source;
+            }
+        },
     },
     watch: {
         /* wwEditor:start */
@@ -160,90 +191,99 @@ export default {
         /* wwFront:start */
         screenSize(newValue, oldValue) {
             if (this.isPrerender && oldValue != newValue) {
-                this.setSrcSet();
+                this.setImgProps();
+            }
+        },
+        baseSrc(newValue, oldValue) {
+            if (oldValue != newValue) {
+                this.setImgSrcSet();
             }
         },
         /* wwFront:end */
     },
     mounted() {
         if (this.isPrerender) {
-            this.setSrcSet();
+            this.setImgProps();
         }
 
         /* wwFront:start */
-        if (!this.isPrerender && this.$el.attributes['data-img-src']) {
-            this.imgSrcSet = JSON.parse(this.$el.attributes['data-img-src'].value);
-            this.$el.removeAttribute('data-img-src');
+        if (!this.isPrerender && window.wwg_wwImageProps[this.wwElementState.uid]) {
+            this.imgProps = window.wwg_wwImageProps[this.wwElementState.uid];
+            this.setImgSrcSet();
         }
         /* wwFront:end */
     },
     methods: {
-        setSrcSet() {
-            setTimeout(() => {
-                if (this.isPrerender && this.$el && this.$el.querySelector('.ww-image__img')) {
-                    this.imgSrcSet = this.imgSrcSet || [];
+        setImgProps() {
+            if (this.isPrerender && this.$el && this.$el.querySelector('.ww-image__img')) {
+                this.imgSrcSet = this.imgSrcSet || [];
 
-                    const img = this.$el.querySelector('.ww-image__img');
-                    let width = Math.round(img.getBoundingClientRect().width);
+                const img = this.$el.querySelector('.ww-image__img');
+                let width = Math.round(img.getBoundingClientRect().width);
 
-                    const transform = wwLib.getResponsiveStyleProp({
-                        uid: this.wwElementState.uid,
-                        states: [':anim'],
-                        prop: 'transform',
-                    });
-                    if (transform && transform.scale) {
-                        const scaleX = parseFloat(transform.scale.x);
-                        if (scaleX !== 0) width = width / scaleX;
-                        else {
-                            width = 1200;
-                        }
-                    }
-
-                    if (width) {
-                        const airtablePrefix = 'https://dl.airtable.com/';
-                        const privateFrenchFoundersPrefix = 'https://private.frenchfounders.com/';
-
-                        let prefix = null;
-                        let url = this.url;
-                        if (!this.url.startsWith('http')) prefix = 'weweb';
-                        else if (this.url.startsWith(airtablePrefix)) {
-                            prefix = 'airtable/';
-                            url = this.url.replace(airtablePrefix, '');
-                        } else if (this.url.startsWith(privateFrenchFoundersPrefix)) {
-                            prefix = 'private-frenchfounders/';
-                            url = this.url.replace(privateFrenchFoundersPrefix, '');
-                        }
-
-                        //pixel-ratio: 1
-                        const currentSrc = prefix
-                            ? `${wwLib.wwUtils.transformToTwicPics(url, prefix)}/quality=90/resize=${Math.round(width)}`
-                            : this.source;
-
-                        const query = this.screenSizes[this.screenSize].query;
-
-                        this.imgSrcSet.unshift({
-                            src: currentSrc,
-                            media: query ? `(${query})` : null,
-                        });
-
-                        //pixel-ratio: 2+
-                        const currentSrcRatio = prefix
-                            ? `${wwLib.wwUtils.transformToTwicPics(url, prefix)}/quality=90/resize=${Math.round(
-                                  width * 2
-                              )}`
-                            : this.source;
-
-                        this.imgSrcSet.unshift({
-                            src: currentSrcRatio,
-                            media: query
-                                ? `(${query}) and (-webkit-min-device-pixel-ratio: 2)`
-                                : '(-webkit-min-device-pixel-ratio: 2)',
-                        });
-
-                        this.$el.setAttribute('data-img-src', JSON.stringify(this.imgSrcSet));
+                const transform = wwLib.getResponsiveStyleProp({
+                    uid: this.wwElementState.uid,
+                    states: [':anim'],
+                    prop: 'transform',
+                });
+                if (transform && transform.scale) {
+                    const scaleX = parseFloat(transform.scale.x);
+                    if (scaleX !== 0) width = width / scaleX;
+                    else {
+                        width = 1200;
                     }
                 }
-            }, 100);
+
+                if (width) {
+                    const query = this.screenSizes[this.screenSize].query;
+
+                    this.imgProps.unshift({
+                        q: query ? `(${query})` : null,
+                        w: Math.round(width),
+                    });
+
+                    this.writeInHead(this.imgProps);
+
+                    this.setImgSrcSet();
+                }
+            }
+        },
+        writeInHead(imgProps) {
+            const prefix = 'wwg_wwImageProps = ';
+            let headScript = document.querySelector('.ww-image-props');
+            if (!headScript) {
+                headScript = document.createElement('script');
+                headScript.classList.add('ww-image-props');
+                headScript.innerText = `${prefix}{}`;
+                document.head.append(headScript);
+            }
+
+            const globalImgProps = JSON.parse(headScript.innerText.replace(prefix, ''));
+
+            globalImgProps[this.wwElementState.uid] = imgProps;
+
+            headScript.innerText = `${prefix}${JSON.stringify(globalImgProps)}`;
+        },
+        setImgSrcSet() {
+            if (this.imgProps) {
+                let imgSrcSet = [];
+                for (const imgProp of this.imgProps) {
+                    imgSrcSet.push({
+                        src: `${this.baseSrc}${this.urlAndPrefix ? `/resize=${imgProp.w}` : ''}`,
+                        media: imgProp.q ? `(${imgProp.q})` : null,
+                    });
+                    imgSrcSet.push({
+                        src: `${this.baseSrc}${this.urlAndPrefix ? `/resize=${imgProp.w * 2}` : ''}`,
+                        media: imgProp.q
+                            ? `(${imgProp.q}) and (-webkit-min-device-pixel-ratio: 2)`
+                            : '(-webkit-min-device-pixel-ratio: 2)',
+                    });
+                }
+
+                this.imgSrcSet = imgSrcSet;
+            } else {
+                this.imgSrcSet = [];
+            }
         },
         /* wwManager:start */
         preventEvent(event) {
