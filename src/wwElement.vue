@@ -207,7 +207,7 @@ export default {
         }
 
         /* wwFront:start */
-        if (!this.isPrerender && window.wwg_wwImageProps[this.wwElementState.uid]) {
+        if (!this.isPrerender && window.wwg_wwImageProps && window.wwg_wwImageProps[this.wwElementState.uid]) {
             this.imgProps = window.wwg_wwImageProps[this.wwElementState.uid];
             this.setImgSrcSet();
         }
