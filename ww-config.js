@@ -10,15 +10,6 @@ export default {
             en: 'Image',
         },
         icon: 'assets',
-        menuOptions: {
-            quick: {
-                sections: ['resize', 'url', 'alt'],
-                bind: [
-                    { prop: 'url', label: { en: 'Bind image source' } },
-                    { prop: 'alt', label: { en: 'Bind image alt' } },
-                ],
-            },
-        },
     },
     properties: {
         url: {
