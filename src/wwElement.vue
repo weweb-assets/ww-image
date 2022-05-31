@@ -203,7 +203,7 @@ export default {
     },
     mounted() {
         if (this.isPrerender) {
-            this.setImgProps();
+            setTimeout(this.setImgProps, 500);
         }
 
         /* wwFront:start */
@@ -307,7 +307,7 @@ export default {
             if (!img.naturalWidth || !img.naturalHeight) return;
 
             const ratio = img.naturalHeight / img.naturalWidth;
-            this.$emit('update:content', { ratio });
+            this.$emit('update:content', { ratio }, false, true);
         },
         resetZoom(event) {
             if (event) this.preventEvent(event);
