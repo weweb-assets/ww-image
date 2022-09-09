@@ -28,9 +28,9 @@ export default {
     props: {
         content: { type: Object, required: true },
         wwElementState: { type: Object, required: true },
-        /* wwManager:start */
+        /* wwEditor:start */
         wwEditorState: { type: Object, required: true },
-        /* wwManager:end */
+        /* wwEditor:end */
     },
     emits: ['update:content'],
     data() {
@@ -38,14 +38,14 @@ export default {
             wwLang: wwLib.wwLang,
             dragListener: {},
 
-            /* wwManager:start */
+            /* wwEditor:start */
             lastMovePosition: { x: 0, y: 0 },
             initialPosition: { x: 0, y: 0 },
             lastTouchDist: 0,
             isMoving: false,
             zoomBarElement: null,
             moveDirection: null,
-            /* wwManager:end */
+            /* wwEditor:end */
         };
     },
     computed: {
@@ -111,7 +111,7 @@ export default {
     /* wwEditor:end */
     methods: {
         setRatio() {
-            /* wwManager:start */
+            /* wwEditor:start */
             if (!this.$el) return;
 
             if (this.wwEditorState.isACopy) return;
@@ -126,7 +126,7 @@ export default {
             this.$emit('update:content', { ratio }, false, true);
             /* wwEditor:end */
         },
-        /* wwManager:start */
+        /* wwEditor:start */
         preventEvent(event) {
             event.preventDefault();
             event.stopPropagation();
@@ -266,7 +266,7 @@ export default {
 
             return false;
         },
-        /* wwManager:end */
+        /* wwEditor:end */
     },
 };
 </script>
