@@ -7,45 +7,15 @@
         <!-- wwEditor:end -->
         <div class="ww-image__wrapper" :style="formatStyle" ww-responsive="ww-img-wrap">
             <div class="ww-image__ratio" :style="ratioStyle" ww-responsive="ww-img-ratio"></div>
-            <!-- wwEditor:start -->
             <img
                 draggable="false"
                 class="ww-image__img"
-                :src="source"
+                :src="src"
                 :alt="wwLang.getText(content.alt)"
                 :style="imageStyle"
                 ww-responsive="ww-img"
                 @load="setRatio"
             />
-            <!-- wwEditor:end -->
-
-            <!-- wwFront:start -->
-            <!-- NO SRCSET -->
-            <img
-                v-if="loadWithTwicPics"
-                class="ww-image__img twic"
-                :src="placeholder"
-                :data-twic-src="twicPicsDataSrc"
-                data-src-transform="quality=85/auto"
-                data-src-step="10"
-                :alt="wwLang.getText(content.alt)"
-                :style="imageStyle"
-                ww-responsive="ww-img-twic"
-            />
-
-            <!-- SRCSET -->
-            <picture v-else class="ww-image__img-picture" loading="lazy" ww-responsive="ww-img">
-                <source v-for="(srcset, index) in imgSrcSet" :key="index" :srcset="srcset.src" :media="srcset.media" />
-                <img
-                    class="ww-image__img"
-                    :style="imageStyle"
-                    :src="baseSrc"
-                    :alt="wwLang.getText(content.alt)"
-                    loading="lazy"
-                    ww-responsive="ww-img-picture"
-                />
-            </picture>
-            <!-- wwFront:end -->
         </div>
     </div>
 </template>
@@ -58,49 +28,30 @@ export default {
     props: {
         content: { type: Object, required: true },
         wwElementState: { type: Object, required: true },
-        wwFrontState: { type: Object, required: true },
-        /* wwManager:start */
+        /* wwEditor:start */
         wwEditorState: { type: Object, required: true },
-        /* wwManager:end */
+        /* wwEditor:end */
     },
     emits: ['update:content'],
     data() {
         return {
-            placeholder: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-            imgSrcSet: [],
-            imgProps: [],
             wwLang: wwLib.wwLang,
             dragListener: {},
 
-            /* wwManager:start */
+            /* wwEditor:start */
             lastMovePosition: { x: 0, y: 0 },
             initialPosition: { x: 0, y: 0 },
             lastTouchDist: 0,
             isMoving: false,
             zoomBarElement: null,
             moveDirection: null,
-            /* wwManager:end */
+            /* wwEditor:end */
         };
     },
     computed: {
-        isPrerender() {
-            return window.__WW_IS_PRERENDER__;
-        },
         url() {
             const url = this.wwElementState.props.url || this.content.url || '';
             return typeof url === 'string' ? url : '';
-        },
-        loadWithTwicPics() {
-            return !this.isPrerender && !this.imgSrcSet && !this.url.startsWith('http');
-        },
-        twicPicsDataSrc() {
-            return `image:${wwLib.wwUtils.getTwicPicsFolder()}${this.url}`;
-        },
-        screenSize() {
-            return this.$store.getters['front/getScreenSize'];
-        },
-        screenSizes() {
-            return this.$store.getters['front/getScreenSizes'];
         },
         imageStyle() {
             let style = {
@@ -137,47 +88,16 @@ export default {
             // eslint-disable-next-line no-unreachable
             return false;
         },
-        source() {
-            if (!this.url.startsWith('http')) {
-                return `${wwLib.wwUtils.getCdnPrefix()}${this.url}`;
-            } else {
-                return this.url;
-            }
-        },
-        urlAndPrefix() {
-            const airtablePrefix = 'https://dl.airtable.com/';
-            const privateFrenchFoundersPrefix = 'https://private.frenchfounders.com/';
 
-            let prefix = null;
-            let url = this.url;
-            if (!this.url.startsWith('http')) {
-                prefix = 'weweb';
-                return { url, prefix };
-            } else if (this.url.startsWith(airtablePrefix)) {
-                prefix = 'airtable/';
-                url = this.url.replace(airtablePrefix, '');
-                return { url, prefix };
-            } else if (this.url.startsWith(privateFrenchFoundersPrefix)) {
-                prefix = 'private-frenchfounders/';
-                url = this.url.replace(privateFrenchFoundersPrefix, '');
-                return { url, prefix };
-            }
-
-            return null;
+        isWeWeb() {
+            return this.url.startsWith('designs/');
         },
-        baseSrc() {
-            if (this.urlAndPrefix) {
-                return `${wwLib.wwUtils.transformToTwicPics(
-                    this.urlAndPrefix.url,
-                    this.urlAndPrefix.prefix
-                )}/quality=90`;
-            } else {
-                return this.source;
-            }
+        src() {
+            return this.isWeWeb ? `${wwLib.wwUtils.getCdnPrefix()}${this.url}` : this.url;
         },
     },
+    /* wwEditor:start */
     watch: {
-        /* wwEditor:start */
         isDoubleSelected() {
             if (this.isDoubleSelected) {
                 this.dragListener = {
@@ -187,115 +107,11 @@ export default {
                 this.dragListener = {};
             }
         },
-        /* wwEditor:end */
-        /* wwFront:start */
-        screenSize(newValue, oldValue) {
-            if (this.isPrerender && oldValue != newValue) {
-                this.setImgProps();
-            }
-        },
-        baseSrc(newValue, oldValue) {
-            if (oldValue != newValue) {
-                this.setImgSrcSet();
-            }
-        },
-        /* wwFront:end */
     },
-    mounted() {
-        if (this.isPrerender) {
-            setTimeout(this.setImgProps, 500);
-        }
-
-        /* wwFront:start */
-        if (!this.isPrerender && window.wwg_wwImageProps && window.wwg_wwImageProps[this.wwElementState.uid]) {
-            this.imgProps = window.wwg_wwImageProps[this.wwElementState.uid];
-            this.setImgSrcSet();
-        }
-        /* wwFront:end */
-    },
+    /* wwEditor:end */
     methods: {
-        setImgProps() {
-            if (this.isPrerender && this.$el && this.$el.querySelector('.ww-image__img')) {
-                this.imgSrcSet = this.imgSrcSet || [];
-
-                const img = this.$el.querySelector('.ww-image__img');
-                let width = Math.round(img.getBoundingClientRect().width);
-
-                const transform = wwLib.getResponsiveStyleProp({
-                    uid: this.wwElementState.uid,
-                    states: [':anim'],
-                    prop: 'transform',
-                });
-                if (transform && transform.scale) {
-                    const scaleX = parseFloat(transform.scale.x);
-                    if (scaleX !== 0) width = width / scaleX;
-                    else {
-                        width = 1200;
-                    }
-                }
-
-                if (width) {
-                    const query = this.screenSizes[this.screenSize].query;
-
-                    this.imgProps.unshift({
-                        q: query ? `(${query})` : null,
-                        w: Math.round(width),
-                    });
-
-                    this.writeInHead(this.imgProps);
-
-                    this.setImgSrcSet();
-                }
-            }
-        },
-        writeInHead(imgProps) {
-            const prefix = 'wwg_wwImageProps = ';
-            let headScript = document.querySelector('.ww-image-props');
-            if (!headScript) {
-                headScript = document.createElement('script');
-                headScript.classList.add('ww-image-props');
-                headScript.innerText = `${prefix}{}`;
-                document.head.append(headScript);
-            }
-
-            const globalImgProps = JSON.parse(headScript.innerText.replace(prefix, ''));
-
-            globalImgProps[this.wwElementState.uid] = imgProps;
-
-            headScript.innerText = `${prefix}${JSON.stringify(globalImgProps)}`;
-        },
-        setImgSrcSet() {
-            if (this.imgProps) {
-                let imgSrcSet = [];
-                for (const imgProp of this.imgProps) {
-                    imgSrcSet.push({
-                        src: `${this.baseSrc}${this.urlAndPrefix ? `/resize=${imgProp.w}` : ''}`,
-                        media: imgProp.q ? `(${imgProp.q})` : null,
-                    });
-                    imgSrcSet.push({
-                        src: `${this.baseSrc}${this.urlAndPrefix ? `/resize=${imgProp.w * 2}` : ''}`,
-                        media: imgProp.q
-                            ? `(${imgProp.q}) and (-webkit-min-device-pixel-ratio: 2)`
-                            : '(-webkit-min-device-pixel-ratio: 2)',
-                    });
-                }
-
-                this.imgSrcSet = imgSrcSet;
-            } else {
-                this.imgSrcSet = [];
-            }
-        },
-        /* wwManager:start */
-        preventEvent(event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            return false;
-        },
-        /*=============================================m_ÔÔ_m=============================================\
-          IMAGE ZOOM
-        \================================================================================================*/
         setRatio() {
+            /* wwEditor:start */
             if (!this.$el) return;
 
             if (this.wwEditorState.isACopy) return;
@@ -308,7 +124,18 @@ export default {
 
             const ratio = img.naturalHeight / img.naturalWidth;
             this.$emit('update:content', { ratio }, false, true);
+            /* wwEditor:end */
         },
+        /* wwEditor:start */
+        preventEvent(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            return false;
+        },
+        /*=============================================m_ÔÔ_m=============================================\
+          IMAGE ZOOM
+        \================================================================================================*/
         resetZoom(event) {
             if (event) this.preventEvent(event);
             this.$emit('update:content', { x: 0, y: 0, zoom: 1 });
@@ -439,7 +266,7 @@ export default {
 
             return false;
         },
-        /* wwManager:end */
+        /* wwEditor:end */
     },
 };
 </script>
