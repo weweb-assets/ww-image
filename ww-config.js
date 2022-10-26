@@ -9,7 +9,7 @@ export default {
             fr: 'Image',
             en: 'Image',
         },
-        icon: 'assets',
+        icon: 'photograph',
     },
     properties: {
         url: {
