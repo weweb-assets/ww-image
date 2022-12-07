@@ -10,6 +10,7 @@ export default {
             en: 'Image',
         },
         icon: 'photograph',
+        deprecated: 'Use an image from the Elements panel instead of this one.',
     },
     properties: {
         url: {
