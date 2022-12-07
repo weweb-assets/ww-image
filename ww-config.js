@@ -16,88 +16,62 @@ export default {
             label: { en: 'Image', fr: 'Image' },
             type: 'Image',
             bindable: true,
-            responsive: true,
             defaultValue: 'https://cdn.weweb.app/public/images/no_image_selected.png',
+            /* wwEditor:start */
+            bindingValidation: {
+                type: 'string',
+                tooltip: 'A string that represents the image url: `"https://.../.../my_image.png"`',
+            },
+            /* wwEditor:end */
         },
-        ratio: {
-            hidden: true,
-            defaultValue: 0.56,
-            responsive: true,
-            states: true,
-        },
-        zoom: {
-            type: 'Number',
-            label: { en: 'Zoom', fr: 'Zoom' },
+        objectFit: {
+            label: {
+                en: 'Fit',
+            },
+            type: 'TextSelect',
             options: {
-                min: 0.01,
-                max: 5,
-                step: 0.01,
+                options: [
+                    { value: null, default: true, label: { en: 'Fill' } },
+                    { value: 'cover', label: { en: 'Cover' } },
+                    { value: 'contain', label: { en: 'Contain' } },
+                ],
             },
             responsive: true,
             states: true,
-            defaultValue: 1,
+            defaultValue: null,
         },
-        x: {
-            type: 'Number',
-            label: { en: 'Position X', fr: 'Position X' },
+        overlay: {
+            type: 'Color',
+            label: { en: 'Overlay' },
             options: {
-                min: -100,
-                max: 100,
+                nullable: true,
+                gradient: true,
             },
             responsive: true,
             states: true,
-            defaultValue: 0,
-        },
-        y: {
-            type: 'Number',
-            label: { en: 'Position Y', fr: 'Position Y' },
-            options: {
-                min: -100,
-                max: 100,
+            bindable: true,
+            /* wwEditor:start */
+            bindingValidation: {
+                cssSupports: 'color',
+                type: 'string',
+                tooltip: 'A string that represents a color code: `"rebeccapurple" | "#00ff00" | "rgb(214, 122, 127)"`',
             },
+            /* wwEditor:end */
+        },
+        filter: {
+            type: 'CssFilters',
+            label: { en: 'Filters' },
             responsive: true,
             states: true,
-            defaultValue: 0,
-        },
-        reset: {
-            type: 'Button',
-            editorOnly: true,
-            options: {
-                text: { en: 'Reset zoom & pos.', fr: 'Réinit. zoom & pos.' },
-                color: 'blue',
-                action: 'resetZoom',
+            bindable: true,
+            /* wwEditor:start */
+            bindingValidation: {
+                cssSupports: 'filter',
+                type: 'string',
+                tooltip:
+                    'A string that represents a filter value: `"blur(5px)" | "contrast(200%)" | "hue-rotate(90deg)"` \n\n <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter" target="_blank">[documentation]</a>',
             },
-        },
-        coverContain: {
-            type: 'Button',
-            editorOnly: true,
-            options: {
-                text: { en: 'Switch Cover / Contain', fr: 'Zoom auto' },
-                color: 'blue',
-                action: 'switchCoverContain',
-            },
-        },
-        style: {
-            type: 'Object',
-            options: {
-                item: {
-                    overlay: {
-                        type: 'Color',
-                        label: { en: 'Overlay', fr: 'Overlay' },
-                        options: {
-                            nullable: true,
-                            gradient: true,
-                        },
-                    },
-                    filter: {
-                        type: 'CssFilters',
-                        label: { en: 'Filters', fr: 'Filtres' },
-                    },
-                },
-            },
-            responsive: true,
-            states: true,
-            defaultValue: {},
+            /* wwEditor:end */
         },
         alt: {
             section: 'settings',
@@ -109,6 +83,24 @@ export default {
                 placeholder: 'Image description',
             },
             defaultValue: { en: '' },
+            /* wwEditor:start */
+            bindingValidation: {
+                type: 'string',
+                tooltip: 'A string that represents the image alt: `"image description"`',
+            },
+            /* wwEditor:end */
+        },
+        loading: {
+            section: 'settings',
+            label: { en: 'Loading' },
+            type: 'TextSelect',
+            options: {
+                options: [
+                    { value: 'lazy', label: { en: 'Lazy' }, default: true },
+                    { value: 'eager', label: { en: 'Eager' } },
+                ],
+            },
+            defaultValue: 'lazy',
         },
     },
 };
