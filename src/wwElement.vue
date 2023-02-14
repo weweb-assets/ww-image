@@ -23,7 +23,7 @@
 <script>
 export default {
     inject: {
-        getObjectStyle: { default: () => {} },
+        componentStyle: { default: () => {} },
     },
     props: {
         content: { type: Object, required: true },
@@ -60,7 +60,7 @@ export default {
                 '--zoom': (this.content && this.content.zoom) || 1,
                 '--left': (this.content && this.content.x) || 0,
                 '--top': (this.content && this.content.y) || 0,
-                transition: this.getObjectStyle().transition,
+                transition: this.this.componentStyle.transition,
             };
             return style;
         },
@@ -71,7 +71,7 @@ export default {
             };
         },
         ratioStyle() {
-            if (!this.getObjectStyle().height || this.getObjectStyle().height === 'auto') {
+            if (!this.componentStyle.height || this.componentStyle.height === 'auto') {
                 return {
                     '--ww-image-ratio': `${this.content.ratio * 100}%`,
                 };
