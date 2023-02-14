@@ -8,7 +8,7 @@
 <script>
 export default {
     inject: {
-        getObjectStyle: { default: () => {} },
+        componentStyle: { default: () => {} },
     },
     props: {
         content: { type: Object, required: true },
@@ -30,7 +30,7 @@ export default {
 
         /* STYLE */
         aspectRatio() {
-            const elementHeight = this.getObjectStyle().height;
+            const elementHeight = this.componentStyle.height;
             if (elementHeight && elementHeight.endsWith('%')) {
                 return `100 / ${elementHeight.replace('%', '')}`;
             } else {
