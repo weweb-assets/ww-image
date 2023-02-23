@@ -60,7 +60,7 @@ export default {
                 '--zoom': (this.content && this.content.zoom) || 1,
                 '--left': (this.content && this.content.x) || 0,
                 '--top': (this.content && this.content.y) || 0,
-                transition: this.this.componentStyle.transition,
+                transition: this.componentStyle.transition,
             };
             return style;
         },
