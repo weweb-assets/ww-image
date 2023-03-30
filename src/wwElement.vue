@@ -30,9 +30,9 @@ export default {
 
         /* STYLE */
         aspectRatio() {
-            const elementHeight = this.getObjectStyle().height;
-            if (elementHeight && elementHeight.endsWith('%')) {
-                return `100 / ${elementHeight.replace('%', '')}`;
+            const elementAspectRatio = this.getObjectStyle().aspectRatio;
+            if (elementAspectRatio && elementAspectRatio !== 'unset') {
+                return `${elementAspectRatio}`;
             } else {
                 return 'unset';
             }
