@@ -6,7 +6,6 @@
         </div>
         <!-- wwEditor:end -->
         <div class="ww-image__wrapper" :style="formatStyle" ww-responsive="ww-img-wrap">
-            <div class="ww-image__ratio" :style="ratioStyle" ww-responsive="ww-img-ratio"></div>
             <img
                 draggable="false"
                 class="ww-image__img"
@@ -14,7 +13,6 @@
                 :alt="wwLang.getText(content.alt)"
                 :style="imageStyle"
                 ww-responsive="ww-img"
-                @load="setRatio"
             />
         </div>
     </div>
@@ -23,7 +21,7 @@
 <script>
 export default {
     inject: {
-        getObjectStyle: { default: () => {} },
+        componentStyle: { default: () => {} },
     },
     props: {
         content: { type: Object, required: true },
@@ -60,7 +58,7 @@ export default {
                 '--zoom': (this.content && this.content.zoom) || 1,
                 '--left': (this.content && this.content.x) || 0,
                 '--top': (this.content && this.content.y) || 0,
-                transition: this.getObjectStyle().transition,
+                transition: this.componentStyle.transition,
             };
             return style;
         },
@@ -69,17 +67,6 @@ export default {
             return {
                 '--ww-image-overlay-background': overlayBackground,
             };
-        },
-        ratioStyle() {
-            if (!this.getObjectStyle().height || this.getObjectStyle().height === 'auto') {
-                return {
-                    '--ww-image-ratio': `${this.content.ratio * 100}%`,
-                };
-            } else {
-                return {
-                    '--ww-image-ratio': '0%',
-                };
-            }
         },
         isDoubleSelected() {
             /* wwEditor:start */
@@ -110,22 +97,6 @@ export default {
     },
     /* wwEditor:end */
     methods: {
-        setRatio() {
-            /* wwEditor:start */
-            if (!this.$el) return;
-
-            if (this.wwEditorState.isACopy) return;
-
-            const img = this.$el.querySelector('img');
-
-            if (!img) return;
-
-            if (!img.naturalWidth || !img.naturalHeight) return;
-
-            const ratio = img.naturalHeight / img.naturalWidth;
-            this.$emit('update:content', { ratio }, false, true);
-            /* wwEditor:end */
-        },
         /* wwEditor:start */
         preventEvent(event) {
             event.preventDefault();
@@ -293,27 +264,6 @@ export default {
             bottom: 0;
             background: var(--ww-image-overlay-background);
             pointer-events: none;
-        }
-    }
-
-    &__ratio {
-        visibility: hidden;
-        position: relative;
-        pointer-events: none;
-
-        &:before {
-            content: '';
-            width: 1px;
-            margin-left: -1px;
-            float: left;
-            height: 0;
-            padding-top: var(--ww-image-ratio);
-        }
-
-        &:after {
-            content: '';
-            display: table;
-            clear: both;
         }
     }
 
