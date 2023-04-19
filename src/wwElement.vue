@@ -6,6 +6,7 @@
         </div>
         <!-- wwEditor:end -->
         <div class="ww-image__wrapper" :style="formatStyle" ww-responsive="ww-img-wrap">
+            <div class="ww-image__ratio" :style="ratioStyle" ww-responsive="ww-img-ratio"></div>
             <img
                 draggable="false"
                 class="ww-image__img"
@@ -13,11 +14,11 @@
                 :alt="wwLang.getText(content.alt)"
                 :style="imageStyle"
                 ww-responsive="ww-img"
+                @load="setRatio"
             />
         </div>
     </div>
 </template>
-
 <script>
 export default {
     inject: {
@@ -35,7 +36,6 @@ export default {
         return {
             wwLang: wwLib.wwLang,
             dragListener: {},
-
             /* wwEditor:start */
             lastMovePosition: { x: 0, y: 0 },
             initialPosition: { x: 0, y: 0 },
@@ -68,6 +68,17 @@ export default {
                 '--ww-image-overlay-background': overlayBackground,
             };
         },
+        ratioStyle() {
+            if (!this.componentStyle.height || this.componentStyle.height === 'auto') {
+                return {
+                    '--ww-image-ratio': `${this.content.ratio * 100}%`,
+                };
+            } else {
+                return {
+                    '--ww-image-ratio': '0%',
+                };
+            }
+        },
         isDoubleSelected() {
             /* wwEditor:start */
             return this.wwEditorState.isDoubleSelected;
@@ -75,7 +86,6 @@ export default {
             // eslint-disable-next-line no-unreachable
             return false;
         },
-
         isWeWeb() {
             return this.url.startsWith('designs/');
         },
@@ -97,11 +107,21 @@ export default {
     },
     /* wwEditor:end */
     methods: {
+        setRatio() {
+            /* wwEditor:start */
+            if (!this.$el) return;
+            if (this.wwEditorState.isACopy) return;
+            const img = this.$el.querySelector('img');
+            if (!img) return;
+            if (!img.naturalWidth || !img.naturalHeight) return;
+            const ratio = img.naturalHeight / img.naturalWidth;
+            this.$emit('update:content', { ratio }, false, true);
+            /* wwEditor:end */
+        },
         /* wwEditor:start */
         preventEvent(event) {
             event.preventDefault();
             event.stopPropagation();
-
             return false;
         },
         /*=============================================m_ÔÔ_m=============================================\
@@ -110,7 +130,6 @@ export default {
         resetZoom(event) {
             if (event) this.preventEvent(event);
             this.$emit('update:content', { x: 0, y: 0, zoom: 1 });
-
             return false;
         },
         switchCoverContain() {
@@ -118,13 +137,10 @@ export default {
                 const wrapper = this.$el.querySelector('.ww-image__wrapper');
                 const wrapperWidth = wrapper.getBoundingClientRect().width;
                 const wrapperHeight = wrapper.getBoundingClientRect().height;
-
                 const img = this.$el.querySelector('img');
                 const imgWidth = img.getBoundingClientRect().width;
                 const imgHeight = img.getBoundingClientRect().height;
-
                 let targetHeight, targetWidth;
-
                 if (wrapperWidth === imgWidth) {
                     targetHeight = wrapperHeight;
                     targetWidth = imgWidth / (imgHeight / wrapperHeight);
@@ -132,22 +148,17 @@ export default {
                     targetWidth = wrapperWidth;
                     targetHeight = imgHeight / (imgWidth / wrapperWidth);
                 }
-
                 const zoom = targetWidth / wrapperWidth;
-
                 this.$emit('update:content', { x: 0, y: 0, zoom });
             }
         },
-
         /*=============================================m_ÔÔ_m=============================================\
           IMAGE MOVE
         \================================================================================================*/
         getEventPosition(event) {
             var position = { x: 0, y: 0 };
-
             position.x = event.clientX;
             position.y = event.clientY;
-
             return position;
         },
         startMove(event) {
@@ -163,7 +174,6 @@ export default {
             }
             this.isMoving = false;
             wwLib.wwManagerUI.lockSelection();
-
             this.lastMovePosition = this.getEventPosition(event);
             this.initialPosition = { x: this.content.x, y: this.content.y };
             if (this.lastMovePosition) {
@@ -171,27 +181,21 @@ export default {
                 wwLib.getManagerDocument().addEventListener('mousemove', this.move);
                 wwLib.getFrontDocument().addEventListener('click', this.stopMove);
                 wwLib.getManagerDocument().addEventListener('click', this.stopMove);
-
                 document.body.classList.add('ww-image-dragging');
                 return false;
             }
         },
         move(event) {
             let position = this.getEventPosition(event);
-
             if (!position) {
                 return;
             }
-
             var offsetXpx = position.x - this.lastMovePosition.x;
             var offsetYpx = position.y - this.lastMovePosition.y;
-
             if (!this.isMoving && Math.abs(offsetXpx) + Math.abs(offsetYpx) < 4) {
                 return;
             }
-
             this.isMoving = true;
-
             if (this.moveDirection == 'x') {
                 offsetYpx = 0;
             } else if (this.moveDirection == 'y') {
@@ -203,11 +207,9 @@ export default {
                 offsetXpx = 0;
                 this.moveDirection = 'y';
             }
-
             const rectImg = this.$el.querySelector('.ww-image__wrapper').getBoundingClientRect();
             var offsetXpercent = (offsetXpx * 100) / rectImg.width;
             var offsetYpercent = (offsetYpx * 100) / rectImg.height;
-
             const update = {
                 x:
                     this.initialPosition.x +
@@ -218,43 +220,35 @@ export default {
                     (offsetYpercent * this.content.zoom) /
                         (1 - this.content.zoom + this.content.zoom * this.content.zoom),
             };
-
             this.preventEvent(event);
             this.$emit('update:content', update);
         },
         stopMove() {
             this.isMoving = false;
-
             wwLib.getFrontDocument().removeEventListener('mousemove', this.move);
             wwLib.getManagerDocument().removeEventListener('mousemove', this.move);
             wwLib.getFrontDocument().removeEventListener('click', this.stopMove);
             wwLib.getManagerDocument().removeEventListener('click', this.stopMove);
-
             this.moveDirection = null;
             window.document.body.classList.remove('ww-image-dragging');
-
             wwLib.wwManagerUI.unlockSelection();
-
             return false;
         },
         /* wwEditor:end */
     },
 };
 </script>
-
 <style scoped lang="scss">
 .ww-image {
     display: flex;
     position: relative;
     overflow: hidden;
     border-radius: inherit;
-
     &__wrapper {
         width: 100%;
         position: relative;
         overflow: hidden;
         flex: 1;
-
         &:after {
             position: absolute;
             content: '';
@@ -266,7 +260,24 @@ export default {
             pointer-events: none;
         }
     }
-
+    &__ratio {
+        visibility: hidden;
+        position: relative;
+        pointer-events: none;
+        &:before {
+            content: '';
+            width: 1px;
+            margin-left: -1px;
+            float: left;
+            height: 0;
+            padding-top: var(--ww-image-ratio);
+        }
+        &:after {
+            content: '';
+            display: table;
+            clear: both;
+        }
+    }
     &__img {
         position: absolute;
         --posX: calc(calc(1% * var(--left)) * calc(1 - calc(calc(1 - var(--zoom)) / 2)));
@@ -276,7 +287,6 @@ export default {
         width: calc(100% * var(--zoom));
         transform: translate(-50%, -50%);
         image-rendering: -webkit-optimize-contrast;
-
         &-picture {
             position: absolute;
             top: 0;
@@ -285,7 +295,6 @@ export default {
             right: 0;
         }
     }
-
     /* wwEditor:start */
     &__drag-overlay {
         position: absolute;
@@ -301,7 +310,6 @@ export default {
         display: flex;
         justify-content: center;
         align-items: center;
-
         &-icon {
             width: 100px;
             height: 100px;
@@ -322,7 +330,6 @@ export default {
     /* wwEditor:end */
 }
 </style>
-
 <style lang="scss">
 /* wwEditor:start */
 .ww-image-dragging {
