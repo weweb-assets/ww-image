@@ -74,7 +74,7 @@ export default {
 
     & img {
         z-index: 0;
-        width: 100%;
+        width: auto;
         width: -moz-available;
         width: -webkit-fill-available;
         width: fill-available;
