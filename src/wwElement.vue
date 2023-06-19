@@ -75,9 +75,6 @@ export default {
     & img {
         z-index: 0;
         width: auto;
-        width: -moz-available;
-        width: -webkit-fill-available;
-        width: fill-available;
         height: 100%;
         display: block;
         aspect-ratio: var(--wwi-ar);
