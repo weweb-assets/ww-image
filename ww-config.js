@@ -38,6 +38,7 @@ export default {
             },
             responsive: true,
             states: true,
+            classes: true,
             defaultValue: null,
         },
         overlay: {
@@ -50,6 +51,7 @@ export default {
             responsive: true,
             states: true,
             bindable: true,
+            classes: true,
             /* wwEditor:start */
             bindingValidation: {
                 cssSupports: 'color',
@@ -64,6 +66,7 @@ export default {
             responsive: true,
             states: true,
             bindable: true,
+            classes: true,
             /* wwEditor:start */
             bindingValidation: {
                 cssSupports: 'filter',
