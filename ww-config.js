@@ -2,7 +2,6 @@ export default {
     type: 'wwObject',
     options: {
         sizable: true,
-        hyperlink: true,
     },
     editor: {
         label: {
