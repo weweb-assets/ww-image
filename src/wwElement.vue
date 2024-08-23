@@ -243,7 +243,6 @@ export default {
     display: flex;
     position: relative;
     overflow: hidden;
-    border-radius: inherit;
     &__wrapper {
         width: 100%;
         position: relative;

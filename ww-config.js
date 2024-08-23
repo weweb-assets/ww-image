@@ -2,7 +2,8 @@ export default {
     type: 'wwObject',
     options: {
         sizable: true,
-        hyperlink: true,
+        ignoredStyleProperties: ['overflow'],
+        displayAllowedValues: ['flex', 'inline-flex'],
     },
     editor: {
         label: {
