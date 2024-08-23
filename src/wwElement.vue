@@ -1,8 +1,8 @@
 <template>
-    <div class="ww-image-basic" ww-responsive="ww-image-basic" :style="style">
+    <component :is="linkTag" v-bind="properties" class="ww-image-basic" ww-responsive="ww-image-basic" :style="style">
         <div class="ww-image-basic-overlay"></div>
         <img :src="src" :alt="alt" v-bind="{ loading: content.loading || 'lazy' }" />
-    </div>
+    </component>
 </template>
 
 <script>
@@ -15,6 +15,15 @@ export default {
         wwElementState: { type: Object, required: true },
     },
     emits: ['update:content'],
+    setup() {
+        const { hasLink, tag: linkTag, properties } = wwLib.wwElement.useLink();
+
+        return {
+            hasLink,
+            linkTag,
+            properties,
+        };
+    },
     computed: {
         /* URL */
         url() {
@@ -59,7 +68,6 @@ export default {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    border-radius: inherit;
 
     &-overlay {
         z-index: 1;
