@@ -75,6 +75,32 @@ export default {
             },
             /* wwEditor:end */
         },
+        imageRendering: {
+            label: { en: 'Rendering' },
+            type: 'TextSelect',
+            options: {
+                options: [
+                    { value: 'auto', default: true, label: { en: 'Auto' } },
+                    { value: 'pixelated', label: { en: 'Pixelated' } },
+                    { value: 'crisp-edges', label: { en: 'Crisp edges' } },
+                    { value: 'optimizeQuality', label: { en: 'Optimize Quality #non-standard' } },
+                    { value: 'optimizeSpeed', label: { en: 'Optimize Speed #non-standard' } },
+                    { value: 'smooth', label: { en: 'Optimize Quality #experimental' } },
+                ],
+            },
+            responsive: true,
+            states: true,
+            classes: true,
+            defaultValue: 'auto',
+            /* wwEditor:start */
+            bindingValidation: {
+                cssSupports: 'image-rendering',
+                type: 'string',
+                tooltip:
+                    'A string that represents an image-rendering css option: `"auto" | "crisp-edges" | "pixelated"` \n\n <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/image-rendering" target="_blank">[documentation]</a>',
+            },
+            /* wwEditor:end */
+        },
         alt: {
             section: 'settings',
             label: { en: 'Alt', fr: 'Alt' },

@@ -43,6 +43,7 @@ export default {
                 '--wwi-of': this.content.objectFit,
                 '--wwi-f': this.content.filter,
                 '--wwi-o': this.content.overlay,
+                '--wwi-r': this.content.imageRendering || 'auto',
             };
         },
 
@@ -80,7 +81,7 @@ export default {
         aspect-ratio: var(--wwi-ar);
         object-fit: var(--wwi-of);
         filter: var(--wwi-f);
-        image-rendering: -webkit-optimize-contrast;
+        image-rendering: var(--wwi-r);
     }
 }
 
