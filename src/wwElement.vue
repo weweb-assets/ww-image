@@ -1,5 +1,12 @@
 <template>
-    <component :is="linkTag" v-bind="properties" class="ww-image-basic" ww-responsive="ww-image-basic" :style="style">
+    <component
+        :is="linkTag"
+        v-bind="properties"
+        class="ww-image-basic"
+        ww-responsive="ww-image-basic"
+        :style="style"
+        :class="{ '-link': hasLink }"
+    >
         <div class="ww-image-basic-overlay"></div>
         <img :src="src" :alt="alt" v-bind="{ loading: content.loading || 'lazy' }" />
     </component>
@@ -68,6 +75,10 @@ export default {
     position: relative;
     isolation: isolate;
     overflow: hidden;
+
+    &.-link {
+        cursor: pointer;
+    }
 
     &-overlay {
         z-index: 1;
