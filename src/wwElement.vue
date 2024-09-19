@@ -5,7 +5,7 @@
         class="ww-image-basic"
         ww-responsive="ww-image-basic"
         :style="style"
-        :class="{ '-link': hasLink }"
+        :class="{ '-link': hasLink && !isEditing }"
     >
         <div class="ww-image-basic-overlay"></div>
         <img :src="src" :alt="alt" v-bind="{ loading: content.loading || 'lazy' }" />
@@ -20,6 +20,9 @@ export default {
     props: {
         content: { type: Object, required: true },
         wwElementState: { type: Object, required: true },
+        /* wwEditor:start */
+        wwEditorState: { type: Object, required: true },
+        /* wwEditor:end */
     },
     emits: ['update:content'],
     setup() {
@@ -60,6 +63,13 @@ export default {
                 '--wwi-f': this.content.filter,
                 '--wwi-o': this.content.overlay,
             };
+        },
+        isEditing() {
+            /* wwEditor:start */
+            return this.wwEditorState.editMode === wwLib.wwEditorHelper.EDIT_MODES.EDITION;
+            /* wwEditor:end */
+            // eslint-disable-next-line no-unreachable
+            return false;
         },
 
         /* ALT */
