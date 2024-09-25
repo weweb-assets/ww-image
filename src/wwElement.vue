@@ -1,8 +1,15 @@
 <template>
-    <div class="ww-image-basic" ww-responsive="ww-image-basic" :style="style">
+    <component
+        :is="linkTag"
+        v-bind="properties"
+        class="ww-image-basic"
+        ww-responsive="ww-image-basic"
+        :style="style"
+        :class="{ '-link': hasLink && !isEditing }"
+    >
         <div class="ww-image-basic-overlay"></div>
         <img :src="src" :alt="alt" v-bind="{ loading: content.loading || 'lazy' }" />
-    </div>
+    </component>
 </template>
 
 <script>
@@ -13,8 +20,20 @@ export default {
     props: {
         content: { type: Object, required: true },
         wwElementState: { type: Object, required: true },
+        /* wwEditor:start */
+        wwEditorState: { type: Object, required: true },
+        /* wwEditor:end */
     },
     emits: ['update:content'],
+    setup() {
+        const { hasLink, tag: linkTag, properties } = wwLib.wwElement.useLink();
+
+        return {
+            hasLink,
+            linkTag,
+            properties,
+        };
+    },
     computed: {
         /* URL */
         url() {
@@ -45,6 +64,13 @@ export default {
                 '--wwi-o': this.content.overlay,
             };
         },
+        isEditing() {
+            /* wwEditor:start */
+            return this.wwEditorState.editMode === wwLib.wwEditorHelper.EDIT_MODES.EDITION;
+            /* wwEditor:end */
+            // eslint-disable-next-line no-unreachable
+            return false;
+        },
 
         /* ALT */
         alt() {
@@ -59,7 +85,10 @@ export default {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    border-radius: inherit;
+
+    &.-link {
+        cursor: pointer;
+    }
 
     &-overlay {
         z-index: 1;
