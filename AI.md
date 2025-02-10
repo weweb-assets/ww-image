@@ -37,4 +37,4 @@ Events: none
 
 Variables: none
 
-Note: use valid unsplash urls
+Note: use valid unsplash urls. Avoid using images that are more than 2000x2000px. Use properly sized images.
