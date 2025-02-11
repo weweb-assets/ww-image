@@ -18,23 +18,26 @@ keywords:
 
 Component Purpose: Display an image with various customization options.
 
-Properties:
+***Properties:***
 - url: string - Image URL. Default: "https://cdn.weweb.app/public/images/no_image_selected.png"
-- objectFit: null | 'cover' | 'contain' - Image resize behavior. Default: null
+- objectFit: null | 'cover' | 'contain' - Image resize behavior. Default: null. Set `objectFit` to `cover` by default so the image does not look stretched
 - overlay: string | null - CSS color/gradient overlay. Default: null
 - filter: string - CSS filter. Default: ""
 - alt: string | { [lang]: string } - Alt text with multi-language support. Default: { en: "" }
 - loading: 'lazy' | 'eager' - Loading strategy. Default: "lazy"
 
-Children: none
+***Children:*** none
 
-Special Features:
+***Special Features:***
 - Responsive and state-based styles for objectFit, overlay, filter
 - Linkable for URL navigation
 - Controllable aspect ratio via CSS
 
-Events: none
+***Events:*** none
 
-Variables: none
+***Variables:*** none
 
-Note: use valid unsplash urls. Avoid using images that are more than 2000x2000px. Use properly sized images.
+***Important***:
+- Use valid unsplash urls
+- Avoid using images that are more than 2000x2000px: use properly sized images
+- Set `objectFit` to `cover` by default so the image does not look stretched
