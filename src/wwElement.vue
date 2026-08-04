@@ -6,7 +6,7 @@
         </div>
         <!-- wwEditor:end -->
         <div class="ww-image__wrapper" :style="formatStyle" ww-responsive="ww-img-wrap">
-            <div class="ww-image__ratio" :style="ratioStyle" ww-responsive="ww-img-ratio"></div>
+            <div class="ww-image__ratio" ww-responsive="ww-img-ratio"></div>
             <img
                 draggable="false"
                 class="ww-image__img"
@@ -21,9 +21,6 @@
 </template>
 <script>
 export default {
-    inject: {
-        componentStyle: { default: () => {} },
-    },
     props: {
         content: { type: Object, required: true },
         wwElementState: { type: Object, required: true },
@@ -52,32 +49,19 @@ export default {
             return typeof url === 'string' ? url : '';
         },
         imageStyle() {
-            let style = {
+            return {
                 filter:
                     this.content && this.content.style && this.content.style.filter ? this.content.style.filter : null,
                 '--zoom': (this.content && this.content.zoom) || 1,
                 '--left': (this.content && this.content.x) || 0,
                 '--top': (this.content && this.content.y) || 0,
-                transition: this.componentStyle.transition,
             };
-            return style;
         },
         formatStyle() {
             const overlayBackground = (this.content.style && this.content.style.overlay) || 'none';
             return {
                 '--ww-image-overlay-background': overlayBackground,
             };
-        },
-        ratioStyle() {
-            if (!this.componentStyle.height || this.componentStyle.height === 'auto') {
-                return {
-                    '--ww-image-ratio': `${this.content.ratio * 100}%`,
-                };
-            } else {
-                return {
-                    '--ww-image-ratio': '0%',
-                };
-            }
         },
         isDoubleSelected() {
             /* wwEditor:start */
@@ -279,6 +263,7 @@ export default {
     }
     &__img {
         position: absolute;
+        transition: var(--ww-image-transition, none);
         --posX: calc(calc(1% * var(--left)) * calc(1 - calc(calc(1 - var(--zoom)) / 2)));
         --posY: calc(calc(1% * var(--top)) * calc(1 - calc(calc(1 - var(--zoom)) / 2)));
         top: calc(50% + var(--posY));
