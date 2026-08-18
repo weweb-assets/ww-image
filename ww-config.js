@@ -1,5 +1,19 @@
 export default {
     type: 'wwObject',
+    css({ style, content }) {
+        const hasFixedHeight = style.height && style.height !== 'auto';
+
+        return [
+            {
+                property: '--ww-image-ratio',
+                value: hasFixedHeight ? '0%' : `${content.ratio * 100}%`,
+            },
+            {
+                property: '--ww-image-transition',
+                value: style.transition,
+            },
+        ];
+    },
     options: {
         sizable: true,
         ignoredStyleProperties: ['overflow'],
